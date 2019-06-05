@@ -1,0 +1,546 @@
+/*
+ * Copyright (C) 2018 GreenWaves Technologies
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * Authors: Germain Haugou, GreenWaves Technologies (germain.haugou@greenwaves-technologies.com)
+ */
+
+#include "pmsis.h"
+#include "bsp/bsp.h"
+
+
+#define SECTOR_SIZE (1<<18)
+
+#define STALL_TASK_PROGRAM      0
+#define STALL_TASK_ERASE_CHIP   1
+#define STALL_TASK_ERASE_SECTOR 2
+#define STALL_TASK_REG_SET      3
+#define STALL_TASK_REG_GET      4
+#define STALL_TASK_READ         5
+
+typedef struct {
+  struct pi_device hyper_device;
+  // Used for communications with hyperflash through udma
+  uint16_t udma_buffer[2];
+
+  // Waiting queue for common operations (only 1 is handled at the same time)
+  pi_task_t *waiting_first;
+  pi_task_t *waiting_last;
+
+  // Task to be enqueued when the on-going operation is done
+  pi_task_t *pending_task;
+
+  // Waiting queue for erase operation (only 1 is handled at the same time) as it needs a
+  // second level FSM
+  pi_task_t *erase_waiting_first;
+  pi_task_t *erase_waiting_last;
+
+  // Task to be enqueued when the on-going erase operation is done
+  pi_task_t *erase_task;
+
+  // Task used for internal FSM scheduling for common operations
+  pi_task_t task;
+
+  // Task used for internal second-level FSM scheduling (for erase operation)
+  pi_task_t task2;
+
+  // Description of on-going task for common operations. The FSM will keep executing
+  // until this operation is done
+  uint32_t pending_hyper_addr;
+  uint32_t pending_data;
+  uint32_t pending_size;
+
+  // Description of on-going task for erase operation. The FSM will keep executing
+  // until this operation is done
+  uint32_t pending_erase_hyper_addr;
+  uint32_t pending_erase_size;
+
+} hyperflash_t;
+
+
+
+static void hyperflash_program_async(struct pi_device *device, uint32_t hyper_addr, void *data, uint32_t size, pi_task_t *task);
+
+static void hyperflash_check_program(void *arg);
+
+static void hyperflash_erase_async(struct pi_device *device, uint32_t addr, int size, pi_task_t *task);
+
+static int hyperflash_stall_task(hyperflash_t *hyperflash, pi_task_t *task, uint32_t id, uint32_t arg0, uint32_t arg1, uint32_t arg2);
+
+static void hyperflash_handle_pending_task(void *arg);
+
+static void hyperflash_erase_chip_async(struct pi_device *device, pi_task_t *task);
+
+static void hyperflash_erase_sector_async(struct pi_device *device, uint32_t addr, pi_task_t *task);
+
+static void hyperflash_set_reg_exec(hyperflash_t *hyperflash, unsigned int addr, unsigned short value)
+{
+  hyperflash->udma_buffer[0] = value;
+  pi_hyper_write(&hyperflash->hyper_device, addr, hyperflash->udma_buffer, 2);
+}
+
+
+
+// TODO should be moved to pmsis api
+static void pi_task_enqueue(pi_task_t *task)
+{
+  rt_event_enqueue(task);
+}
+
+
+
+static unsigned short hyperflash_get_reg_exec(hyperflash_t *hyperflash, unsigned int addr)
+{
+  pi_hyper_read(&hyperflash->hyper_device, addr, hyperflash->udma_buffer, 4);
+  return hyperflash->udma_buffer[0];
+}
+
+
+
+static unsigned int hyperflash_get_status_reg(hyperflash_t *hyperflash)
+{
+  hyperflash_set_reg_exec(hyperflash, 0x555<<1, 0x70);
+  return hyperflash_get_reg_exec(hyperflash, 0);
+}
+
+
+
+static int hyperflash_open(struct pi_device *device)
+{
+  struct hyperflash_conf *conf = (struct hyperflash_conf *)device->config;
+  int periph_id;
+  int channel;
+
+  hyperflash_t *hyperflash = (hyperflash_t *)pmsis_l2_malloc(sizeof(hyperflash_t));
+  if (hyperflash == NULL) return -1;
+
+  device->data = (void *)hyperflash;
+
+  if (bsp_hyperflash_open(conf))
+    goto error;
+
+  struct pi_hyper_conf hyper_conf;
+  pi_hyper_conf_init(&hyper_conf);
+
+  hyper_conf.id = conf->hyper_itf;
+  hyper_conf.cs = conf->hyper_cs;
+  hyper_conf.type = PI_HYPER_TYPE_FLASH;
+
+  pi_open_from_conf(&hyperflash->hyper_device, &hyper_conf);
+
+  if (pi_hyper_open(&hyperflash->hyper_device))
+    goto error;
+
+  hyperflash->pending_task = NULL;
+  hyperflash->waiting_first = NULL;
+
+  hyperflash->erase_task = NULL;
+  hyperflash->erase_waiting_first = NULL;
+
+  return 0;
+
+error:
+  pmsis_l2_malloc_free(hyperflash, sizeof(hyperflash_t));
+  return -1;
+}
+
+
+
+static void hyperflash_close(struct pi_device *device)
+{
+  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
+  pi_hyper_close(&hyperflash->hyper_device);
+  pmsis_l2_malloc_free(hyperflash, sizeof(hyperflash_t));
+}
+
+
+
+static void hyperflash_ioctl(struct pi_device *device, uint32_t cmd, void *arg)
+{
+  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
+
+  switch (cmd)
+  {
+    case FLASH_IOCTL_INFO:
+    {
+      struct flash_info *flash_info = (struct flash_info *)arg;
+      flash_info->sector_size = 1<<18;
+      // TODO find a way to know what is on the flash, as they may be a boot binary
+      flash_info->flash_start = flash_info->sector_size;
+    }
+  }
+}
+
+
+
+static void hyperflash_reg_set_async(struct pi_device *device, uint32_t addr, uint8_t *value, pi_task_t *task)
+{
+  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
+
+  if (hyperflash_stall_task(hyperflash, task, STALL_TASK_REG_SET, addr, (uint32_t)value, 0))
+    return;
+
+  hyperflash_set_reg_exec(hyperflash, addr, *(uint16_t *)value);
+
+  pi_task_enqueue(task);
+}
+
+
+
+static void hyperflash_reg_get_async(struct pi_device *device, uint32_t addr, uint8_t *value, pi_task_t *task)
+{
+  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
+  
+  if (hyperflash_stall_task(hyperflash, task, STALL_TASK_REG_GET, addr, (uint32_t)value, 0))
+    return;
+
+  *(uint16_t *)value = hyperflash_get_reg_exec(hyperflash, addr);
+
+  pi_task_enqueue(task);
+}
+
+
+
+static void hyperflash_read_async(struct pi_device *device, uint32_t addr, void *data, uint32_t size, pi_task_t *task)
+{
+  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
+
+  if (hyperflash_stall_task(hyperflash, task, STALL_TASK_READ, addr, (uint32_t)data, size))
+    return;
+
+  pi_hyper_read_async(&hyperflash->hyper_device, addr, data, size, pi_task_callback(&hyperflash->task, hyperflash_handle_pending_task, device));
+}
+
+
+
+static void hyperflash_handle_pending_task(void *arg)
+{
+  struct pi_device *device = (struct pi_device *)arg;
+  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
+
+  int irq = disable_irq();
+
+  pi_task_enqueue(hyperflash->pending_task);
+  hyperflash->pending_task = NULL;
+
+  pi_task_t *task = hyperflash->waiting_first;
+  if (task)
+  {
+    hyperflash->waiting_first = task->implem.next;
+  }
+
+  restore_irq(irq);
+
+  if (task)
+  {
+    if (task->implem.data[0] == STALL_TASK_PROGRAM)
+    {
+      hyperflash_program_async(device, task->implem.data[1], (void *)task->implem.data[2], task->implem.data[3], task);
+    }
+    else if (task->implem.data[0] == STALL_TASK_ERASE_CHIP)
+    {
+      hyperflash_erase_chip_async(device, task);
+    }
+    else if (task->implem.data[0] == STALL_TASK_ERASE_SECTOR)
+    {
+      hyperflash_erase_sector_async(device, task->implem.data[1], task);
+    }
+    else if (task->implem.data[0] == STALL_TASK_REG_SET)
+    {
+      hyperflash_reg_set_async(device, task->implem.data[1], (uint8_t *)task->implem.data[2], task);
+    }
+    else if (task->implem.data[0] == STALL_TASK_REG_GET)
+    {
+      hyperflash_reg_get_async(device, task->implem.data[1], (uint8_t *)task->implem.data[2], task);
+    }
+    else if (task->implem.data[0] == STALL_TASK_READ)
+    {
+      hyperflash_read_async(device, task->implem.data[1], (void *)task->implem.data[2], task->implem.data[3], task);
+    }
+  }
+}
+
+
+
+static void hyperflash_handle_pending_erase_task(void *arg)
+{
+  struct pi_device *device = (struct pi_device *)arg;
+  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
+
+  int irq = disable_irq();
+
+  pi_task_enqueue(hyperflash->erase_task);
+  hyperflash->erase_task = NULL;
+
+  pi_task_t *task = hyperflash->erase_waiting_first;
+  if (task)
+  {
+    hyperflash->erase_waiting_first = task->implem.next;
+  }
+
+  restore_irq(irq);
+
+  if (task)
+  {
+    hyperflash_erase_async(device, task->implem.data[1], task->implem.data[2], task);
+  }
+}
+
+
+
+static int hyperflash_stall_task(hyperflash_t *hyperflash, pi_task_t *task, uint32_t id, uint32_t arg0, uint32_t arg1, uint32_t arg2)
+{
+  int irq = disable_irq();
+
+  if (hyperflash->pending_task != NULL)
+  {
+    task->implem.data[0] = id;
+    task->implem.data[1] = arg0;
+    task->implem.data[2] = arg1;
+    task->implem.data[3] = arg2;
+
+    if (hyperflash->waiting_first)
+      hyperflash->waiting_last->implem.next = task;
+    else
+      hyperflash->waiting_first = task;
+
+    hyperflash->waiting_last = task;
+    task->implem.next = NULL;
+
+    restore_irq(irq);
+    return 1;
+  }
+
+  hyperflash->pending_task = task;
+
+  restore_irq(irq);
+  return 0;
+}
+
+
+
+static int hyperflash_stall_erase_task(hyperflash_t *hyperflash, pi_task_t *task, uint32_t id, uint32_t arg0, uint32_t arg1, uint32_t arg2)
+{
+  int irq = disable_irq();
+
+  if (hyperflash->erase_task != NULL)
+  {
+    task->implem.data[0] = id;
+    task->implem.data[1] = arg0;
+    task->implem.data[2] = arg1;
+    task->implem.data[3] = arg2;
+
+    if (hyperflash->erase_waiting_first)
+      hyperflash->erase_waiting_last->implem.next = task;
+    else
+      hyperflash->erase_waiting_first = task;
+
+    hyperflash->erase_waiting_last = task;
+    task->implem.next = NULL;
+    restore_irq(irq);
+    return 1;
+  }
+
+  hyperflash->erase_task = task;
+
+  restore_irq(irq);
+  return 0;
+}
+
+
+
+static void hyperflash_program_resume(void *arg)
+{
+  struct pi_device *device = (struct pi_device *)arg;
+  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
+
+  if (hyperflash->pending_size == 0)
+  {
+    hyperflash_handle_pending_task(device);
+  }
+  else
+  {
+    unsigned int iter_size = 512 - (hyperflash->pending_hyper_addr & 0x1ff);
+      if (iter_size > hyperflash->pending_size)
+        iter_size = hyperflash->pending_size;
+
+    // Enqueue command header synchronously as this should be quick
+    hyperflash_set_reg_exec(hyperflash, 0x555<<1, 0xAA);
+    hyperflash_set_reg_exec(hyperflash, 0x2AA<<1, 0x55);
+    hyperflash_set_reg_exec(hyperflash, 0x555<<1, 0xA0);
+
+    pi_hyper_write_async(&hyperflash->hyper_device, hyperflash->pending_hyper_addr, (void *)hyperflash->pending_data, iter_size, pi_task_callback(&hyperflash->task, hyperflash_check_program, device));
+
+    hyperflash->pending_hyper_addr += iter_size;
+    hyperflash->pending_data += iter_size;
+    hyperflash->pending_size -= iter_size;
+  }
+}
+
+
+
+static void hyperflash_check_program(void *arg)
+{
+  struct pi_device *device = (struct pi_device *)arg;
+  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
+
+  if (((hyperflash_get_status_reg(hyperflash) >> 7) & 1) == 0)
+  {
+    // Typical buffer programming time is 475us
+    rt_event_push_delayed(pi_task_callback(&hyperflash->task, hyperflash_check_program, device), 250);
+  }
+  else
+  {
+    hyperflash_program_resume(device);
+  }
+}
+
+
+
+static void hyperflash_program_async(struct pi_device *device, uint32_t hyper_addr, void *data, uint32_t size, pi_task_t *task)
+{
+  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
+
+  if (hyperflash_stall_task(hyperflash, task, STALL_TASK_PROGRAM, hyper_addr, (uint32_t)data, size))
+    return;
+
+  hyperflash->pending_hyper_addr = hyper_addr;
+  hyperflash->pending_data = (uint32_t)data;
+  hyperflash->pending_size = size;
+
+  hyperflash_program_resume(device);
+}
+
+
+
+static void hyperflash_erase_chip_async(struct pi_device *device, pi_task_t *task)
+{
+  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
+
+  if (hyperflash_stall_task(hyperflash, task, STALL_TASK_ERASE_CHIP, 0, 0, 0))
+    return;
+
+  // Enqueue command header synchronously as this should be quick
+  hyperflash_set_reg_exec(hyperflash, 0x555<<1, 0xAA);
+  hyperflash_set_reg_exec(hyperflash, 0x2AA<<1, 0x55);
+  hyperflash_set_reg_exec(hyperflash, 0x555<<1, 0x80);
+  hyperflash_set_reg_exec(hyperflash, 0x555<<1, 0xAA);
+  hyperflash_set_reg_exec(hyperflash, 0x2AA<<1, 0x55);
+  hyperflash_set_reg_exec(hyperflash, 0x555<<1, 0x10);
+
+  pi_task_enqueue(task);
+}
+
+
+
+static void hyperflash_check_erase(void *arg)
+{
+  struct pi_device *device = (struct pi_device *)arg;
+  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
+
+  if (((hyperflash_get_status_reg(hyperflash) >> 7) & 1) == 0)
+  {
+    rt_event_push_delayed(pi_task_callback(&hyperflash->task, hyperflash_check_erase, device), 100000);
+  }
+  else
+  {
+    hyperflash_handle_pending_task(device);
+  }
+}
+
+
+
+static void hyperflash_erase_sector_async(struct pi_device *device, uint32_t addr, pi_task_t *task)
+{
+  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
+
+  if (hyperflash_stall_task(hyperflash, task, STALL_TASK_ERASE_SECTOR, addr, 0, 0))
+    return;
+
+  // Enqueue command header synchronously as this should be quick
+  hyperflash_set_reg_exec(hyperflash, 0x555<<1, 0xAA);
+  hyperflash_set_reg_exec(hyperflash, 0x2AA<<1, 0x55);
+  hyperflash_set_reg_exec(hyperflash, 0x555<<1, 0x80);
+  hyperflash_set_reg_exec(hyperflash, 0x555<<1, 0xAA);
+  hyperflash_set_reg_exec(hyperflash, 0x2AA<<1, 0x55);
+  hyperflash_set_reg_exec(hyperflash, addr, 0x30);
+
+  // Typical sector erase time is 930ms
+  rt_event_push_delayed(pi_task_callback(&hyperflash->task, hyperflash_check_erase, device), 100000);
+}
+
+
+
+static void hyperflash_erase_resume(void *arg)
+{
+  struct pi_device *device = (struct pi_device *)arg;
+  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
+
+  if (hyperflash->pending_erase_size == 0)
+  {
+    hyperflash_handle_pending_erase_task(device);
+  }
+  else
+  {
+    unsigned int iter_size = SECTOR_SIZE - (hyperflash->pending_erase_hyper_addr & (SECTOR_SIZE - 1));
+      if (iter_size > hyperflash->pending_erase_size)
+        iter_size = hyperflash->pending_erase_size;
+
+    hyperflash_erase_sector_async(device, hyperflash->pending_erase_hyper_addr, pi_task_callback(&hyperflash->task2, hyperflash_erase_resume, device));
+
+    hyperflash->pending_erase_hyper_addr += iter_size;
+    hyperflash->pending_erase_size -= iter_size;
+  }
+}
+
+
+
+static void hyperflash_erase_async(struct pi_device *device, uint32_t addr, int size, pi_task_t *task)
+{
+  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
+
+  if (hyperflash_stall_erase_task(hyperflash, task, 3, addr, size, 0))
+    return;
+
+  hyperflash->pending_erase_hyper_addr = addr;
+  hyperflash->pending_erase_size = size;
+
+  hyperflash_erase_resume(device);
+}
+
+
+
+static flash_api_t hyperflash_api = {
+  .open                 = & hyperflash_open,
+  .close                = & hyperflash_close,
+  .ioctl                = & hyperflash_ioctl,
+  .read_async           = & hyperflash_read_async,
+  .program_async        = & hyperflash_program_async,
+  .erase_chip_async     = & hyperflash_erase_chip_async,
+  .erase_sector_async   = & hyperflash_erase_sector_async,
+  .erase_async          = & hyperflash_erase_async,
+  .reg_set_async        = & hyperflash_reg_set_async,
+  .reg_get_async        = & hyperflash_reg_get_async
+};
+
+
+
+void hyperflash_conf_init(struct hyperflash_conf *conf)
+{
+  conf->flash.api = &hyperflash_api;
+  bsp_hyperflash_conf_init(conf);
+  __flash_conf_init(&conf->flash);
+}
