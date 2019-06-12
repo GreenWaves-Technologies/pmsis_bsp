@@ -3,7 +3,7 @@ export GAPOC_A_SRC
 
 all:
 ifdef PULPOS
-	make -f rules/pulpos.mk all install
+	make -f rules/pulpos.mk build install
 endif
 
 clean:
