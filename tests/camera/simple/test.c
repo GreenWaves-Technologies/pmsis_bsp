@@ -20,7 +20,7 @@
 
 #define BUFF_SIZE (WIDTH*HEIGHT)
 
-RT_L2_DATA unsigned char *buff[2];
+L2_DATA unsigned char *buff[2];
 
 static int open_camera(struct pi_device *device)
 {

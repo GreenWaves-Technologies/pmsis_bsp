@@ -147,12 +147,16 @@ static himax_reg_init_t __himax_reg_init[] =
 
 static inline int is_i2c_active()
 {
+#ifdef __ZEPHYR__
+  return 1;
+#else
   // I2C driver is not yet working on some chips, at least this works on gvsoc.
   // Also there is noI2C connection to camera model on RTL
 #if PULP_CHIP == CHIP_VEGA || PULP_CHIP == CHIP_ARNOLD || PULP_CHIP == CHIP_PULPISSIMO || PULP_CHIP == CHIP_PULPISSIMO_V1
   return 0;
 #else
   return rt_platform() != ARCHI_PLATFORM_RTL;
+#endif
 #endif
 }
 
@@ -177,8 +181,12 @@ static uint8_t __himax_reg_read(himax_t *himax, unsigned int addr)
     himax->i2c_req.addr = ((addr >> 8) & 0xff) | ((addr & 0xff) << 8);
     pi_i2c_write(&himax->i2c_device, (uint8_t *)&himax->i2c_req, 2, PI_I2C_XFER_NO_STOP);
     pi_i2c_read(&himax->i2c_device, (uint8_t *)&himax->i2c_read_value, 1, PI_I2C_XFER_STOP);
+    return *(volatile uint8_t *)&himax->i2c_read_value;
   }
-  return *(volatile uint8_t *)&himax->i2c_read_value;
+  else
+  {
+    return 0;
+  }
 }
 
 
@@ -201,7 +209,9 @@ static void __himax_reset(himax_t *himax)
   while (__himax_reg_read(himax, HIMAX_MODE_SELECT) != HIMAX_STANDBY)
   {
     __himax_reg_write(himax, HIMAX_SW_RESET, HIMAX_RESET);
+#ifndef __ZEPHYR__
     rt_time_wait_us(50);
+#endif
   }
 }
 
@@ -209,7 +219,7 @@ static void __himax_reset(himax_t *himax)
 
 static void __himax_mode(himax_t *himax, uint8_t mode)
 {
-  __himax_reg_write(himax, MODE_SELECT, mode);
+  __himax_reg_write(himax, HIMAX_MODE_SELECT, mode);
 }
 
 
@@ -239,8 +249,6 @@ static void __himax_standby(himax_t *himax)
 int __himax_open(struct pi_device *device)
 {
   struct himax_conf *conf = (struct himax_conf *)device->config;
-  int periph_id;
-  int channel;
 
   himax_t *himax = (himax_t *)pmsis_l2_malloc(sizeof(himax_t));
   if (himax == NULL) return -1;
@@ -303,8 +311,6 @@ static void __himax_control(struct pi_device *device, camera_cmd_e cmd, void *ar
   int irq = rt_irq_disable();
 
   himax_t *himax = (himax_t *)device->data;
-
-  rt_cpi_t *cpi = (rt_cpi_t *)himax->cpi_device.data;
 
   switch (cmd)
   {

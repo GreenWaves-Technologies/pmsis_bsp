@@ -141,7 +141,7 @@ static int __ili_open(struct pi_device *device)
   spi_conf.itf = conf->spi_itf;
   spi_conf.cs = conf->spi_cs;
 
-  spi_conf.wordsize = RT_SPIM_WORDSIZE_8;
+  spi_conf.wordsize = PI_SPI_WORDSIZE_8;
   spi_conf.big_endian = 1;
   spi_conf.max_baudrate = 50000000;
   spi_conf.polarity = 0;
@@ -185,7 +185,7 @@ void ili9341_conf_init(struct ili9341_conf *conf)
 static void __ili_write_8(ili_t *ili, uint8_t value) 
 {
   ili->temp_buffer[0] = value;
-  pi_spi_send(&ili->spim, ili->temp_buffer, 8, RT_SPIM_CS_AUTO);
+  pi_spi_send(&ili->spim, ili->temp_buffer, 8, PI_SPI_CS_AUTO);
 }
 
 
