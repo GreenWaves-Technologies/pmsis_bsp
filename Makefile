@@ -1,4 +1,4 @@
-ifdef PULP_SDK_HOME
+ifndef GAP_SDK_HOME
 PULP_PROPERTIES += udma/cpi/version pulp_chip_family
 include $(TARGET_INSTALL_DIR)/rules/pulp_properties.mk
 endif
