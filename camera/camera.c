@@ -35,7 +35,7 @@ void camera_capture(struct pi_device *device, void *buffer, size_t size)
 {
   pi_task_t task;
   camera_capture_async(device, buffer, size, pi_task(&task));
-  pi_wait_on_task(&task);
+  pi_task_wait_on(&task);
 }
 
 

@@ -110,7 +110,7 @@ static inline void flash_reg_set(struct pi_device *device, uint32_t flash_addr, 
 {
   pi_task_t task;
   flash_reg_set_async(device, flash_addr, value, pi_task(&task));
-  pi_wait_on_task(&task);
+  pi_task_wait_on(&task);
 }
 
 static inline void flash_reg_get_async(struct pi_device *device, uint32_t flash_addr, uint8_t *value, pi_task_t *task)
@@ -123,7 +123,7 @@ static inline void flash_reg_get(struct pi_device *device, uint32_t flash_addr, 
 {
   pi_task_t task;
   flash_reg_get_async(device, flash_addr, value, pi_task(&task));
-  pi_wait_on_task(&task);
+  pi_task_wait_on(&task);
 }
 
 static inline void flash_read_async(struct pi_device *device, uint32_t flash_addr, void *data, uint32_t size, pi_task_t *task)
@@ -136,7 +136,7 @@ static inline void flash_read(struct pi_device *device, uint32_t flash_addr, voi
 {
   pi_task_t task;
   flash_read_async(device, flash_addr, data, size, pi_task(&task));
-  pi_wait_on_task(&task);
+  pi_task_wait_on(&task);
 }
 
 static inline void flash_program_async(struct pi_device *device, uint32_t flash_addr, void *data, uint32_t size, pi_task_t *task)
@@ -149,7 +149,7 @@ static inline void flash_program(struct pi_device *device, uint32_t flash_addr, 
 {
   pi_task_t task;
   flash_program_async(device, flash_addr, data, size, pi_task(&task));
-  pi_wait_on_task(&task);
+  pi_task_wait_on(&task);
 }
 
 static inline void flash_erase_chip_async(struct pi_device *device, pi_task_t *task)
@@ -162,7 +162,7 @@ static inline void flash_erase_chip(struct pi_device *device)
 {
   pi_task_t task;
   flash_erase_chip_async(device, pi_task(&task));
-  pi_wait_on_task(&task);
+  pi_task_wait_on(&task);
 }
 
 static inline void flash_erase_sector_async(struct pi_device *device, uint32_t flash_addr, pi_task_t *task)
@@ -175,7 +175,7 @@ static inline void flash_erase_sector(struct pi_device *device, uint32_t flash_a
 {
   pi_task_t task;
   flash_erase_sector_async(device, flash_addr, pi_task(&task));
-  pi_wait_on_task(&task);
+  pi_task_wait_on(&task);
 }
 
 static inline void flash_erase_async(struct pi_device *device, uint32_t flash_addr, int size, pi_task_t *task)
@@ -188,7 +188,7 @@ static inline void flash_erase(struct pi_device *device, uint32_t flash_addr, in
 {
   pi_task_t task;
   flash_erase_async(device, flash_addr, size, pi_task(&task));
-  pi_wait_on_task(&task);
+  pi_task_wait_on(&task);
 }
 
 void __flash_conf_init(struct flash_conf *conf);

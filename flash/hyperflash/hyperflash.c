@@ -97,7 +97,7 @@ static void hyperflash_set_reg_exec(hyperflash_t *hyperflash, unsigned int addr,
 // TODO should be moved to pmsis api
 static void pi_task_enqueue(pi_task_t *task)
 {
-  rt_event_enqueue(task);
+  pi_task_push(task);
 }
 
 
@@ -121,8 +121,6 @@ static unsigned int hyperflash_get_status_reg(hyperflash_t *hyperflash)
 static int hyperflash_open(struct pi_device *device)
 {
   struct hyperflash_conf *conf = (struct hyperflash_conf *)device->config;
-  int periph_id;
-  int channel;
 
   hyperflash_t *hyperflash = (hyperflash_t *)pmsis_l2_malloc(sizeof(hyperflash_t));
   if (hyperflash == NULL) return -1;
@@ -170,8 +168,6 @@ static void hyperflash_close(struct pi_device *device)
 
 static void hyperflash_ioctl(struct pi_device *device, uint32_t cmd, void *arg)
 {
-  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
-
   switch (cmd)
   {
     case FLASH_IOCTL_INFO:
@@ -400,7 +396,7 @@ static void hyperflash_check_program(void *arg)
   if (((hyperflash_get_status_reg(hyperflash) >> 7) & 1) == 0)
   {
     // Typical buffer programming time is 475us
-    rt_event_push_delayed(pi_task_callback(&hyperflash->task, hyperflash_check_program, device), 250);
+    pi_task_push_delayed_us(pi_task_callback(&hyperflash->task, hyperflash_check_program, device), 250);
   }
   else
   {
@@ -453,7 +449,7 @@ static void hyperflash_check_erase(void *arg)
 
   if (((hyperflash_get_status_reg(hyperflash) >> 7) & 1) == 0)
   {
-    rt_event_push_delayed(pi_task_callback(&hyperflash->task, hyperflash_check_erase, device), 100000);
+    pi_task_push_delayed_us(pi_task_callback(&hyperflash->task, hyperflash_check_erase, device), 100000);
   }
   else
   {
@@ -479,7 +475,7 @@ static void hyperflash_erase_sector_async(struct pi_device *device, uint32_t add
   hyperflash_set_reg_exec(hyperflash, addr, 0x30);
 
   // Typical sector erase time is 930ms
-  rt_event_push_delayed(pi_task_callback(&hyperflash->task, hyperflash_check_erase, device), 100000);
+  pi_task_push_delayed_us(pi_task_callback(&hyperflash->task, hyperflash_check_erase, device), 100000);
 }
 
 

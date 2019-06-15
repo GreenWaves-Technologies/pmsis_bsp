@@ -32,6 +32,7 @@
 typedef struct
 {
   struct pi_device spim;
+  struct pi_device gpio_port;
   int width;
   uint32_t current_data;
   uint32_t current_size;
@@ -102,8 +103,6 @@ static void __ili_write_async(struct pi_device *device, pi_buffer_t *buffer, uin
 {
   ili_t *ili = (ili_t *)device->data;
 
-  __rt_task_init(task);
-
   __ili_set_addr_window(ili, x, y, w, h); // Clipped area
 
   pi_task_callback(&ili->temp_copy_task, __ili9341_write_buffer_iter, (void *)ili);
@@ -123,13 +122,19 @@ static void __ili_write_async(struct pi_device *device, pi_buffer_t *buffer, uin
 static int __ili_open(struct pi_device *device)
 {
   struct ili9341_conf *conf = (struct ili9341_conf *)device->config;
-  int periph_id;
-  int channel;
 
   ili_t *ili = (ili_t *)pmsis_l2_malloc(sizeof(ili_t));
   if (ili == NULL) return -1;
 
   if (bsp_ili9341_open(conf))
+    goto error;
+
+  struct pi_gpio_conf gpio_conf;
+  pi_gpio_conf_init(&gpio_conf);
+
+  pi_open_from_conf(&ili->gpio_port, &gpio_conf);
+
+  if (pi_gpio_open(&ili->gpio_port))
     goto error;
 
   device->data = (void *)ili;
@@ -208,18 +213,17 @@ static void __ili_write_32(ili_t *ili, uint16_t value)
 
 static void __ili_write_command(ili_t *ili, uint8_t cmd)
 {
-  rt_gpio_set_pin_value(0, ili->gpio, 0);
+  pi_gpio_pin_write(&ili->gpio_port, ili->gpio, 0);
   __ili_write_8(ili,cmd);
-  rt_gpio_set_pin_value(0, ili->gpio, 1);
+  pi_gpio_pin_write(&ili->gpio_port, ili->gpio, 1);
 }
 
 
 
 static void __ili_init(ili_t *ili)
 {
-  rt_gpio_init(0, ili->gpio);    
-  rt_gpio_set_dir(0, 1<<ili->gpio, RT_GPIO_IS_OUT);
-  rt_gpio_set_pin_value(0, ili->gpio, 0);
+  pi_gpio_pin_configure(&ili->gpio_port, ili->gpio, PI_GPIO_OUTPUT);
+  pi_gpio_pin_write(&ili->gpio_port, ili->gpio, 0);
 
   __ili_write_command(ili,0xEF);
   __ili_write_8(ili,0x03);
@@ -328,9 +332,9 @@ static void __ili_init(ili_t *ili)
   __ili_write_8(ili,0x0F);
 
   __ili_write_command(ili,ILI9341_SLPOUT);    //Exit Sleep
-  rt_time_wait_us(120000);
+  pi_time_wait_us(120000);
   __ili_write_command(ili,ILI9341_DISPON);    //Display on
-  rt_time_wait_us(120000);
+  pi_time_wait_us(120000);
 }
 
 
