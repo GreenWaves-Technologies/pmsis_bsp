@@ -83,7 +83,7 @@ all: dir header gapuino_bsp gapoc_a_bsp
 dir:
 	mkdir -p $(BUILD_DIR) $(TARGET_INSTALL_DIR) $(LIB_DIR)
 
-header: $(INSTALL_FILES)
+header: $(INSTALL_HEADERS)
 
 $(OBJECTS_GAPUINO) : $(GAPUINO_BUILD_DIR)/%.o : %.c
 	@mkdir -p $(dir $@)
