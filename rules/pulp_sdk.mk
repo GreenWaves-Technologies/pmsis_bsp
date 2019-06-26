@@ -1,5 +1,6 @@
 export GAPUINO_SRC
 export GAPOC_A_SRC
+export AI_DECK_SRC
 
 all:
 ifdef PULPOS

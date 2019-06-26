@@ -25,6 +25,10 @@
 #include <bsp/gapoc_a.h>
 #endif
 
+#if defined(CONFIG_AI_DECK)
+#include <bsp/ai_deck.h>
+#endif
+
 #if defined(CONFIG_HIMAX)
 #include "bsp/camera/himax.h"
 void bsp_himax_conf_init(struct himax_conf *conf);
@@ -48,6 +52,12 @@ int bsp_ili9341_open(struct ili9341_conf *conf);
 #include "bsp/flash/hyperflash.h"
 void bsp_hyperflash_conf_init(struct hyperflash_conf *conf);
 int bsp_hyperflash_open(struct hyperflash_conf *conf);
+#endif
+
+#if defined(CONFIG_NINA_W10)
+#include "bsp/transport/nina_w10.h"
+void bsp_nina_w10_conf_init(struct nina_w10_conf *conf);
+int bsp_nina_w10_open(struct nina_w10_conf *conf);
 #endif
 
 

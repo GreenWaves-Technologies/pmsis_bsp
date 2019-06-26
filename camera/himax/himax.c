@@ -381,8 +381,6 @@ static camera_api_t himax_api =
 void himax_conf_init(struct himax_conf *conf)
 {
   conf->camera.api = &himax_api;
-  conf->i2c_itf = 0;
-  conf->cpi_itf = 0;
   conf->skip_pads_config = 0;
   bsp_himax_conf_init(conf);
   __camera_conf_init(&conf->camera);

@@ -17,6 +17,9 @@
 #ifndef __DRIVERS__BUFFER_H__
 #define __DRIVERS__BUFFER_H__
 
+#include <stdint.h>
+#include <pmsis.h>
+
 typedef enum {
   PI_BUFFER_TYPE_L2,
   PI_BUFFER_TYPE_FC_TCDM,
@@ -34,15 +37,21 @@ typedef struct {
   void *data;
   uint32_t width;
   uint32_t height;
+  uint32_t channels;
   uint32_t stride;
   pi_buffer_format_e format;
 } pi_buffer_t;
+
+static inline int pi_buffer_size(pi_buffer_t *buffer)
+{
+  return buffer->width*buffer->height*buffer->channels;
+}
 
 static inline void pi_buffer_init(pi_buffer_t *buffer, pi_buffer_type_e type, void *data);
 
 static inline void pi_buffer_set_stride(pi_buffer_t *buffer, uint32_t stride);
 
-static inline void pi_buffer_set_format(pi_buffer_t *buffer, uint32_t width, uint32_t height, pi_buffer_format_e format);
+static inline void pi_buffer_set_format(pi_buffer_t *buffer, uint32_t width, uint32_t height, uint32_t channels, pi_buffer_format_e format);
 
 
 static inline void pi_buffer_init(pi_buffer_t *buffer, pi_buffer_type_e type, void *data)
@@ -57,11 +66,12 @@ static inline void pi_buffer_set_stride(pi_buffer_t *buffer, uint32_t stride)
   buffer->stride = stride;
 }
 
-static inline void pi_buffer_set_format(pi_buffer_t *buffer, uint32_t width, uint32_t height, pi_buffer_format_e format)
+static inline void pi_buffer_set_format(pi_buffer_t *buffer, uint32_t width, uint32_t height, uint32_t channels, pi_buffer_format_e format)
 {
   buffer->format = format;
   buffer->width = width;
   buffer->height = height;
+  buffer->channels = channels;
 }
 
 #endif

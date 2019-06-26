@@ -12,6 +12,15 @@ GAPUINO_SRC = \
   flash/flash.c \
   flash/hyperflash/hyperflash.c
 
+AI_DECK_SRC = \
+  bsp/ai_deck.c \
+  camera/camera.c \
+  camera/himax/himax.c \
+  flash/flash.c \
+  flash/hyperflash/hyperflash.c \
+  transport/transport.c \
+  transport/nina_w10/nina_w10.c
+
 GAPOC_A_SRC = \
   bsp/gapoc_a.c \
   camera/camera.c \
