@@ -50,6 +50,7 @@ typedef struct
   int setup_size;
   uint8_t *setup_command;
   nina_req_t req;
+  int access_done;
 } nina_t;
 
 
@@ -60,14 +61,20 @@ static int __nina_w10_send_packet(nina_t *nina, uint8_t *packet, int size, pi_ta
 
 static int __nina_w10_send_command(nina_t *nina, uint8_t *command, int size, pi_task_t *task)
 {
-  // Nina module is generating a rising edge when it is ready to receive a command
-  while(pi_gpio_pin_notif_get(&nina->gpio_ready, 0) == 0)
+  if (nina->access_done)
   {
-    pi_yield();
+    // Nina module is generating a rising edge when it is ready to receive a command
+    while(pi_gpio_pin_notif_get(&nina->gpio_ready, 0) == 0)
+    {
+      pi_yield();
+    }
   }
+
   pi_gpio_pin_notif_clear(&nina->gpio_ready, 0);
 
   pi_spi_send_async(&nina->spim, (void *)command, ((size + 3) & ~0x3)*8, PI_SPI_CS_AUTO, task);
+
+  nina->access_done = 1;
 
   return 0;
 }
@@ -76,14 +83,20 @@ static int __nina_w10_send_command(nina_t *nina, uint8_t *command, int size, pi_
 
 static int __nina_w10_get_response(nina_t *nina, uint8_t *response, int size, pi_task_t *task)
 {
-  // Nina module is generating a rising edge when it is ready to receive a command
-  while(pi_gpio_pin_notif_get(&nina->gpio_ready, 0) == 0)
+  if (nina->access_done)
   {
-    pi_yield();
+    // Nina module is generating a rising edge when it is ready to receive a command
+    while(pi_gpio_pin_notif_get(&nina->gpio_ready, 0) == 0)
+    {
+      pi_yield();
+    }
   }
+  
   pi_gpio_pin_notif_clear(&nina->gpio_ready, 0);
 
   pi_spi_receive_async(&nina->spim, (void *)response, ((size + 3) & ~0x3)*8, PI_SPI_CS_AUTO, task);
+
+  nina->access_done = 1;
 
   return 0;
 }
@@ -239,7 +252,6 @@ int __nina_w10_open(struct pi_device *device)
 
   rt_pad_set_function(PAD_12_RF_PACTRL0, PAD_12_FUNC1_GPIOA0);
 
-
   struct pi_spi_conf spi_conf;
   pi_spi_conf_init(&spi_conf);
   spi_conf.itf = conf->spi_itf;
@@ -260,6 +272,16 @@ int __nina_w10_open(struct pi_device *device)
 
   nina->pending_task = NULL;
   nina->pending_first = NULL;
+
+  do {
+    uint32_t value;
+    pi_gpio_pin_read(&nina->gpio_ready, 0, &value);
+    if (value == 1)
+      break;
+    pi_time_wait_us(10);
+  } while(1);
+
+  nina->access_done = 0;
 
   pi_task_t task;
   __nina_w10_setup(nina, conf, pi_task(&task));

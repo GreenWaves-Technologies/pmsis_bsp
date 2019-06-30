@@ -209,6 +209,8 @@ void spi_slave_init()
     gpio_set_pull_mode(GPIO_SCLK, GPIO_PULLUP_ONLY);
     gpio_set_pull_mode(GPIO_CS, GPIO_PULLUP_ONLY);
 
+    WRITE_PERI_REG(GPIO_OUT_W1TC_REG, (1<<GPIO_HANDSHAKE));
+
 
     //Initialize SPI slave interface
     ret=spi_slave_initialize(VSPI_HOST, &buscfg, &slvcfg, 1);
