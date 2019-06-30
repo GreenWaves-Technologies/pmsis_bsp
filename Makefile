@@ -26,7 +26,9 @@ GAPOC_A_SRC = \
   camera/camera.c \
   camera/mt9v034/mt9v034.c \
   flash/flash.c \
-  flash/hyperflash/hyperflash.c
+  flash/hyperflash/hyperflash.c \
+  transport/transport.c \
+  transport/nina_w10/nina_w10.c
 
 
 ifdef GAP_SDK_HOME

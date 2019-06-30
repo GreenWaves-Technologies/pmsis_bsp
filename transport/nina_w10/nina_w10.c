@@ -25,10 +25,200 @@
 #include "bsp/transport.h"
 
 
+#define NINA_W10_CMD_SETUP        0x80
+#define NINA_W10_CMD_SEND_PACKET  0x81
+
+
+
+typedef struct
+{
+  uint32_t type;
+  uint32_t size;
+} __attribute__((packed)) nina_req_t;
+
+
 typedef struct
 {
   struct pi_device spim;
+  struct pi_device gpio_ready;
+  pi_task_t task;
+  uint32_t pending_size;
+  uint8_t *pending_packet;
+  pi_task_t *pending_task;
+  pi_task_t *pending_first;
+  pi_task_t *pending_last;
+  int setup_size;
+  uint8_t *setup_command;
+  nina_req_t req;
 } nina_t;
+
+
+
+static int __nina_w10_send_packet(nina_t *nina, uint8_t *packet, int size, pi_task_t *task);
+
+
+
+static int __nina_w10_send_command(nina_t *nina, uint8_t *command, int size, pi_task_t *task)
+{
+  // Nina module is generating a rising edge when it is ready to receive a command
+  while(pi_gpio_pin_notif_get(&nina->gpio_ready, 0) == 0)
+  {
+    pi_yield();
+  }
+  pi_gpio_pin_notif_clear(&nina->gpio_ready, 0);
+
+  pi_spi_send_async(&nina->spim, (void *)command, ((size + 3) & ~0x3)*8, PI_SPI_CS_AUTO, task);
+
+  return 0;
+}
+
+
+
+static int __nina_w10_get_response(nina_t *nina, uint8_t *response, int size, pi_task_t *task)
+{
+  // Nina module is generating a rising edge when it is ready to receive a command
+  while(pi_gpio_pin_notif_get(&nina->gpio_ready, 0) == 0)
+  {
+    pi_yield();
+  }
+  pi_gpio_pin_notif_clear(&nina->gpio_ready, 0);
+
+  pi_spi_receive_async(&nina->spim, (void *)response, ((size + 3) & ~0x3)*8, PI_SPI_CS_AUTO, task);
+
+  return 0;
+}
+
+
+
+static int __nina_w10_append_string(uint8_t *buffer, const char *str)
+{
+  int index = 0;
+  while(1)
+  {
+    buffer[index] = str[index];
+    if (str[index] == 0)
+      break;
+    index++;
+  }
+  return index + 1;
+}
+
+
+
+static int __nina_w10_append_uint32(uint8_t *buffer, uint32_t value)
+{
+  *(uint32_t *)buffer = value;
+  return 4;
+}
+
+
+
+static void __nina_w10_setup_resume(void *arg)
+{
+  nina_t *nina = (nina_t *)arg;
+
+  pmsis_l2_malloc_free(nina->setup_command, nina->setup_size);
+
+  pi_task_t *task = nina->pending_task;
+  nina->pending_task = NULL;
+
+  __nina_w10_get_response(nina, (uint8_t *)&nina->req, sizeof(nina_req_t), task);
+}
+
+
+
+static int __nina_w10_setup(nina_t *nina, struct nina_w10_conf *conf, pi_task_t *task)
+{
+  int setup_size = sizeof(nina_req_t) + strlen(conf->ip_addr) + 1 + strlen(conf->ssid) + 1 + strlen(conf->passwd) + 1;
+  uint8_t *setup_command = pmsis_l2_malloc(setup_size);
+  if (setup_command == NULL)
+    return -1;
+
+  uint8_t *current = setup_command;
+
+  nina_req_t *req = (nina_req_t *)current;
+
+  req->type = NINA_W10_CMD_SETUP;
+
+  nina->pending_task = task;
+
+  current += sizeof(nina_req_t);
+
+  current += __nina_w10_append_string(current, conf->ssid);
+  current += __nina_w10_append_string(current, conf->passwd);
+  current += __nina_w10_append_string(current, conf->ip_addr);
+  current += __nina_w10_append_uint32(current, conf->port);
+
+  nina->setup_size = setup_size;
+  nina->setup_command = setup_command;
+
+  __nina_w10_send_command(nina, setup_command, current - setup_command, pi_task_callback(&nina->task, __nina_w10_setup_resume, (void *)nina));
+
+  return 0;
+}
+
+
+
+static void __nina_w10_send_packet_end(void *arg)
+{
+  nina_t *nina = (nina_t *)arg;
+
+  int irq = rt_irq_disable();
+
+  pi_task_push(nina->pending_task);
+  nina->pending_task = NULL;
+
+  if (nina->pending_first)
+  {
+    pi_task_t *task = nina->pending_first;
+    nina->pending_first = task->implem.next;
+    __nina_w10_send_packet(nina, (uint8_t *)task->implem.data[0], task->implem.data[1], task);
+  }
+
+  rt_irq_restore(irq);
+}
+
+
+
+static void __nina_w10_send_packet_resume(void *arg)
+{
+  nina_t *nina = (nina_t *)arg;
+
+  if (nina->pending_size)
+  {
+    uint32_t iter_size = 1024;
+    if (iter_size > nina->pending_size)
+      iter_size = nina->pending_size;
+
+    __nina_w10_send_command(nina, nina->pending_packet, iter_size, pi_task_callback(&nina->task, __nina_w10_send_packet_resume, nina));
+
+    nina->pending_size -= iter_size;
+    nina->pending_packet += iter_size;
+  }
+  else
+  {
+    __nina_w10_get_response(nina, (uint8_t *)&nina->req, sizeof(nina_req_t), pi_task_callback(&nina->task, __nina_w10_send_packet_end, nina));
+  }
+}
+
+
+
+static int __nina_w10_send_packet(nina_t *nina, uint8_t *packet, int size, pi_task_t *task)
+{
+  nina_req_t *req = &nina->req;
+
+  req->type = NINA_W10_CMD_SEND_PACKET;
+  req->size = size;
+
+  nina->pending_task = task;
+  nina->pending_size = size;
+  nina->pending_packet = packet;
+
+  __nina_w10_send_command(nina, (uint8_t *)&nina->req, sizeof(nina_req_t), pi_task_callback(&nina->task, __nina_w10_send_packet_resume, nina));
+
+  return 0;
+}
+
 
 
 int __nina_w10_open(struct pi_device *device)
@@ -38,6 +228,18 @@ int __nina_w10_open(struct pi_device *device)
   nina_t *nina = (nina_t *)pmsis_l2_malloc(sizeof(nina_t));
   if (nina == NULL) return -1;
 
+  struct pi_gpio_conf gpio_conf;
+  pi_gpio_conf_init(&gpio_conf);
+
+  pi_open_from_conf(&nina->gpio_ready, &gpio_conf);
+  pi_gpio_open(&nina->gpio_ready);
+
+  pi_gpio_pin_configure(&nina->gpio_ready, 0, PI_GPIO_INPUT);
+  pi_gpio_pin_notif_configure(&nina->gpio_ready, 0, PI_GPIO_NOTIF_RISE);
+
+  rt_pad_set_function(PAD_12_RF_PACTRL0, PAD_12_FUNC1_GPIOA0);
+
+
   struct pi_spi_conf spi_conf;
   pi_spi_conf_init(&spi_conf);
   spi_conf.itf = conf->spi_itf;
@@ -45,7 +247,7 @@ int __nina_w10_open(struct pi_device *device)
 
   spi_conf.wordsize = PI_SPI_WORDSIZE_8;
   spi_conf.big_endian = 1;
-  spi_conf.max_baudrate = 50000000;
+  spi_conf.max_baudrate = 20000000;
   spi_conf.polarity = 0;
   spi_conf.phase = 0;
   
@@ -55,6 +257,13 @@ int __nina_w10_open(struct pi_device *device)
     goto error;
 
   device->data = (void *)nina;
+
+  nina->pending_task = NULL;
+  nina->pending_first = NULL;
+
+  pi_task_t task;
+  __nina_w10_setup(nina, conf, pi_task(&task));
+  pi_task_wait_on(&task);
 
   return 0;
 
@@ -83,7 +292,28 @@ int __nina_w10_send_async(struct pi_device *device, void *buffer, size_t size, p
 {
   nina_t *nina = (nina_t *)device->data;
 
-  pi_spi_send_async(&nina->spim, buffer, size*8, PI_SPI_CS_AUTO, task);
+  int irq = rt_irq_disable();
+
+  if (nina->pending_task)
+  {
+    if (nina->pending_first)
+      nina->pending_last->implem.next = task;
+    else
+      nina->pending_first = task;
+
+    nina->pending_last = task;
+    task->implem.next = NULL;
+
+    task->implem.data[0] = (int)buffer;
+    task->implem.data[1] = size;
+  }
+  else
+  {
+    __nina_w10_send_packet(nina, buffer, size, task);
+  }
+
+  rt_irq_restore(irq);
+
   return 0;
 }
 
@@ -104,7 +334,6 @@ static transport_api_t nina_w10_api =
   .receive_async     = &__nina_w10_receive_async,
   .close             = &__nina_w10_close,
 };
-
 
 
 void nina_w10_conf_init(struct nina_w10_conf *conf)

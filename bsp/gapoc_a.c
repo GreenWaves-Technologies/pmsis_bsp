@@ -20,6 +20,7 @@
 
 #include "bsp/camera/mt9v034.h"
 #include "bsp/flash/hyperflash.h"
+#include "bsp/transport/nina_w10.h"
 
 
 void bsp_hyperflash_conf_init(struct hyperflash_conf *conf)
@@ -54,3 +55,17 @@ int bsp_mt9v034_open(struct mt9v034_conf *conf)
 
   return 0;
 }
+
+
+
+void bsp_nina_w10_conf_init(struct nina_w10_conf *conf)
+{
+  conf->spi_itf = CONFIG_NINA_W10_SPI_ITF;
+  conf->spi_cs = CONFIG_NINA_W10_SPI_CS;
+}
+
+int bsp_nina_w10_open(struct nina_w10_conf *conf)
+{
+  return 0;
+}
+

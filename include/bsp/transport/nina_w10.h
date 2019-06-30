@@ -24,6 +24,10 @@ struct nina_w10_conf
   struct transport_conf transport;
   int spi_itf;
   int spi_cs;
+  const char *ssid;
+  const char *passwd;
+  const char *ip_addr;
+  uint32_t port;
 };
 
 void nina_w10_conf_init(struct nina_w10_conf *conf);
