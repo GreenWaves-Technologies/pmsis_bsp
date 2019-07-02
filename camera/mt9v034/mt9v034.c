@@ -178,6 +178,9 @@ static int __mt9v034_start(mt9v034_t *mt9v034)
   __mt9v034_reg_write(mt9v034, MT9V034_HORIZONTAL_BLANKING_A, TOTAL_ROW_TIME - width);
   //__mt9v034_reg_write(mt9v034, MT9V034_VERTICAL_BLANKING_A, 1000);
 
+  // -- Switch camera to suitable mode (GPIO_CIS_EXP assumed low, normally already done!]
+  __mt9v034_reg_write(mt9v034, MT9V034_CHIP_CONTROL, MT9V034_CHIP_CONTROL_SNAPSHOT_MODE | MT9V034_CHIP_CONTROL_DVP_ON | MT9V034_CHIP_CONTROL_SIMULTANEOUS);            
+
  
   return 0;
 }
@@ -201,11 +204,9 @@ static void __mt9v034_off(mt9v034_t *mt9v034)
 
 static void __mt9v034_trigger_snapshot(mt9v034_t *mt9v034)
 {  
-  // -- Switch camera to suitable mode (GPIO_CIS_EXP assumed low, normally already done!]
-  __mt9v034_reg_write(mt9v034, MT9V034_CHIP_CONTROL, MT9V034_CHIP_CONTROL_SNAPSHOT_MODE | MT9V034_CHIP_CONTROL_DVP_ON | MT9V034_CHIP_CONTROL_SIMULTANEOUS);            
-
   // -- GPIO_CIS_EXP snapshot trigger signal 
   rt_gpio_set_pin_value(0, mt9v034->conf.trigger_gpio, 1);   // generate rising edge to trigger snapshot
+  rt_gpio_set_pin_value(0, mt9v034->conf.trigger_gpio, 0);   // generate rising edge to trigger snapshot
 }
 
 
@@ -299,7 +300,6 @@ static void __mt9v034_control(struct pi_device *device, camera_cmd_e cmd, void *
       break;
 
     case CAMERA_CMD_STOP:
-      rt_gpio_set_pin_value(0, mt9v034->conf.trigger_gpio, 1);   // generate rising edge to trigger snapshot
       pi_cpi_control_stop(&mt9v034->cpi_device);
       break;
 
