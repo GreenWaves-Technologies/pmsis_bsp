@@ -69,7 +69,7 @@ $(foreach file, $(INSTALL_FILES), $(eval $(call declareInstallFile,$(file))))
 
 INC = $(BSP_INC) $(TARGET_INSTALL_DIR)/include/io $(TARGET_INSTALL_DIR)/include
 INC_PATH = $(foreach d, $(INC), -I$d)
-INC_PATH += -include $(GAP_SDK_HOME)/pulp-os/pulp-rt/mk/gap/fc_config.h
+INC_PATH += -include $(TARGET_INSTALL_DIR)/include/rt/chips/$(TARGET_NAME)/config.h
 
 OBJECTS_GAPUINO = $(patsubst %.c, $(GAPUINO_BUILD_DIR)/%.o, $(wildcard $(GAPUINO_SRC)))
 OBJECTS_GAPOC_A = $(patsubst %.c, $(GAPOC_A_BUILD_DIR)/%.o, $(wildcard $(GAPOC_A_SRC)))
