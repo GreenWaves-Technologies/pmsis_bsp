@@ -28,6 +28,8 @@ GAPOC_A_SRC = \
   flash/flash.c \
   flash/hyperflash/hyperflash.c \
   transport/transport.c \
+  display/display.c \
+  display/ili9341/ili9341.c \
   transport/nina_w10/nina_w10.c
 
 

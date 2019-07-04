@@ -21,6 +21,7 @@
 #include "bsp/camera/mt9v034.h"
 #include "bsp/flash/hyperflash.h"
 #include "bsp/transport/nina_w10.h"
+#include "bsp/display/ili9341.h"
 
 
 void bsp_hyperflash_conf_init(struct hyperflash_conf *conf)
@@ -69,3 +70,23 @@ int bsp_nina_w10_open(struct nina_w10_conf *conf)
   return 0;
 }
 
+
+void bsp_ili9341_conf_init(struct ili9341_conf *conf)
+{
+  conf->gpio = CONFIG_ILI9341_GPIO;
+  conf->spi_itf = CONFIG_ILI9341_SPI_ITF;
+  conf->spi_cs = CONFIG_ILI9341_SPI_CS;
+
+}
+
+int bsp_ili9341_open(struct ili9341_conf *conf)
+{
+  if (!conf->skip_pads_config)
+  {
+ #ifndef __ZEPHYR__
+    rt_pad_set_function(CONFIG_ILI9341_GPIO_PAD, CONFIG_ILI9341_GPIO_PAD_FUNC);
+ #endif
+  }
+
+  return 0;
+}
