@@ -10,7 +10,11 @@ GAPUINO_SRC = \
   display/display.c \
   display/ili9341/ili9341.c \
   flash/flash.c \
-  flash/hyperflash/hyperflash.c
+  fs/read_fs/read_fs.c \
+  flash/hyperflash/hyperflash.c \
+  ram/hyperram/hyperram.c \
+  ram/ram.c \
+  ram/alloc_extern.c
 
 AI_DECK_SRC = \
   bsp/ai_deck.c \
@@ -19,7 +23,10 @@ AI_DECK_SRC = \
   flash/flash.c \
   flash/hyperflash/hyperflash.c \
   transport/transport.c \
-  transport/nina_w10/nina_w10.c
+  transport/nina_w10/nina_w10.c \
+  ram/hyperram/hyperram.c \
+  ram/ram.c \
+  ram/alloc_extern.c
 
 GAPOC_A_SRC = \
   bsp/gapoc_a.c \
@@ -30,7 +37,10 @@ GAPOC_A_SRC = \
   transport/transport.c \
   display/display.c \
   display/ili9341/ili9341.c \
-  transport/nina_w10/nina_w10.c
+  transport/nina_w10/nina_w10.c \
+  ram/hyperram/hyperram.c \
+  ram/ram.c \
+  ram/alloc_extern.c
 
 
 ifdef GAP_SDK_HOME

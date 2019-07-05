@@ -15,6 +15,7 @@
  */
 
 #ifndef __BSP__BSP_H__
+
 #define __BSP__BSP_H__
 
 #if defined(CONFIG_GAPUINO)
@@ -52,6 +53,12 @@ int bsp_ili9341_open(struct ili9341_conf *conf);
 #include "bsp/flash/hyperflash.h"
 void bsp_hyperflash_conf_init(struct hyperflash_conf *conf);
 int bsp_hyperflash_open(struct hyperflash_conf *conf);
+#endif
+
+#if defined(CONFIG_HYPERRAM)
+#include "bsp/ram/hyperram.h"
+void bsp_hyperram_conf_init(struct hyperram_conf *conf);
+int bsp_hyperram_open(struct hyperram_conf *conf);
 #endif
 
 #if defined(CONFIG_NINA_W10)

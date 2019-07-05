@@ -20,6 +20,24 @@
 #include "bsp/camera/himax.h"
 #include "bsp/flash/hyperflash.h"
 #include "bsp/transport/nina_w10.h"
+#include "bsp/ram/hyperram.h"
+
+
+void bsp_hyperram_conf_init(struct hyperram_conf *conf)
+{
+  conf->ram_start = CONFIG_HYPERRAM_START;
+  conf->ram_size = CONFIG_HYPERRAM_SIZE;
+  conf->skip_pads_config = 0;
+  conf->hyper_itf = CONFIG_HYPERRAM_HYPER_ITF;
+  conf->hyper_cs = CONFIG_HYPERRAM_HYPER_CS;
+}
+
+int bsp_hyperram_open(struct hyperram_conf *conf)
+{
+  return 0;
+}
+
+
 
 
 void bsp_hyperflash_conf_init(struct hyperflash_conf *conf)

@@ -21,6 +21,7 @@
 #define CONFIG_HYPERFLASH
 #define CONFIG_NINA_W10
 #define CONFIG_ILI9341
+#define CONFIG_HYPERRAM
 
 #define CONFIG_MT9V034_CPI_ITF               0
 #define CONFIG_MT9V034_I2C_ITF               1
@@ -42,5 +43,10 @@
 
 #define CONFIG_NINA_W10_SPI_ITF       1
 #define CONFIG_NINA_W10_SPI_CS        0
+
+#define CONFIG_HYPERRAM_HYPER_ITF 0
+#define CONFIG_HYPERRAM_HYPER_CS  0
+#define CONFIG_HYPERRAM_START     0
+#define CONFIG_HYPERRAM_SIZE     (1<<20)
 
 #endif

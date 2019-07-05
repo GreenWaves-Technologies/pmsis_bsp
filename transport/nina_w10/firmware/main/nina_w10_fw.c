@@ -223,6 +223,18 @@ void spi_slave_init()
 
 
 
+  nina_conf.ssid = "HONOR_KIW-L21_ACD9";
+  nina_conf.passwd = "gejeseclha22140";
+  nina_conf.ip_addr = "192.168.43.237";
+  nina_conf.port = 3333;
+
+
+
+
+
+
+
+
 
 static int command_extract_string(uint8_t *buffer, const char **str, int max_len)
 {

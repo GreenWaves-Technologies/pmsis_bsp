@@ -14,26 +14,22 @@
  * limitations under the License.
  */
 
-#ifndef __BSP__AI_DECK_H__
-#define __BSP__AI_DECK_H__
+/*
+ * Authors: Germain Haugou, GreenWaves Technologies (germain.haugou@greenwaves-technologies.com)
+ */
 
-#define CONFIG_HIMAX
-#define CONFIG_NINA_W10
-#define CONFIG_HYPERFLASH
-#define CONFIG_HYPERRAM
+#include "bsp/ram.h"
 
-#define CONFIG_HIMAX_CPI_ITF 0
-#define CONFIG_HIMAX_I2C_ITF 1
 
-#define CONFIG_NINA_W10_SPI_ITF       1
-#define CONFIG_NINA_W10_SPI_CS        0
+int ram_open(struct pi_device *device)
+{
+  struct ram_conf *conf = (struct ram_conf *)device->config;
+  ram_api_t *api = (ram_api_t *)conf->api;
+  device->api = (struct pi_device_api *)api;
+  return api->open(device);
+}
 
-#define CONFIG_HYPERFLASH_HYPER_ITF 0
-#define CONFIG_HYPERFLASH_HYPER_CS  1
 
-#define CONFIG_HYPERRAM_HYPER_ITF 0
-#define CONFIG_HYPERRAM_HYPER_CS  0
-#define CONFIG_HYPERRAM_START     0
-#define CONFIG_HYPERRAM_SIZE     (1<<20)
-
-#endif
+void __ram_conf_init(struct ram_conf *conf)
+{
+}
