@@ -532,7 +532,6 @@ static flash_api_t hyperflash_api = {
   .erase_async          = & hyperflash_erase_async,
   .reg_set_async        = & hyperflash_reg_set_async,
   .reg_get_async        = & hyperflash_reg_get_async,
-  .cl_read_async        = & hyperflash_cl_read,
 };
 
 
