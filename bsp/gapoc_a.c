@@ -25,6 +25,23 @@
 #include "bsp/ram/hyperram.h"
 
 
+
+static int __bsp_init_pads_done = 0;
+
+
+
+static void __bsp_init_pads()
+{
+  if (!__bsp_init_pads_done)
+  {
+    __bsp_init_pads_done = 1;
+    unsigned int pads_value[] = {0x00055500, 0x0f000000, 0x003fffff, 0x00000000};
+    pi_pad_init(pads_value);
+  }
+}
+
+
+
 void bsp_hyperram_conf_init(struct hyperram_conf *conf)
 {
   conf->ram_start = CONFIG_HYPERRAM_START;
@@ -36,6 +53,7 @@ void bsp_hyperram_conf_init(struct hyperram_conf *conf)
 
 int bsp_hyperram_open(struct hyperram_conf *conf)
 {
+  __bsp_init_pads();
   return 0;
 }
 
@@ -49,6 +67,7 @@ void bsp_hyperflash_conf_init(struct hyperflash_conf *conf)
 
 int bsp_hyperflash_open(struct hyperflash_conf *conf)
 {
+  __bsp_init_pads();
   return 0;
 }
 
@@ -64,6 +83,8 @@ void bsp_mt9v034_conf_init(struct mt9v034_conf *conf)
 
 int bsp_mt9v034_open(struct mt9v034_conf *conf)
 {
+  __bsp_init_pads();
+
   if (!conf->skip_pads_config)
   {
     pi_pad_set_function(CONFIG_MT9V034_TRIGGER_GPIO_PAD, CONFIG_MT9V034_TRIGGER_GPIO_PAD_FUNC);
@@ -84,6 +105,7 @@ void bsp_nina_w10_conf_init(struct nina_w10_conf *conf)
 
 int bsp_nina_w10_open(struct nina_w10_conf *conf)
 {
+  __bsp_init_pads();
   return 0;
 }
 
@@ -98,6 +120,8 @@ void bsp_ili9341_conf_init(struct ili9341_conf *conf)
 
 int bsp_ili9341_open(struct ili9341_conf *conf)
 {
+  __bsp_init_pads();
+  
   if (!conf->skip_pads_config)
   {
     pi_pad_set_function(CONFIG_ILI9341_GPIO_PAD, CONFIG_ILI9341_GPIO_PAD_FUNC);

@@ -23,6 +23,19 @@
 #include "bsp/ram/hyperram.h"
 
 
+static int __bsp_init_pads_done = 0;
+
+static void __bsp_init_pads()
+{
+  if (!__bsp_init_pads_done)
+  {
+    printf("SETTING PADS\n");
+    __bsp_init_pads_done = 1;
+    unsigned int pads_value[] = {0x00055500, 0x0f000000, 0x003fffff, 0x00000000};
+    pi_pad_init(pads_value);
+  }
+}
+
 
 void bsp_hyperram_conf_init(struct hyperram_conf *conf)
 {
@@ -35,6 +48,7 @@ void bsp_hyperram_conf_init(struct hyperram_conf *conf)
 
 int bsp_hyperram_open(struct hyperram_conf *conf)
 {
+  __bsp_init_pads();
   return 0;
 }
 
@@ -48,6 +62,7 @@ void bsp_hyperflash_conf_init(struct hyperflash_conf *conf)
 
 int bsp_hyperflash_open(struct hyperflash_conf *conf)
 {
+  __bsp_init_pads();
   return 0;
 }
 
@@ -61,6 +76,7 @@ void bsp_himax_conf_init(struct himax_conf *conf)
 
 int bsp_himax_open(struct himax_conf *conf)
 {
+  __bsp_init_pads();
   return 0;
 }
 
@@ -76,9 +92,11 @@ void bsp_ili9341_conf_init(struct ili9341_conf *conf)
 
 int bsp_ili9341_open(struct ili9341_conf *conf)
 {
+  __bsp_init_pads();
+
   if (!conf->skip_pads_config)
   {
-  	pi_pad_set_function(CONFIG_ILI9341_GPIO_PAD, CONFIG_ILI9341_GPIO_PAD_FUNC);
+    pi_pad_set_function(CONFIG_ILI9341_GPIO_PAD, CONFIG_ILI9341_GPIO_PAD_FUNC);
   }
 
   return 0;
