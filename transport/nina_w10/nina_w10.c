@@ -250,7 +250,7 @@ int __nina_w10_open(struct pi_device *device)
   pi_gpio_pin_configure(&nina->gpio_ready, 0, PI_GPIO_INPUT);
   pi_gpio_pin_notif_configure(&nina->gpio_ready, 0, PI_GPIO_NOTIF_RISE);
 
-  rt_pad_set_function(PAD_12_RF_PACTRL0, PAD_12_FUNC1_GPIOA0);
+  pi_pad_set_function(PI_PAD_12_A19_RF_PACTRL0, PI_PAD_12_A19_GPIOA0_FUNC1);
 
   struct pi_spi_conf spi_conf;
   pi_spi_conf_init(&spi_conf);

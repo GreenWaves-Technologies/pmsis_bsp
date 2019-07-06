@@ -107,7 +107,7 @@ typedef struct fs_l2_s {
 typedef struct fs_s {
   struct pi_device *flash;
   pi_task_t step_event;
-  rt_event_t *pending_event;
+  pi_task_t *pending_event;
   int mount_step;
   int fs_size;
   fs_l2_t *fs_l2;
@@ -115,8 +115,8 @@ typedef struct fs_s {
   int nb_comps;
   unsigned char *cache;
   unsigned int  cache_addr;
-  rt_mutex_t mutex;
-  rt_event_t event;
+  //rt_mutex_t mutex;
+  pi_task_t event;
   int error;
 } fs_t;
 
@@ -125,7 +125,7 @@ typedef struct {
   fs_file_t *file;
   void *buffer;
   size_t size;
-  rt_event_t event;
+  pi_task_t task;
   int done;
   int result;
   unsigned char cid;
@@ -134,7 +134,7 @@ typedef struct {
 } cl_fs_req_t;
 
 
-static inline void fs_cluster_read(fs_file_t *file, void *buffer, size_t size, cl_fs_req_t *req);
+static inline void cl_fs_read(fs_file_t *file, void *buffer, size_t size, cl_fs_read_req_t *req);
 
 
 

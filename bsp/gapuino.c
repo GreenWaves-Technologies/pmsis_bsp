@@ -78,9 +78,7 @@ int bsp_ili9341_open(struct ili9341_conf *conf)
 {
   if (!conf->skip_pads_config)
   {
- #ifndef __ZEPHYR__
-  	rt_pad_set_function(CONFIG_ILI9341_GPIO_PAD, CONFIG_ILI9341_GPIO_PAD_FUNC);
- #endif
+  	pi_pad_set_function(CONFIG_ILI9341_GPIO_PAD, CONFIG_ILI9341_GPIO_PAD_FUNC);
   }
 
   return 0;

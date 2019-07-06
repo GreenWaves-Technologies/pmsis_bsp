@@ -21,7 +21,7 @@
 
 typedef enum {
   FLASH_TYPE_SPI,     /*!< SPI flash. */
-  FLASH_TYPE_HYPER,    /*!< Hyperflash. */
+  FLASH_TYPE_HYPERFLASH,    /*!< Hyperflash. */
   FLASH_TYPE_MRAM     /*!< MRAM. */
 } flash_type_e;
 
@@ -85,6 +85,7 @@ typedef struct {
 
 struct flash_conf {
   flash_api_t *api;
+  flash_type_e type;
 };
 
 

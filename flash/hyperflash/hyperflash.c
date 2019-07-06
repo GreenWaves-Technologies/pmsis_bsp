@@ -222,6 +222,14 @@ static void hyperflash_read_async(struct pi_device *device, uint32_t addr, void 
 
 
 
+void cl_hyperflash_read(struct pi_device *device, uint32_t addr, void *data, uint32_t size, cl_hyperflash_read_req_t *req)
+{
+  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
+  pi_cl_hyper_copy(&hyperflash->hyper_device, addr, data, size, &req->hyperbus_req);
+}
+
+
+
 static void hyperflash_handle_pending_task(void *arg)
 {
   struct pi_device *device = (struct pi_device *)arg;
@@ -529,7 +537,8 @@ static flash_api_t hyperflash_api = {
   .erase_sector_async   = & hyperflash_erase_sector_async,
   .erase_async          = & hyperflash_erase_async,
   .reg_set_async        = & hyperflash_reg_set_async,
-  .reg_get_async        = & hyperflash_reg_get_async
+  .reg_get_async        = & hyperflash_reg_get_async,
+  .cl_read_async        = & hyperflash_cl_read,
 };
 
 
@@ -537,6 +546,7 @@ static flash_api_t hyperflash_api = {
 void hyperflash_conf_init(struct hyperflash_conf *conf)
 {
   conf->flash.api = &hyperflash_api;
+  conf->flash.type = FLASH_TYPE_HYPERFLASH;
   bsp_hyperflash_conf_init(conf);
   __flash_conf_init(&conf->flash);
 }

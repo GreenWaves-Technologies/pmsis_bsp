@@ -24,12 +24,13 @@
 
 
 
-// Called by global rt_error_str to display fs errors
+#if 0
+// Called by global pi_error_str to display fs errors
 //
 char *__fs_error_str(int error)
 {
-#ifdef __RT_USE_IO
-  switch (rt_error_code(error))
+#ifdef __pi_USE_IO
+  switch (pi_error_code(error))
   {
     case FS_MOUNT_FLASH_ERROR: return "FS mount error: failed to open flash";
     case FS_MOUNT_MEM_ERROR:   return "FS mount error: failed to allocate memory";
@@ -46,19 +47,20 @@ char *__fs_error_str(int error)
 //  - register the error in the scheduler if no event is given, as it is then a synchronous call
 //  - or enqueue the error in the scheduler for delayed notification as it is an asynchronous call
 //
-static inline void __fs_abort(rt_event_t *event, int error, void *object)
+static inline void __fs_abort(pi_task *event, int error, void *object)
 {
-  int irq = rt_irq_disable();
-  __rt_error_report(event, __rt_error(RT_ERROR_FS, error), object);
-  rt_irq_restore(irq);
+  //int irq = pi_irq_disable();
+  __pi_error_report(event, __pi_error(pi_error_FS, error), object);
+  //pi_irq_restore(irq);
 }
 
 // Can be called to register an error for a synchronous call
 static inline void __fs_error(int error)
 {
-  __rt_error_register(__rt_error(RT_ERROR_FS, error));
+  __pi_error_register(__pi_error(pi_error_FS, error));
 }
 
+#endif
 
 
 // Default FS config init
@@ -112,7 +114,7 @@ static void __fs_mount_step(void *arg)
       int fs_offset = fs->fs_l2->fs_offset;
       fs->fs_info = pmsis_l2_malloc(fs_size);
       if (fs->fs_info == NULL) {
-        __fs_abort(fs->pending_event, FS_MOUNT_MEM_ERROR, (void *)fs);
+        //__fs_abort(fs->pending_event, FS_MOUNT_MEM_ERROR, (void *)fs);
         goto error;
       }
       flash_read_async(fs->flash, fs_offset + 8, (void *)fs->fs_info, fs_size, pi_task_callback(&fs->step_event, __fs_mount_step, (void *)arg));
@@ -138,13 +140,13 @@ error:
 
 void fs_unmount(struct pi_device *device)
 {
-  int irq = rt_irq_disable();
+  //int irq = pi_irq_disable();
 
   fs_t *fs = (fs_t *)device->data;
 
   __fs_free(fs);
 
-  rt_irq_restore(irq);
+  //pi_irq_restore(irq);
 }
 
 
@@ -160,7 +162,7 @@ int fs_mount(struct pi_device *device)
   // Moreover it is important to not block imterrupts as this function can last
   // a long time due to flash access in case of synchronous mode.
 
-  rt_trace(RT_TRACE_DEV_CTRL, "[FS] Mounting file-system (device: %s)\n", dev_name);
+  //pi_trace(pi_trace_DEV_CTRL, "[FS] Mounting file-system (device: %s)\n", dev_name);
 
   fs_t *fs = pmsis_l2_malloc(sizeof(fs_t));
   if (fs == NULL) goto error;
@@ -197,7 +199,7 @@ int fs_mount(struct pi_device *device)
   return 0;
 
 error:
-    __fs_error(FS_MOUNT_MEM_ERROR);
+    //__fs_error(FS_MOUNT_MEM_ERROR);
   __fs_free(fs);
   return -1;
 }
@@ -211,7 +213,7 @@ fs_file_t *fs_open(struct pi_device *device, const char *file_name, int flags)
   // No need to mask interrupts, as the file-system is read-only
   // its structure cannot change
 
-  rt_trace(RT_TRACE_FS, "[FS] Opening file (name: %s)\n", file_name);
+  //pi_trace(pi_trace_FS, "[FS] Opening file (name: %s)\n", file_name);
 
   // Get information about the file system from the header
   unsigned int *fs_info = fs->fs_info;
@@ -253,7 +255,7 @@ void fs_close(fs_file_t *file)
 
 
 // Reads a block from device, which must be 4-bytes aligned on both the address and the size
-static int __fs_read_block(fs_t *fs, unsigned int addr, unsigned int buffer, int size, rt_event_t *event)
+static int __fs_read_block(fs_t *fs, unsigned int addr, unsigned int buffer, int size, pi_task_t *event)
 {
   //printf("[FS] Read block (buffer: 0x%x, addr: 0x%x, size: 0x%x)\n", buffer, addr, size);
 
@@ -369,7 +371,7 @@ static void __fs_try_read(void *arg)
     // steps are done to notify the user
     pi_task_push(file->pending_event);
     return;
-    //__rt_mutex_unlock(&file->fs->mutex);
+    //__pi_mutex_unlock(&file->fs->mutex);
   }
 
   int size = __fs_read(
@@ -395,7 +397,7 @@ int fs_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *event)
   // which must prevent anyone from accessing the cache
   // This also indirectly lock the file, which is good as we keep some pending state
   // also in the file
-  //__rt_mutex_lock(&file->fs->mutex);
+  //__pi_mutex_lock(&file->fs->mutex);
 
   int real_size = size;
   if (file->offset + size > file->size) {
@@ -422,7 +424,7 @@ int fs_direct_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *
 {
   fs_t *fs = (fs_t *)file->fs->data;
   // Mask interrupt to update file current position and get information
-  //int irq = rt_irq_disable();
+  //int irq = pi_irq_disable();
 
   int real_size = size;
   unsigned int addr = file->addr + file->offset;
@@ -431,7 +433,7 @@ int fs_direct_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *
   }
   file->offset += real_size;
 
-  //rt_irq_restore(irq);
+  //pi_irq_restore(irq);
 
   flash_read_async(fs->flash, addr, (void *)buffer, real_size, event);
 
@@ -451,13 +453,12 @@ void __fs_cluster_req_done(void *_req)
 void __fs_cluster_req(void *_req)
 {
   cl_fs_req_t *req = (cl_fs_req_t *)_req;
-  rt_event_t *event = &req->event;
+  pi_task_t *event = &req->task;
   fs_file_t *file = req->file;
-  __rt_init_event(event, rt_event_internal_sched(), __fs_cluster_req_done, (void *)req);
   if (req->direct) {
-    req->result = fs_direct_read_async(file, req->buffer, req->size, event);
+    req->result = fs_direct_read_async(file, req->buffer, req->size, pi_task_callback(&req->task, __fs_cluster_req_done, (void *)req));
   } else {
-    req->result = fs_read_async(req->file, req->buffer, req->size, event);
+    req->result = fs_read_async(req->file, req->buffer, req->size, pi_task_callback(&req->task, __fs_cluster_req_done, (void *)req));
   }
 }
 
@@ -466,14 +467,10 @@ void __fs_cluster_read(fs_file_t *file, void *buffer, size_t size, cl_fs_req_t *
   req->file = file;
   req->buffer = buffer;
   req->size = size;
-  req->cid = rt_cluster_id();
+  req->cid = pi_cluster_id();
   req->done = 0;
   req->direct = direct;
-  __rt_init_event(&req->event, __rt_cluster_sched_get(), __fs_cluster_req, (void *)req);
-  // Mark it as pending event so that it is not added to the list of free events
-  // as it stands inside the event request
-  __rt_event_set_pending(&req->event);
-  __rt_cluster_push_fc_event(&req->event);
+  __rt_cluster_push_fc_event(pi_task_callback(&req->task, __fs_cluster_req, (void *)req));
 }
 
 void __fs_cluster_seek_req(void *_req)
@@ -488,12 +485,10 @@ void __fs_cluster_seek(fs_file_t *file, unsigned int offset, cl_fs_req_t *req)
 {
   req->file = file;
   req->offset = offset;
-  req->cid = rt_cluster_id();
+  req->cid = pi_cluster_id();
   req->done = 0;
 
-  __rt_init_event(&req->event, __rt_cluster_sched_get(), __fs_cluster_seek_req, (void *)req);
-  __rt_event_set_pending(&req->event);
-  __rt_cluster_push_fc_event(&req->event);
+  __rt_cluster_push_fc_event(pi_task_callback(&req->task, __fs_cluster_req, (void *)req));
 }
 
 #endif

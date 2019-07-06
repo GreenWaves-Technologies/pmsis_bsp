@@ -122,7 +122,7 @@ void __pi_hyperram_alloc_cluster_req(void *_req)
   pi_cl_hyperram_alloc_req_t *req = (pi_cl_hyperram_alloc_req_t *)_req;
   req->result = pi_hyperram_alloc(req->device, req->size);
   req->done = 1;
-  __rt_cluster_notif_req_done(req->cid);
+  __pi_cluster_notif_req_done(req->cid);
 }
 
 
@@ -132,7 +132,7 @@ void __pi_hyperram_free_cluster_req(void *_req)
   pi_cl_hyperram_free_req_t *req = (pi_cl_hyperram_free_req_t *)_req;
   pi_hyperram_free(req->device, req->chunk, req->size);
   req->done = 1;
-  __rt_cluster_notif_req_done(req->cid);
+  __pi_cluster_notif_req_done(req->cid);
 }
 
 
@@ -143,9 +143,9 @@ void pi_cl_hyperram_alloc(struct pi_device *device, uint32_t size, pi_cl_hyperra
   req->size = size;
   req->cid = pi_cluster_id();
   req->done = 0;
-  __rt_task_init_from_cluster(&req->event);
+  __pi_task_init_from_cluster(&req->event);
   pi_task_callback(&req->event, __pi_hyperram_alloc_cluster_req, (void* )req);
-  __rt_cluster_push_fc_event(&req->event);
+  __pi_cluster_push_fc_event(&req->event);
 }
 
 
@@ -157,9 +157,9 @@ void pi_cl_hyperram_free(struct pi_device *device, uint32_t chunk, uint32_t size
   req->chunk = chunk;
   req->cid = pi_cluster_id();
   req->done = 0;
-  __rt_task_init_from_cluster(&req->event);
+  __pi_task_init_from_cluster(&req->event);
   pi_task_callback(&req->event, __pi_hyperram_free_cluster_req, (void* )req);
-  __rt_cluster_push_fc_event(&req->event);
+  __pi_cluster_push_fc_event(&req->event);
 }
 
 #endif

@@ -42,5 +42,7 @@ struct hyperflash_conf
 void hyperflash_conf_init(struct hyperflash_conf *conf);
 
 
+void cl_hyperflash_read(struct pi_device *device, uint32_t addr, void *data, uint32_t size, cl_hyperflash_read_req_t *req);
+
 
 #endif 
