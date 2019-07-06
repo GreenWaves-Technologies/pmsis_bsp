@@ -21,6 +21,7 @@
 #include "pmsis.h"
 #include "bsp/fs.h"
 #include "bsp/flash.h"
+#include <string.h>
 
 
 #define READ_FS_THRESHOLD            16
@@ -457,7 +458,6 @@ void __cl_fs_req_done(void *_req)
 void __cl_fs_req(void *_req)
 {
   cl_fs_req_t *req = (cl_fs_req_t *)_req;
-  pi_task_t *event = &req->task;
   fs_file_t *file = req->file;
   if (req->direct) {
     req->result = fs_direct_read_async(file, req->buffer, req->size, pi_task_callback(&req->task, __cl_fs_req_done, (void *)req));

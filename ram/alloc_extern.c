@@ -202,7 +202,7 @@ int __attribute__((noinline)) extern_free(extern_alloc_t *a, int size, void *add
 
 {
   alloc_chunk_extern_t *chunk;
-  alloc_chunk_extern_t *next = a->first_free, *prev = 0, *new;
+  alloc_chunk_extern_t *next = a->first_free, *prev = 0;
   size = ALIGN_UP(size, MIN_CHUNK_SIZE);
 
   while (next && next->addr < (unsigned int)addr) {
