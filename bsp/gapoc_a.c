@@ -35,7 +35,7 @@ static void __bsp_init_pads()
   if (!__bsp_init_pads_done)
   {
     __bsp_init_pads_done = 1;
-    unsigned int pads_value[] = {0x00055500, 0x0f000000, 0x003fffff, 0x00000000};
+    uint32_t pads_value[] = {0x00055500, 0x0f000000, 0x003fffff, 0x00000000};
     pi_pad_init(pads_value);
   }
 }
