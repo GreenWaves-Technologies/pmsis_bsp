@@ -58,44 +58,38 @@ typedef struct {
   char name[];
 } fs_desc_t;
 
+typedef struct cl_fs_req_s cl_fs_req_t;
 
 void fs_conf_init(struct fs_conf *conf);
 
-
-
 int fs_mount(struct pi_device *device);
-
-
 
 void fs_unmount(struct pi_device *device);
 
-
-
 fs_file_t *fs_open(struct pi_device *device, const char *file, int flags);
-
-
 
 void fs_close(fs_file_t *file);
 
-
-
 int fs_read(fs_file_t *file, void *buffer, size_t size);
 
-
-
 int fs_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *task);
-
-
-
 
 int fs_direct_read(fs_file_t *file, void *buffer, size_t size);
 
 int fs_direct_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *task);
 
-
-
 int fs_seek(fs_file_t *file, unsigned int offset);
 
+void cl_fs_read(fs_file_t *file, void *buffer, size_t size, cl_fs_req_t *req);
+
+void cl_fs_direct_read(fs_file_t *file, void *buffer, size_t size, cl_fs_req_t *req);
+
+void cl_fs_seek(fs_file_t *file, unsigned int offset, cl_fs_req_t *req);
+
+static inline int cl_fs_wait(cl_fs_req_t *req);
+
+
+/// @cond IMPLEM
 
 typedef struct fs_l2_s {
   uint32_t fs_offset;
@@ -121,7 +115,7 @@ typedef struct fs_s {
 } fs_t;
 
 
-typedef struct {
+typedef struct cl_fs_req_s {
   fs_file_t *file;
   void *buffer;
   size_t size;
@@ -133,18 +127,15 @@ typedef struct {
   unsigned int offset;
 } cl_fs_req_t;
 
+static inline __attribute__((always_inline)) int cl_fs_wait(cl_fs_req_t *req)
+{
+  while((*(volatile int *)&req->done) == 0)
+  {
+    eu_evt_maskWaitAndClr(1<<RT_CLUSTER_CALL_EVT);
+  }
+  return req->result;
+}
 
-//static inline void cl_fs_read(fs_file_t *file, void *buffer, size_t size, cl_fs_read_req_t *req);
-
-
-
-static inline void fs_cluster_direct_read(fs_file_t *file, void *buffer, size_t size, cl_fs_req_t *req);
-
-
-
-static inline void fs_cluster_seek(fs_file_t *file, unsigned int offset, cl_fs_req_t *req);
-
-
-static inline int fs_cluster_wait(cl_fs_req_t *req);
+/// @endcond
 
 #endif

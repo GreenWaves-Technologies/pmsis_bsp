@@ -441,39 +441,54 @@ int fs_direct_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *
 }
 
 
-#if defined(ARCHI_HAS_CLUSTER)
-
-void __fs_cluster_req_done(void *_req)
+void __cl_fs_req_done(void *_req)
 {
   cl_fs_req_t *req = (cl_fs_req_t *)_req;
   req->done = 1;
   __rt_cluster_notif_req_done(req->cid);
 }
 
-void __fs_cluster_req(void *_req)
+void __cl_fs_req(void *_req)
 {
   cl_fs_req_t *req = (cl_fs_req_t *)_req;
   pi_task_t *event = &req->task;
   fs_file_t *file = req->file;
   if (req->direct) {
-    req->result = fs_direct_read_async(file, req->buffer, req->size, pi_task_callback(&req->task, __fs_cluster_req_done, (void *)req));
+    req->result = fs_direct_read_async(file, req->buffer, req->size, pi_task_callback(&req->task, __cl_fs_req_done, (void *)req));
   } else {
-    req->result = fs_read_async(req->file, req->buffer, req->size, pi_task_callback(&req->task, __fs_cluster_req_done, (void *)req));
+    req->result = fs_read_async(req->file, req->buffer, req->size, pi_task_callback(&req->task, __cl_fs_req_done, (void *)req));
   }
 }
 
-void __fs_cluster_read(fs_file_t *file, void *buffer, size_t size, cl_fs_req_t *req, int direct)
+void cl_fs_read(fs_file_t *file, void *buffer, size_t size, cl_fs_req_t *req)
 {
   req->file = file;
   req->buffer = buffer;
   req->size = size;
   req->cid = pi_cluster_id();
   req->done = 0;
-  req->direct = direct;
-  __rt_cluster_push_fc_event(pi_task_callback(&req->task, __fs_cluster_req, (void *)req));
+  req->direct = 0;
+
+  __rt_task_init_from_cluster(&req->task);
+  pi_task_callback(&req->task, __cl_fs_req, (void* )req);
+  __rt_cluster_push_fc_event(&req->task);
 }
 
-void __fs_cluster_seek_req(void *_req)
+void cl_fs_direct_read(fs_file_t *file, void *buffer, size_t size, cl_fs_req_t *req)
+{
+  req->file = file;
+  req->buffer = buffer;
+  req->size = size;
+  req->cid = pi_cluster_id();
+  req->done = 0;
+  req->direct = 1;
+
+  __rt_task_init_from_cluster(&req->task);
+  pi_task_callback(&req->task, __cl_fs_req, (void* )req);
+  __rt_cluster_push_fc_event(&req->task);
+}
+
+void __cl_fs_seek_req(void *_req)
 {
   cl_fs_req_t *req = (cl_fs_req_t *)_req;
   req->result = fs_seek(req->file, req->offset);
@@ -481,14 +496,14 @@ void __fs_cluster_seek_req(void *_req)
   __rt_cluster_notif_req_done(req->cid);
 }
 
-void __fs_cluster_seek(fs_file_t *file, unsigned int offset, cl_fs_req_t *req)
+void cl_fs_seek(fs_file_t *file, unsigned int offset, cl_fs_req_t *req)
 {
   req->file = file;
   req->offset = offset;
   req->cid = pi_cluster_id();
   req->done = 0;
 
-  __rt_cluster_push_fc_event(pi_task_callback(&req->task, __fs_cluster_req, (void *)req));
+  __rt_task_init_from_cluster(&req->task);
+  pi_task_callback(&req->task, __cl_fs_seek_req, (void* )req);
+  __rt_cluster_push_fc_event(&req->task);
 }
-
-#endif
