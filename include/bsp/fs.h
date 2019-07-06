@@ -134,7 +134,7 @@ typedef struct {
 } cl_fs_req_t;
 
 
-static inline void cl_fs_read(fs_file_t *file, void *buffer, size_t size, cl_fs_read_req_t *req);
+//static inline void cl_fs_read(fs_file_t *file, void *buffer, size_t size, cl_fs_read_req_t *req);
 
 
 
