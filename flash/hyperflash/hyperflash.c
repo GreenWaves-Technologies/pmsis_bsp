@@ -222,12 +222,6 @@ static void hyperflash_read_async(struct pi_device *device, uint32_t addr, void 
 
 
 
-void cl_hyperflash_read(struct pi_device *device, uint32_t addr, void *data, uint32_t size, cl_hyperflash_read_req_t *req)
-{
-  hyperflash_t *hyperflash = (hyperflash_t *)device->data;
-  pi_cl_hyper_copy(&hyperflash->hyper_device, addr, data, size, &req->hyperbus_req);
-}
-
 
 
 static void hyperflash_handle_pending_task(void *arg)
