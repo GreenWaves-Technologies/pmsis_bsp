@@ -23,6 +23,10 @@
 #include "bsp/flash.h"
 
 
+#define READ_FS_THRESHOLD            16
+#define READ_FS_THRESHOLD_BLOCK      128
+#define READ_FS_THRESHOLD_BLOCK_FULL (READ_FS_THRESHOLD_BLOCK + 8)
+
 
 #if 0
 // Called by global pi_error_str to display fs errors
@@ -77,7 +81,7 @@ static void __fs_free(fs_t *fs)
   {
     if (fs->fs_info) pmsis_l2_malloc_free(fs->fs_info, fs->fs_l2->fs_size);
     if (fs->fs_l2) pmsis_l2_malloc_free(fs->fs_l2, sizeof(fs_l2_t));
-    if (fs->cache) pmsis_l2_malloc_free(fs->cache, FS_READ_THRESHOLD_BLOCK_FULL);
+    if (fs->cache) pmsis_l2_malloc_free(fs->cache, READ_FS_THRESHOLD_BLOCK_FULL);
   }
 }
 
@@ -178,7 +182,7 @@ int fs_mount(struct pi_device *device)
   fs->fs_l2 = pmsis_l2_malloc(sizeof(fs_l2_t));
   if (fs->fs_l2 == NULL) goto error;
 
-  fs->cache = pmsis_l2_malloc(FS_READ_THRESHOLD_BLOCK_FULL);
+  fs->cache = pmsis_l2_malloc(READ_FS_THRESHOLD_BLOCK_FULL);
   if (fs->cache == NULL) goto error;
 
   fs->mount_step = 1;
@@ -264,7 +268,7 @@ static int __fs_read_block(fs_t *fs, unsigned int addr, unsigned int buffer, int
   return size;
 }
 
-// Reads a block from cache, whose size is inferior to FS_READ_THRESHOLD
+// Reads a block from cache, whose size is inferior to READ_FS_THRESHOLD
 static int __fs_read_from_cache(fs_file_t *file, unsigned int buffer, unsigned int addr, int size)
 {
   //printf("[FS] Read from cache (buffer: 0x%x, addr: 0x%x, size: 0x%x)\n", buffer, addr, size);
@@ -277,7 +281,7 @@ static int __fs_read_from_cache(fs_file_t *file, unsigned int buffer, unsigned i
 
 }
 
-// Reads a block from cache, whose size is inferior to FS_READ_THRESHOLD,
+// Reads a block from cache, whose size is inferior to READ_FS_THRESHOLD,
 // with no alignment constraint.
 // If the data is not in the cache, it is loaded fron FS
 // and then it copied from the cache to the buffer
@@ -285,13 +289,13 @@ static int __fs_read_cached(fs_file_t *file, unsigned int buffer, unsigned int a
 {
   //printf("[FS] Read cached (buffer: 0x%x, addr: 0x%x, size: 0x%x)\n", buffer, addr, size);
 
-  if (size > FS_READ_THRESHOLD_BLOCK_FULL - (addr & 0x7)) size = FS_READ_THRESHOLD_BLOCK_FULL - (addr & 0x7);
+  if (size > READ_FS_THRESHOLD_BLOCK_FULL - (addr & 0x7)) size = READ_FS_THRESHOLD_BLOCK_FULL - (addr & 0x7);
 
   fs_t *fs = (fs_t *)file->fs->data;
 
-  if (addr < fs->cache_addr || addr + size > fs->cache_addr + FS_READ_THRESHOLD_BLOCK_FULL) {
+  if (addr < fs->cache_addr || addr + size > fs->cache_addr + READ_FS_THRESHOLD_BLOCK_FULL) {
     fs->cache_addr = addr & ~0x7;
-    __fs_read_block(fs, fs->cache_addr, (int)fs->cache, FS_READ_THRESHOLD_BLOCK_FULL, event);
+    __fs_read_block(fs, fs->cache_addr, (int)fs->cache, READ_FS_THRESHOLD_BLOCK_FULL, event);
     *pending = 1;
     return 0;
   }
@@ -309,13 +313,13 @@ int __fs_read(fs_file_t *file, unsigned int buffer, unsigned int addr, int size,
   //   - Small accesses
   //   - FS address alignment is different from L2 alignment,
   //     there is now way to transfer it directly, it must go through the cache
-  int use_cache = size <= FS_READ_THRESHOLD || (addr & 0x7) != (buffer & 0x7);
+  int use_cache = size <= READ_FS_THRESHOLD || (addr & 0x7) != (buffer & 0x7);
   if (use_cache) return __fs_read_cached(file, buffer, addr, size, pending, event);
 
   // Cache hit
-  if (size <= FS_READ_THRESHOLD_BLOCK_FULL &&
+  if (size <= READ_FS_THRESHOLD_BLOCK_FULL &&
     addr >= fs->cache_addr &&
-    addr + size < fs->cache_addr + FS_READ_THRESHOLD_BLOCK_FULL) {
+    addr + size < fs->cache_addr + READ_FS_THRESHOLD_BLOCK_FULL) {
     return __fs_read_from_cache(file, buffer, addr, size);
   }
 
@@ -408,6 +412,8 @@ int fs_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *event)
 
   // Store the read information into the file in case the read is kept pending
   // when we return
+
+  __rt_task_init(event);
   file->pending_event = event;
   file->pending_buffer = (unsigned int)buffer;
   file->pending_size = real_size;

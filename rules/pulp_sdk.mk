@@ -18,5 +18,5 @@ ifdef PULPOS
 endif
 ifdef SRC
 	mkdir -p $(TARGET_INSTALL_DIR)/src/pmsis_bsp
-	cp -r bsp camera display flash include zephyr $(TARGET_INSTALL_DIR)/src/pmsis_bsp
+	cp -r bsp camera display flash ram fs include zephyr $(TARGET_INSTALL_DIR)/src/pmsis_bsp
 endif
