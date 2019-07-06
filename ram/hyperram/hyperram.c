@@ -78,26 +78,32 @@ static void hyperram_close(struct pi_device *device)
 
 
 
-static void hyperram_read_async(struct pi_device *device, uint32_t addr, void *data, uint32_t size, pi_task_t *task)
+static void hyperram_copy_async(struct pi_device *device, uint32_t addr, void *data, uint32_t size, int ext2loc, pi_task_t *task)
 {
   hyperram_t *hyperram = (hyperram_t *)device->data;
 
-  pi_hyper_read_async(&hyperram->hyper_device, addr, data, size, task);
+  if (ext2loc)
+    pi_hyper_read_async(&hyperram->hyper_device, addr, data, size, task);
+  else
+    pi_hyper_write_async(&hyperram->hyper_device, addr, data, size, task);
 }
 
 
 
-static void hyperram_write_async(struct pi_device *device, uint32_t addr, void *data, uint32_t size, pi_task_t *task)
+static void hyperram_copy_2d_async(struct pi_device *device, uint32_t addr, void *data, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_task_t *task)
 {
   hyperram_t *hyperram = (hyperram_t *)device->data;
 
-  pi_hyper_write_async(&hyperram->hyper_device, addr, data, size, task);
+  if (ext2loc)
+    pi_hyper_read_2d_async(&hyperram->hyper_device, addr, data, size, stride, length, task);
+  else
+    pi_hyper_write_2d_async(&hyperram->hyper_device, addr, data, size, stride, length, task);
 }
 
 
 
 
-int hyperram_alloc(struct pi_device *device, uint32_t size, uint32_t *addr)
+int hyperram_alloc(struct pi_device *device, uint32_t *addr, uint32_t size)
 {
   void *chunk;
   hyperram_t *hyperram = (hyperram_t *)device->data;
@@ -108,7 +114,7 @@ int hyperram_alloc(struct pi_device *device, uint32_t size, uint32_t *addr)
 
 
 
-int hyperram_free(struct pi_device *device, uint32_t size, uint32_t addr)
+int hyperram_free(struct pi_device *device, uint32_t addr, uint32_t size)
 {
   hyperram_t *hyperram = (hyperram_t *)device->data;
   return extern_free(&hyperram->alloc, size, (void *)addr);
@@ -167,8 +173,8 @@ void pi_cl_hyperram_free(struct pi_device *device, uint32_t chunk, uint32_t size
 static ram_api_t hyperram_api = {
   .open                 = &hyperram_open,
   .close                = &hyperram_close,
-  .read_async           = &hyperram_read_async,
-  .write_async          = &hyperram_write_async,
+  .copy_async           = &hyperram_copy_async,
+  .copy_2d_async        = &hyperram_copy_2d_async,
   .alloc                = &hyperram_alloc,
   .free                 = &hyperram_free,
 };
