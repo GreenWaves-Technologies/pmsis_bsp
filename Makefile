@@ -40,7 +40,8 @@ GAPOC_A_SRC = \
   transport/nina_w10/nina_w10.c \
   ram/hyperram/hyperram.c \
   ram/ram.c \
-  ram/alloc_extern.c
+  ram/alloc_extern.c \
+  ble/nina_b112/nina_b112.c
 
 
 ifdef GAP_SDK_HOME

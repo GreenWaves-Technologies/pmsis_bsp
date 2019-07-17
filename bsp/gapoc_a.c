@@ -23,24 +23,42 @@
 #include "bsp/transport/nina_w10.h"
 #include "bsp/display/ili9341.h"
 #include "bsp/ram/hyperram.h"
-
+#include "bsp/ble/nina_b112/nina_b112.h"
 
 
 static int __bsp_init_pads_done = 0;
 
 
+static void __gpio_init()
+{
+    rt_gpio_set_dir(0, 1<<GPIOA0_LED      , RT_GPIO_IS_OUT);
+    rt_gpio_set_dir(0, 1<<GPIOA1          , RT_GPIO_IS_IN);
+    rt_gpio_set_dir(0, 1<<GPIOA2_NINA_RST , RT_GPIO_IS_OUT);
+    rt_gpio_set_dir(0, 1<<GPIOA3_CIS_EXP  , RT_GPIO_IS_OUT);
+    rt_gpio_set_dir(0, 1<<GPIOA4_1V8_EN   , RT_GPIO_IS_OUT);
+    rt_gpio_set_dir(0, 1<<GPIOA5_CIS_PWRON, RT_GPIO_IS_OUT);
+    rt_gpio_set_dir(0, 1<<GPIOA18         , RT_GPIO_IS_IN);
+    rt_gpio_set_dir(0, 1<<GPIOA19         , RT_GPIO_IS_IN);
+    rt_gpio_set_dir(0, 1<<GPIOA21_NINA17  , RT_GPIO_IS_OUT);
+
+    rt_gpio_set_pin_value(0, GPIOA0_LED, 0);
+    rt_gpio_set_pin_value(0, GPIOA2_NINA_RST, 0);
+    rt_gpio_set_pin_value(0, GPIOA3_CIS_EXP, 0);
+    rt_gpio_set_pin_value(0, GPIOA4_1V8_EN, 1);
+    rt_gpio_set_pin_value(0, GPIOA5_CIS_PWRON, 0);
+    rt_gpio_set_pin_value(0, GPIOA21_NINA17, 1);
+}
 
 static void __bsp_init_pads()
 {
   if (!__bsp_init_pads_done)
   {
     __bsp_init_pads_done = 1;
-    uint32_t pads_value[] = {0x00055500, 0x0f000000, 0x003fffff, 0x00000000};
+    uint32_t pads_value[] = {0x00055504, 0x0f450000, 0x003fffff, 0x00000000};
     pi_pad_init(pads_value);
+    __gpio_init();
   }
 }
-
-
 
 void bsp_hyperram_conf_init(struct hyperram_conf *conf)
 {
@@ -54,6 +72,7 @@ void bsp_hyperram_conf_init(struct hyperram_conf *conf)
 int bsp_hyperram_open(struct hyperram_conf *conf)
 {
   __bsp_init_pads();
+  pi_pad_set_function(CONFIG_HYPERBUS_DATA6_PAD, CONFIG_HYPERRAM_DATA6_PAD_FUNC);
   return 0;
 }
 
@@ -68,6 +87,7 @@ void bsp_hyperflash_conf_init(struct hyperflash_conf *conf)
 int bsp_hyperflash_open(struct hyperflash_conf *conf)
 {
   __bsp_init_pads();
+  pi_pad_set_function(CONFIG_HYPERBUS_DATA6_PAD, CONFIG_HYPERRAM_DATA6_PAD_FUNC);
   return 0;
 }
 
@@ -121,7 +141,7 @@ void bsp_ili9341_conf_init(struct ili9341_conf *conf)
 int bsp_ili9341_open(struct ili9341_conf *conf)
 {
   __bsp_init_pads();
-  
+
   if (!conf->skip_pads_config)
   {
     pi_pad_set_function(CONFIG_ILI9341_GPIO_PAD, CONFIG_ILI9341_GPIO_PAD_FUNC);
@@ -129,3 +149,23 @@ int bsp_ili9341_open(struct ili9341_conf *conf)
 
   return 0;
 }
+
+void bsp_nina_b112_conf_init(struct nina_b112_conf *conf)
+{
+
+}
+
+int bsp_nina_b112_open(struct nina_b112_conf *conf)
+{
+  __bsp_init_pads();
+
+  if (!conf->skip_pads_config)
+  {
+    pi_pad_set_function(CONFIG_HYPERBUS_DATA6_PAD, CONFIG_UART_RX_PAD_FUNC);
+  }
+
+  return 0;
+}
+
+
+

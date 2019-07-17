@@ -74,7 +74,7 @@ INC_PATH += -include $(TARGET_INSTALL_DIR)/include/rt/chips/$(TARGET_NAME)/confi
 OBJECTS_GAPUINO = $(patsubst %.c, $(GAPUINO_BUILD_DIR)/%.o, $(wildcard $(GAPUINO_SRC)))
 OBJECTS_GAPOC_A = $(patsubst %.c, $(GAPOC_A_BUILD_DIR)/%.o, $(wildcard $(GAPOC_A_SRC)))
 
-CFLAGS += -march=rv32imcxgap8 -mPE=8 -mFC=1 -D__riscv__ -Os -g -Werror -Wall
+CFLAGS += -std=gnu99 -march=rv32imcxgap8 -mPE=8 -mFC=1 -D__riscv__ -Os -g -Werror -Wall
 CFLAGS += -Wno-unused-variable -Wno-unused-function
 CFLAGS += -MMD -MP -c
 
