@@ -155,7 +155,7 @@ static int __ili_open(struct pi_device *device)
 
   spi_conf.wordsize = PI_SPI_WORDSIZE_8;
   spi_conf.big_endian = 1;
-  spi_conf.max_baudrate = 20000000;
+  spi_conf.max_baudrate = 50000000;
   spi_conf.polarity = 0;
   spi_conf.phase = 0;
   
