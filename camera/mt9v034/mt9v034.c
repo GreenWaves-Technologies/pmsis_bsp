@@ -171,6 +171,10 @@ static int __mt9v034_start(mt9v034_t *mt9v034)
   //Enable High Dynamic Range, this is very good for image flow
   __mt9v034_reg_write(mt9v034,  MT9V034_HDR, MT9V034_HDR_ON );    
 
+  //Set Black level control to auto
+  __mt9v034_reg_write(mt9v034,  MT9V034_BLACK_LEVEL_CTRL, MT9V034_BLACK_LEVEL_AUTO );    
+
+
 
   // Program Horizontal and Vertical Blanking accordingly:
   // Keep Frame Start Blanking and Frame End Blanking to their default values
