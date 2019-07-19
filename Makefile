@@ -33,6 +33,7 @@ GAPOC_A_SRC = \
   camera/camera.c \
   camera/mt9v034/mt9v034.c \
   flash/flash.c \
+  fs/read_fs/read_fs.c \
   flash/hyperflash/hyperflash.c \
   transport/transport.c \
   display/display.c \
