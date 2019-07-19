@@ -166,7 +166,7 @@ static int __mt9v034_start(mt9v034_t *mt9v034)
   // Adjust target brightness
   // TODO -- This could be offered as user-definable setting
   #define BRIGHTNESS_1_64     MT9V034_AEC_AGC_DESIRED_BIN_DEF     // keep at MT9V034_AEC_AGC_DESIRED_BIN_DEF=58 for default brightness (Min=1, Max=64)
-  __mt9v034_reg_write(mt9v034,  MT9V034_AEC_AGC_DESIRED_BIN, BRIGHTNESS_1_64 );    
+  __mt9v034_reg_write(mt9v034,  MT9V034_AEC_AGC_DESIRED_BIN, BRIGHTNESS_1_64 );
 
   //Enable High Dynamic Range, this is very good for image flow
   __mt9v034_reg_write(mt9v034,  MT9V034_HDR, MT9V034_HDR_ON );    

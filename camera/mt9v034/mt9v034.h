@@ -199,7 +199,7 @@
 // 0x99-0xA4 - digtial tiles coordinates
 
 #define MT9V034_AEC_AGC_DESIRED_BIN		0xa5
-#define     MT9V034_AEC_AGC_DESIRED_BIN_DEF      58
+#define     MT9V034_AEC_AGC_DESIRED_BIN_DEF      45
 
 #define MT9V034_AEC_UPDATE_FREQUENCY	0xa6
 

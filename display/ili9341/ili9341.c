@@ -27,7 +27,14 @@
 
 #define TEMP_BUFFER_SIZE 256
 
-
+RT_L2_DATA unsigned int _width=ILI9341_TFTWIDTH;
+RT_L2_DATA unsigned int _height=ILI9341_TFTHEIGHT;
+RT_L2_DATA int16_t cursor_x=0;
+RT_L2_DATA int16_t cursor_y=0;
+RT_L2_DATA int16_t wrap=0;
+RT_L2_DATA uint8_t textsize=1;
+RT_L2_DATA uint16_t textcolor=ILI9341_GREEN;
+RT_L2_DATA uint16_t textbgcolor=ILI9341_WHITE;
 
 typedef struct
 {
@@ -148,7 +155,7 @@ static int __ili_open(struct pi_device *device)
 
   spi_conf.wordsize = PI_SPI_WORDSIZE_8;
   spi_conf.big_endian = 1;
-  spi_conf.max_baudrate = 50000000;
+  spi_conf.max_baudrate = 20000000;
   spi_conf.polarity = 0;
   spi_conf.phase = 0;
   
@@ -203,7 +210,7 @@ static void __ili_write_16(ili_t *ili, uint16_t value)
 
 
 
-static void __ili_write_32(ili_t *ili, uint16_t value) 
+static void __ili_write_32(ili_t *ili, uint32_t value) 
 {
   __ili_write_16(ili, value >> 16);
   __ili_write_16(ili, value);
@@ -335,6 +342,7 @@ static void __ili_init(ili_t *ili)
   pi_time_wait_us(120000);
   __ili_write_command(ili,ILI9341_DISPON);    //Display on
   pi_time_wait_us(120000);
+
 }
 
 
@@ -386,4 +394,113 @@ static void __ili_set_addr_window(ili_t *ili,uint16_t x, uint16_t y, uint16_t w,
   __ili_write_command(ili,ILI9341_PASET); // Row addr set
   __ili_write_32(ili,ya);
   __ili_write_command(ili,ILI9341_RAMWR); // write to RAM
+}
+
+
+void writeColor(struct pi_device *device, uint16_t color, unsigned int len){
+
+    ili_t *ili = (ili_t *)device->data;
+    for (uint32_t t=0; t<len; t++){
+        
+        __ili_write_16(ili,color);
+    
+    }
+    return;
+}
+
+void writeFillRect(struct pi_device *device, unsigned short x, unsigned short y, unsigned short w, unsigned short h, unsigned short color){
+    
+    ili_t *ili = (ili_t *)device->data;
+
+    if((x >= _width) || (y >= _height)) return;
+    unsigned short x2 = x + w - 1, y2 = y + h - 1;
+
+    // Clip right/bottom
+    if(x2 >= _width)  w = _width  - x;
+    if(y2 >= _height) h = _height - y;
+    unsigned int len = (int32_t)w * h;
+
+    //setAddrWindow(spim,x, y, w, h);
+    __ili_set_addr_window(ili, x, y, w, h); // Clipped area
+
+    writeColor(device, color, len);
+}
+
+
+void setTextWrap(signed short w) {
+    wrap = w;
+}
+
+void setCursor(signed short x, signed short y) {
+    cursor_x = x;
+    cursor_y = y;
+}
+
+void setTextColor(uint16_t c) {
+    // For 'transparent' background, we'll set the bg
+    // to the same as fg instead of using a flag
+    textcolor = c;
+}
+
+static void __ili_writePixelAtPos(struct pi_device *device,int16_t x, int16_t y, uint16_t color) {
+
+    ili_t *ili = (ili_t *)device->data;
+
+    if((x < 0) ||(x >= (int)_width) || (y < 0) || (y >= (int)_height)) return;
+    
+    __ili_set_addr_window(ili, x, y, 1, 1); // Clipped area
+    __ili_write_16(ili,color);
+
+}
+
+static void drawChar(struct pi_device *device,int16_t x, int16_t y, unsigned char c,
+  uint16_t color, uint16_t bg, uint8_t size) {
+
+        if((x >= (int)_width)            || // Clip right
+           (y >= (int)_height)           || // Clip bottom
+           ((x + 6 * size - 1) < 0) || // Clip left
+           ((y + 8 * size - 1) < 0))   // Clip top
+            return;
+
+        //if(!_cp437 && (c >= 176)) c++; // Handle 'classic' charset behavior
+
+        for(int8_t i=0; i<5; i++ ) { // Char bitmap = 5 columns
+            uint8_t line = font[c * 5 + i];
+            for(int8_t j=0; j<8; j++, line >>= 1) {
+                if(line & 1) {
+                    if(size == 1)
+                        __ili_writePixelAtPos(device,x+i, y+j, color);
+                    else
+                        writeFillRect(device,x+i*size, y+j*size, size, size, color);
+                } else if(bg != color) {
+                    if(size == 1)
+                        __ili_writePixelAtPos(device,x+i, y+j, bg);
+                    else
+                        writeFillRect(device,x+i*size, y+j*size, size, size, bg);
+                }
+            }
+        }
+    }
+
+ 
+static void writeChar(struct pi_device *device,uint8_t c) {
+
+     if(c == '\n') {                        // Newline?
+            cursor_x  = 0;                     // Reset x to zero,
+            cursor_y += textsize * 8;          // advance y one line
+        } else if(c != '\r') {                 // Ignore carriage returns
+            if(wrap && ((cursor_x + textsize * 6) > (int)_width)) { // Off right?
+                cursor_x  = 0;                 // Reset x to zero,
+                cursor_y += textsize * 8;      // advance y one line
+            }
+            drawChar(device,cursor_x, cursor_y, c, textcolor, textbgcolor, textsize);
+            cursor_x += textsize * 6;          // Advance x one char
+        }
+}
+
+void writeText(struct pi_device *device,char* str,int fontsize){
+    textsize= fontsize;
+    int i=0;
+    while(str[i] != '\0')
+        writeChar(device,str[i++]);
 }
