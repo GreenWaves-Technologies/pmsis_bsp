@@ -27,14 +27,14 @@
 
 #define TEMP_BUFFER_SIZE 256
 
-RT_L2_DATA unsigned int _width=ILI9341_TFTWIDTH;
-RT_L2_DATA unsigned int _height=ILI9341_TFTHEIGHT;
-RT_L2_DATA int16_t cursor_x=0;
-RT_L2_DATA int16_t cursor_y=0;
-RT_L2_DATA int16_t wrap=0;
-RT_L2_DATA uint8_t textsize=1;
-RT_L2_DATA uint16_t textcolor=ILI9341_GREEN;
-RT_L2_DATA uint16_t textbgcolor=ILI9341_WHITE;
+L2_DATA unsigned int _width=ILI9341_TFTWIDTH;
+L2_DATA unsigned int _height=ILI9341_TFTHEIGHT;
+L2_DATA int16_t cursor_x=0;
+L2_DATA int16_t cursor_y=0;
+L2_DATA int16_t wrap=0;
+L2_DATA uint8_t textsize=1;
+L2_DATA uint16_t textcolor=ILI9341_GREEN;
+L2_DATA uint16_t textbgcolor=ILI9341_WHITE;
 
 typedef struct
 {
