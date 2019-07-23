@@ -387,11 +387,18 @@ static void __fs_try_read(void *arg)
   file->pending_buffer += size;
   file->pending_size -= size;
 
-  if (!pending && file->pending_size == 0)
+  if (!pending)
   {
-    // In case there was a user event specified, enqueue it now that all
-    // steps are done to notify the user
-    pi_task_push(file->pending_event);
+    if (file->pending_size == 0)
+    {
+      // In case there was a user event specified, enqueue it now that all
+      // steps are done to notify the user
+      pi_task_push(file->pending_event);
+    }
+    else
+    {
+      pi_task_push(pi_task_callback(&file->step_event, __fs_try_read, (void *)file));
+    }
   }
 }
 
