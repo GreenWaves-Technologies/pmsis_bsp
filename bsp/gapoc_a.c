@@ -34,18 +34,14 @@ static void __gpio_init()
     pi_gpio_pin_configure(0, GPIOA0_LED      , PI_GPIO_OUTPUT);
     pi_gpio_pin_configure(0, GPIOA1          , PI_GPIO_INPUT);
     pi_gpio_pin_configure(0, GPIOA2_NINA_RST , PI_GPIO_OUTPUT);
-    pi_gpio_pin_configure(0, GPIOA3_CIS_EXP  , PI_GPIO_OUTPUT);
     pi_gpio_pin_configure(0, GPIOA4_1V8_EN   , PI_GPIO_OUTPUT);
-    pi_gpio_pin_configure(0, GPIOA5_CIS_PWRON, PI_GPIO_OUTPUT);
     pi_gpio_pin_configure(0, GPIOA18         , PI_GPIO_INPUT);
     pi_gpio_pin_configure(0, GPIOA19         , PI_GPIO_INPUT);
     pi_gpio_pin_configure(0, GPIOA21_NINA17  , PI_GPIO_OUTPUT);
 
     pi_gpio_pin_write(0, GPIOA0_LED, 0);
     pi_gpio_pin_write(0, GPIOA2_NINA_RST, 0);
-    pi_gpio_pin_write(0, GPIOA3_CIS_EXP, 0);
     pi_gpio_pin_write(0, GPIOA4_1V8_EN, 1);
-    pi_gpio_pin_write(0, GPIOA5_CIS_PWRON, 0);
     pi_gpio_pin_write(0, GPIOA21_NINA17, 1);
 }
 

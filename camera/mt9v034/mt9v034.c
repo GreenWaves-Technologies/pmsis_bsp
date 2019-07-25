@@ -38,6 +38,7 @@ typedef struct {
   struct mt9v034_conf conf;
   struct pi_device cpi_device;
   struct pi_device i2c_device;
+  struct pi_device gpio_port;
   i2c_req_t i2c_req;
 } mt9v034_t;
 
@@ -50,7 +51,11 @@ static inline int is_i2c_active()
 #if PULP_CHIP == CHIP_VEGA || PULP_CHIP == CHIP_ARNOLD || PULP_CHIP == CHIP_PULPISSIMO || PULP_CHIP == CHIP_PULPISSIMO_V1
   return 0;
 #else
+#ifdef ARCHI_PLATFORM_RTL
   return rt_platform() != ARCHI_PLATFORM_RTL;
+#else
+  return 1;
+#endif
 #endif
 }
 
@@ -85,10 +90,10 @@ static uint16_t __mt9v034_reg_read(mt9v034_t *mt9v034, uint8_t addr)
 static int __mt9v034_start(mt9v034_t *mt9v034)
 {
   // GPIO_CIS_EXP   // Make sure trigger input is low -- normally redundant
-  pi_gpio_pin_write(0, mt9v034->conf.trigger_gpio, 0);
+  pi_gpio_pin_write(&mt9v034->gpio_port, mt9v034->conf.trigger_gpio, 0);
 
   // Enable 3V3A/3V3D
-  pi_gpio_pin_write(0, mt9v034->conf.power_gpio, 1); // GPIO_CIS_PWRON
+  pi_gpio_pin_write(&mt9v034->gpio_port, mt9v034->conf.power_gpio, 1); // GPIO_CIS_PWRON
 
   // Wait for chip ready
   {
@@ -196,7 +201,7 @@ static int __mt9v034_start(mt9v034_t *mt9v034)
 static void __mt9v034_on(mt9v034_t *mt9v034)
 {
   // Enable 3V3A/3V3D
-  pi_gpio_pin_write(0, mt9v034->conf.power_gpio, 1);
+  pi_gpio_pin_write(&mt9v034->gpio_port, mt9v034->conf.power_gpio, 1);
 }
 
 
@@ -212,8 +217,8 @@ static void __mt9v034_off(mt9v034_t *mt9v034)
 static void __mt9v034_trigger_snapshot(mt9v034_t *mt9v034)
 {
   // -- GPIO_CIS_EXP snapshot trigger signal
-  pi_gpio_pin_write(0, mt9v034->conf.trigger_gpio, 1);   // generate rising edge to trigger snapshot
-  pi_gpio_pin_write(0, mt9v034->conf.trigger_gpio, 0);   // generate rising edge to trigger snapshot
+  pi_gpio_pin_write(&mt9v034->gpio_port, mt9v034->conf.trigger_gpio, 1);   // generate rising edge to trigger snapshot
+  pi_gpio_pin_write(&mt9v034->gpio_port, mt9v034->conf.trigger_gpio, 0);   // generate rising edge to trigger snapshot
 }
 
 
@@ -247,20 +252,31 @@ static int __mt9v034_open(struct pi_device *device)
   if (pi_i2c_open(&i2c1))
     goto error2;
 
-  pi_gpio_pin_configure(0, conf->trigger_gpio, PI_GPIO_OUTPUT);
+  struct pi_gpio_conf gpio_conf;
+  pi_gpio_conf_init(&gpio_conf);
 
-  pi_gpio_pin_configure(0, conf->power_gpio, PI_GPIO_OUTPUT);
+  pi_open_from_conf(&mt9v034->gpio_port, &gpio_conf);
+
+  if (pi_gpio_open(&mt9v034->gpio_port))
+    goto error3;
+
+  pi_gpio_pin_configure(&mt9v034->gpio_port, conf->trigger_gpio, PI_GPIO_OUTPUT);
+
+  pi_gpio_pin_configure(&mt9v034->gpio_port, conf->power_gpio, PI_GPIO_OUTPUT);
 
   if (__mt9v034_start(mt9v034) != 0)
-    goto error3;
+    goto error4;
 
   if (bsp_mt9v034_open(conf))
-    goto error3;
+    goto error4;
 
   pi_cpi_set_format(&mt9v034->cpi_device, PI_CPI_FORMAT_BYPASS_BIGEND);
 
   return 0;
 
+error4:
+  // TODO does not exist yet
+  //pi_gpio_close(&mt9v034->gpio_port);
 error3:
   pi_i2c_close(&mt9v034->i2c_device);
 error2:
@@ -283,8 +299,6 @@ static void __mt9v034_close(struct pi_device *device)
 
 static void __mt9v034_control(struct pi_device *device, camera_cmd_e cmd, void *arg)
 {
-  int irq = rt_irq_disable();
-
   mt9v034_t *mt9v034 = (mt9v034_t *)device->data;
 
   rt_cpi_t *cpi = (rt_cpi_t *)mt9v034->cpi_device.data;
@@ -311,8 +325,6 @@ static void __mt9v034_control(struct pi_device *device, camera_cmd_e cmd, void *
     default:
       break;
   }
-
-  rt_irq_restore(irq);
 }
 
 
