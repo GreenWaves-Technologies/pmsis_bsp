@@ -31,22 +31,22 @@ static int __bsp_init_pads_done = 0;
 
 static void __gpio_init()
 {
-    rt_gpio_set_dir(0, 1<<GPIOA0_LED      , RT_GPIO_IS_OUT);
-    rt_gpio_set_dir(0, 1<<GPIOA1          , RT_GPIO_IS_IN);
-    rt_gpio_set_dir(0, 1<<GPIOA2_NINA_RST , RT_GPIO_IS_OUT);
-    rt_gpio_set_dir(0, 1<<GPIOA3_CIS_EXP  , RT_GPIO_IS_OUT);
-    rt_gpio_set_dir(0, 1<<GPIOA4_1V8_EN   , RT_GPIO_IS_OUT);
-    rt_gpio_set_dir(0, 1<<GPIOA5_CIS_PWRON, RT_GPIO_IS_OUT);
-    rt_gpio_set_dir(0, 1<<GPIOA18         , RT_GPIO_IS_IN);
-    rt_gpio_set_dir(0, 1<<GPIOA19         , RT_GPIO_IS_IN);
-    rt_gpio_set_dir(0, 1<<GPIOA21_NINA17  , RT_GPIO_IS_OUT);
+    pi_gpio_pin_configure(0, GPIOA0_LED      , PI_GPIO_OUTPUT);
+    pi_gpio_pin_configure(0, GPIOA1          , PI_GPIO_INPUT);
+    pi_gpio_pin_configure(0, GPIOA2_NINA_RST , PI_GPIO_OUTPUT);
+    pi_gpio_pin_configure(0, GPIOA3_CIS_EXP  , PI_GPIO_OUTPUT);
+    pi_gpio_pin_configure(0, GPIOA4_1V8_EN   , PI_GPIO_OUTPUT);
+    pi_gpio_pin_configure(0, GPIOA5_CIS_PWRON, PI_GPIO_OUTPUT);
+    pi_gpio_pin_configure(0, GPIOA18         , PI_GPIO_INPUT);
+    pi_gpio_pin_configure(0, GPIOA19         , PI_GPIO_INPUT);
+    pi_gpio_pin_configure(0, GPIOA21_NINA17  , PI_GPIO_OUTPUT);
 
-    rt_gpio_set_pin_value(0, GPIOA0_LED, 0);
-    rt_gpio_set_pin_value(0, GPIOA2_NINA_RST, 0);
-    rt_gpio_set_pin_value(0, GPIOA3_CIS_EXP, 0);
-    rt_gpio_set_pin_value(0, GPIOA4_1V8_EN, 1);
-    rt_gpio_set_pin_value(0, GPIOA5_CIS_PWRON, 0);
-    rt_gpio_set_pin_value(0, GPIOA21_NINA17, 1);
+    pi_gpio_pin_write(0, GPIOA0_LED, 0);
+    pi_gpio_pin_write(0, GPIOA2_NINA_RST, 0);
+    pi_gpio_pin_write(0, GPIOA3_CIS_EXP, 0);
+    pi_gpio_pin_write(0, GPIOA4_1V8_EN, 1);
+    pi_gpio_pin_write(0, GPIOA5_CIS_PWRON, 0);
+    pi_gpio_pin_write(0, GPIOA21_NINA17, 1);
 }
 
 static void __bsp_init_pads()
@@ -167,5 +167,8 @@ int bsp_nina_b112_open(struct nina_b112_conf *conf)
   return 0;
 }
 
-
+void board_init()
+{
+    __bsp_init_pads();
+}
 

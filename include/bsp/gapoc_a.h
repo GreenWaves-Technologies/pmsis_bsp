@@ -64,4 +64,7 @@
 #define GPIOA19                   19
 #define GPIOA21_NINA17            21
 
+
+void board_init();
+
 #endif

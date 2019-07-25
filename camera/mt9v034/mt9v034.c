@@ -26,7 +26,7 @@ static struct pi_device i2c1;
 static struct pi_device cpi_device;
 
 
- 
+
 typedef struct {
   uint8_t addr;
   uint16_t value;
@@ -85,32 +85,32 @@ static uint16_t __mt9v034_reg_read(mt9v034_t *mt9v034, uint8_t addr)
 static int __mt9v034_start(mt9v034_t *mt9v034)
 {
   // GPIO_CIS_EXP   // Make sure trigger input is low -- normally redundant
-  rt_gpio_set_pin_value(0, mt9v034->conf.trigger_gpio, 0);
-  
-  // Enable 3V3A/3V3D 
-  rt_gpio_set_pin_value(0, mt9v034->conf.power_gpio, 1); // GPIO_CIS_PWRON
+  pi_gpio_pin_write(0, mt9v034->conf.trigger_gpio, 0);
+
+  // Enable 3V3A/3V3D
+  pi_gpio_pin_write(0, mt9v034->conf.power_gpio, 1); // GPIO_CIS_PWRON
 
   // Wait for chip ready
   {
     uint16_t id;
-    do 
+    do
     {
       id = __mt9v034_reg_read(mt9v034, MT9V034_CHIP_ID_REG);
     } while (id == 0xFFFF);  // Getting 0xFFFF when I2C not yet ready
-    
+
     if (id != MT9V034_CHIP_ID)
     {
       printf("Error - Unexpected I2C device address from CIS\n");
-      return -1;     
+      return -1;
     }
   }
 
   // Make sure camera won't start outputting valid pixels yet: go to snapshot mode (trigger input asssumed low)
-  __mt9v034_reg_write(mt9v034, MT9V034_CHIP_CONTROL, MT9V034_CHIP_CONTROL_SNAPSHOT_MODE | MT9V034_CHIP_CONTROL_DVP_OFF| MT9V034_CHIP_CONTROL_SIMULTANEOUS);     
+  __mt9v034_reg_write(mt9v034, MT9V034_CHIP_CONTROL, MT9V034_CHIP_CONTROL_SNAPSHOT_MODE | MT9V034_CHIP_CONTROL_DVP_OFF| MT9V034_CHIP_CONTROL_SIMULTANEOUS);
 
   // Reset chip (except I2C config) to abort any capture started in default master mode before config change (helps save power)
-  __mt9v034_reg_write(mt9v034, MT9V034_RESET, MT9V034_SOFT_RESET);     
-        
+  __mt9v034_reg_write(mt9v034, MT9V034_RESET, MT9V034_SOFT_RESET);
+
   // Replace default values of some reserved registers as per recommendations ginven in datasheet Rev.D, Table 8 p14
   // Need different settings in case of binning ?
   if( (__mt9v034_reg_read(mt9v034, MT9V034_COARSE_SHUTTER_WIDTH_A)==0) && (__mt9v034_reg_read(mt9v034, MT9V034_FINE_SHUTTER_WIDTH_A)<456) )
@@ -141,26 +141,26 @@ static int __mt9v034_start(mt9v034_t *mt9v034)
     width = 160;
   }
 
-  __mt9v034_reg_write(mt9v034, MT9V034_READ_MODE_A, 
+  __mt9v034_reg_write(mt9v034, MT9V034_READ_MODE_A,
     (binning << MT9V034_READ_MODE_ROW_BIN_SHIFT) |
     (binning << MT9V034_READ_MODE_COLUMN_BIN_SHIFT) |
     (mt9v034->conf.column_flip << MT9V034_READ_MODE_COLUMN_FLIP_SHIFT) |
     (mt9v034->conf.row_flip << MT9V034_READ_MODE_ROW_FLIP_SHIFT)
   );
-         
+
   if (binning)
   {
     // !!! In binning mode, mt9v034 appears to provide pixels with difft timing -- requiring clock inversion !!
     __mt9v034_reg_write(mt9v034,  MT9V034_PIXEL_CLOCK, MT9V034_PIXEL_CLOCK_INV_PXL_CLK);
 
-    // Correct Pixel Count in Histogram 
+    // Correct Pixel Count in Histogram
     __mt9v034_reg_write(mt9v034,  MT9V034_HISTOGRAM_PIXCOUNT, MT9V034_HISTOGRAM_PIXCOUNT_DEF/((1+binning)*(1+binning)));
   }
 
-  __mt9v034_reg_write(mt9v034, MT9V034_COLUMN_START_A, 56+1);     // first column index is 1    
-  __mt9v034_reg_write(mt9v034, MT9V034_WINDOW_WIDTH_A, 640);                               
+  __mt9v034_reg_write(mt9v034, MT9V034_COLUMN_START_A, 56+1);     // first column index is 1
+  __mt9v034_reg_write(mt9v034, MT9V034_WINDOW_WIDTH_A, 640);
   __mt9v034_reg_write(mt9v034, MT9V034_ROW_START_A, 4);         // CAUTION: First 4 rows are dark rows, not to be read out // !!! A VOIR ////
-  __mt9v034_reg_write(mt9v034, MT9V034_WINDOW_HEIGHT_A, 480); 
+  __mt9v034_reg_write(mt9v034, MT9V034_WINDOW_HEIGHT_A, 480);
 
 
   // Adjust target brightness
@@ -169,10 +169,10 @@ static int __mt9v034_start(mt9v034_t *mt9v034)
   __mt9v034_reg_write(mt9v034,  MT9V034_AEC_AGC_DESIRED_BIN, BRIGHTNESS_1_64 );
 
   //Enable High Dynamic Range, this is very good for image flow
-  __mt9v034_reg_write(mt9v034,  MT9V034_HDR, MT9V034_HDR_ON );    
+  __mt9v034_reg_write(mt9v034,  MT9V034_HDR, MT9V034_HDR_ON );
 
   //Set Black level control to auto
-  __mt9v034_reg_write(mt9v034,  MT9V034_BLACK_LEVEL_CTRL, MT9V034_BLACK_LEVEL_AUTO );    
+  __mt9v034_reg_write(mt9v034,  MT9V034_BLACK_LEVEL_CTRL, MT9V034_BLACK_LEVEL_AUTO );
 
 
 
@@ -186,34 +186,34 @@ static int __mt9v034_start(mt9v034_t *mt9v034)
   //__mt9v034_reg_write(mt9v034, MT9V034_VERTICAL_BLANKING_A, 1000);
 
   // -- Switch camera to suitable mode (GPIO_CIS_EXP assumed low, normally already done!]
-  __mt9v034_reg_write(mt9v034, MT9V034_CHIP_CONTROL, MT9V034_CHIP_CONTROL_SNAPSHOT_MODE | MT9V034_CHIP_CONTROL_DVP_ON | MT9V034_CHIP_CONTROL_SIMULTANEOUS);            
+  __mt9v034_reg_write(mt9v034, MT9V034_CHIP_CONTROL, MT9V034_CHIP_CONTROL_SNAPSHOT_MODE | MT9V034_CHIP_CONTROL_DVP_ON | MT9V034_CHIP_CONTROL_SIMULTANEOUS);
 
- 
+
   return 0;
 }
 
 
 static void __mt9v034_on(mt9v034_t *mt9v034)
 {
-  // Enable 3V3A/3V3D 
-  rt_gpio_set_pin_value(0, mt9v034->conf.power_gpio, 1);
+  // Enable 3V3A/3V3D
+  pi_gpio_pin_write(0, mt9v034->conf.power_gpio, 1);
 }
 
 
 
 static void __mt9v034_off(mt9v034_t *mt9v034)
 {
-  // Stop 3V3A/3V3D 
-  rt_gpio_set_pin_value(0, mt9v034->conf.power_gpio, 0);
+  // Stop 3V3A/3V3D
+  pi_gpio_pin_write(0, mt9v034->conf.power_gpio, 0);
 }
 
 
 
 static void __mt9v034_trigger_snapshot(mt9v034_t *mt9v034)
-{  
-  // -- GPIO_CIS_EXP snapshot trigger signal 
-  rt_gpio_set_pin_value(0, mt9v034->conf.trigger_gpio, 1);   // generate rising edge to trigger snapshot
-  rt_gpio_set_pin_value(0, mt9v034->conf.trigger_gpio, 0);   // generate rising edge to trigger snapshot
+{
+  // -- GPIO_CIS_EXP snapshot trigger signal
+  pi_gpio_pin_write(0, mt9v034->conf.trigger_gpio, 1);   // generate rising edge to trigger snapshot
+  pi_gpio_pin_write(0, mt9v034->conf.trigger_gpio, 0);   // generate rising edge to trigger snapshot
 }
 
 
@@ -247,11 +247,9 @@ static int __mt9v034_open(struct pi_device *device)
   if (pi_i2c_open(&i2c1))
     goto error2;
 
-  rt_gpio_init(0, conf->trigger_gpio);    
-  rt_gpio_set_dir(0, 1<<conf->trigger_gpio, RT_GPIO_IS_OUT);
+  pi_gpio_pin_configure(0, conf->trigger_gpio, PI_GPIO_OUTPUT);
 
-  rt_gpio_init(0, conf->power_gpio);    
-  rt_gpio_set_dir(0, 1<<conf->power_gpio, RT_GPIO_IS_OUT);
+  pi_gpio_pin_configure(0, conf->power_gpio, PI_GPIO_OUTPUT);
 
   if (__mt9v034_start(mt9v034) != 0)
     goto error3;
@@ -342,7 +340,7 @@ static int __mt9v034_reg_get(struct pi_device *device, uint32_t addr, uint8_t *v
   return 0;
 }
 
-static camera_api_t MT9V034_api = 
+static camera_api_t MT9V034_api =
 {
   .open           = &__mt9v034_open,
   .close          = &__mt9v034_close,
