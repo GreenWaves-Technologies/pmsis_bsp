@@ -20,6 +20,7 @@ PULP_LIB_FC_SRCS_pibsp_ai_deck = $(AI_DECK_SRC)
 PULP_LIB_TARGET_NAME_pibsp_ai_deck = ai_deck/libpibsp.a
 PULP_LIB_CFLAGS_pibsp_ai_deck = -DCONFIG_AI_DECK
 
-PULP_CFLAGS += -Os -g -Werror -Wall -I$(CURDIR)/include
+PULP_CFLAGS += -Os -g -I$(CURDIR)/include
+PULP_CFLAGS += -Wextra -Wall -Werror -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wundef
 
 include $(PULP_SDK_HOME)/install/rules/pulp.mk
