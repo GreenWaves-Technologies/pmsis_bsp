@@ -19,7 +19,7 @@
 #include "pmsis.h"
 //#include "pmsis_l2_malloc.h"
 //#include "pmsis_task.h"
-//#include "uart.h"
+#include "drivers/uart.h"
 //#include "udma_uart.h"
 #include "bsp/bsp.h"
 #include "bsp/ble/nina_b112/nina_b112.h"

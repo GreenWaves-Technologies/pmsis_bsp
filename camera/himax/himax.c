@@ -154,8 +154,10 @@ static inline int is_i2c_active()
   // Also there is noI2C connection to camera model on RTL
 #if PULP_CHIP == CHIP_VEGA || PULP_CHIP == CHIP_ARNOLD || PULP_CHIP == CHIP_PULPISSIMO || PULP_CHIP == CHIP_PULPISSIMO_V1
   return 0;
-#else
+#elif defined(ARCHI_PLATFORM_RTL)
   return rt_platform() != ARCHI_PLATFORM_RTL;
+#else
+  return 1;
 #endif
 #endif
 }
@@ -210,7 +212,7 @@ static void __himax_reset(himax_t *himax)
   {
     __himax_reg_write(himax, HIMAX_SW_RESET, HIMAX_RESET);
 #ifndef __ZEPHYR__
-    rt_time_wait_us(50);
+    pi_time_wait_us(50);
 #endif
   }
 }
@@ -308,7 +310,7 @@ static void __himax_close(struct pi_device *device)
 
 static void __himax_control(struct pi_device *device, camera_cmd_e cmd, void *arg)
 {
-  int irq = rt_irq_disable();
+  int irq = disable_irq();
 
   himax_t *himax = (himax_t *)device->data;
 
@@ -334,7 +336,7 @@ static void __himax_control(struct pi_device *device, camera_cmd_e cmd, void *ar
       break;
   }
 
-  rt_irq_restore(irq);
+  restore_irq(irq);
 }
 
 
@@ -366,7 +368,7 @@ int __himax_reg_get(struct pi_device *device, uint32_t addr, uint8_t *value)
 
 
 
-static camera_api_t himax_api = 
+static camera_api_t himax_api =
 {
   .open           = &__himax_open,
   .close          = &__himax_close,

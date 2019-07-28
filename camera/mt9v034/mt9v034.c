@@ -301,8 +301,6 @@ static void __mt9v034_control(struct pi_device *device, camera_cmd_e cmd, void *
 {
   mt9v034_t *mt9v034 = (mt9v034_t *)device->data;
 
-  rt_cpi_t *cpi = (rt_cpi_t *)mt9v034->cpi_device.data;
-
   switch (cmd)
   {
     case CAMERA_CMD_ON:

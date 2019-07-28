@@ -91,7 +91,7 @@ static int __nina_w10_get_response(nina_t *nina, uint8_t *response, int size, pi
       pi_yield();
     }
   }
-  
+
   pi_gpio_pin_notif_clear(&nina->gpio_ready, 0);
 
   pi_spi_receive_async(&nina->spim, (void *)response, ((size + 3) & ~0x3)*8, PI_SPI_CS_AUTO, task);
@@ -176,7 +176,7 @@ static void __nina_w10_send_packet_end(void *arg)
 {
   nina_t *nina = (nina_t *)arg;
 
-  int irq = rt_irq_disable();
+  int irq = disable_irq();
 
   pi_task_push(nina->pending_task);
   nina->pending_task = NULL;
@@ -188,7 +188,7 @@ static void __nina_w10_send_packet_end(void *arg)
     __nina_w10_send_packet(nina, (uint8_t *)task->implem.data[0], task->implem.data[1], task);
   }
 
-  rt_irq_restore(irq);
+  restore_irq(irq);
 }
 
 
@@ -262,7 +262,7 @@ int __nina_w10_open(struct pi_device *device)
   spi_conf.max_baudrate = 20000000;
   spi_conf.polarity = 0;
   spi_conf.phase = 0;
-  
+
   pi_open_from_conf(&nina->spim, &spi_conf);
 
   if (pi_spi_open(&nina->spim))
@@ -314,7 +314,7 @@ int __nina_w10_send_async(struct pi_device *device, void *buffer, size_t size, p
 {
   nina_t *nina = (nina_t *)device->data;
 
-  int irq = rt_irq_disable();
+  int irq = disable_irq();
 
   if (nina->pending_task)
   {
@@ -334,7 +334,7 @@ int __nina_w10_send_async(struct pi_device *device, void *buffer, size_t size, p
     __nina_w10_send_packet(nina, buffer, size, task);
   }
 
-  rt_irq_restore(irq);
+  restore_irq(irq);
 
   return 0;
 }
@@ -348,7 +348,7 @@ int __nina_w10_receive_async(struct pi_device *device, void *buffer, size_t size
 
 
 
-static transport_api_t nina_w10_api = 
+static transport_api_t nina_w10_api =
 {
   .open              = &__nina_w10_open,
   .connect           = &__nina_w10_connect,
