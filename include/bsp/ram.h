@@ -275,7 +275,7 @@ static inline void cl_ram_write_wait(cl_ram_req_t *req)
 
 static inline void cl_ram_copy_wait(cl_ram_req_t *req)
 {
-#if defined(__PMSIS__)
+#if defined(PMSIS_DRIVERS)
     pi_task_wait_on_no_mutex(&(req->done));
     hal_compiler_barrier();
 #else
@@ -288,7 +288,7 @@ static inline void cl_ram_copy_wait(cl_ram_req_t *req)
 
 static inline int cl_ram_alloc_wait(cl_ram_alloc_req_t *req, uint32_t *chunk)
 {
-#if defined(__PMSIS__)
+#if defined(PMSIS_DRIVERS)
     pi_task_wait_on_no_mutex(&(req->done));
     hal_compiler_barrier();
 #else
@@ -305,7 +305,7 @@ static inline int cl_ram_alloc_wait(cl_ram_alloc_req_t *req, uint32_t *chunk)
 
 static inline void cl_ram_free_wait(cl_ram_free_req_t *req)
 {
-#if defined(__PMSIS__)
+#if defined(PMSIS_DRIVERS)
     pi_task_wait_on_no_mutex(&(req->done));
     hal_compiler_barrier();
 #else

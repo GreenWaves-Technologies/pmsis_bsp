@@ -20,6 +20,7 @@
 
 #include "pmsis.h"
 #include "bsp/bsp.h"
+#include "drivers/hyperbus.h"
 
 
 #define SECTOR_SIZE (1<<18)
@@ -133,7 +134,7 @@ static int hyperflash_open(struct pi_device *device)
   struct pi_hyper_conf hyper_conf;
   pi_hyper_conf_init(&hyper_conf);
 
-  hyper_conf.id = conf->hyper_itf;
+  hyper_conf.id = (unsigned char) conf->hyper_itf;
   hyper_conf.cs = conf->hyper_cs;
   hyper_conf.type = PI_HYPER_TYPE_FLASH;
 
@@ -199,7 +200,7 @@ static void hyperflash_reg_set_async(struct pi_device *device, uint32_t addr, ui
 static void hyperflash_reg_get_async(struct pi_device *device, uint32_t addr, uint8_t *value, pi_task_t *task)
 {
   hyperflash_t *hyperflash = (hyperflash_t *)device->data;
-  
+
   if (hyperflash_stall_task(hyperflash, task, STALL_TASK_REG_GET, addr, (uint32_t)value, 0))
     return;
 
@@ -235,6 +236,7 @@ static void hyperflash_handle_pending_task(void *arg)
   hyperflash->pending_task = NULL;
 
   pi_task_t *task = hyperflash->waiting_first;
+#ifndef PMSIS_DRIVERS
   if (task)
   {
     hyperflash->waiting_first = task->implem.next;
@@ -269,6 +271,7 @@ static void hyperflash_handle_pending_task(void *arg)
       hyperflash_read_async(device, task->implem.data[1], (void *)task->implem.data[2], task->implem.data[3], task);
     }
   }
+#endif
 }
 
 
@@ -284,17 +287,21 @@ static void hyperflash_handle_pending_erase_task(void *arg)
   hyperflash->erase_task = NULL;
 
   pi_task_t *task = hyperflash->erase_waiting_first;
+#ifndef PMSIS_DRIVERS
   if (task)
   {
     hyperflash->erase_waiting_first = task->implem.next;
   }
+#endif
 
   restore_irq(irq);
 
+#ifndef PMSIS_DRIVERS
   if (task)
   {
     hyperflash_erase_async(device, task->implem.data[1], task->implem.data[2], task);
   }
+#endif
 }
 
 
@@ -303,6 +310,7 @@ static int hyperflash_stall_task(hyperflash_t *hyperflash, pi_task_t *task, uint
 {
   int irq = disable_irq();
 
+#ifndef PMSIS_DRIVERS
   if (hyperflash->pending_task != NULL)
   {
     task->implem.data[0] = id;
@@ -321,6 +329,7 @@ static int hyperflash_stall_task(hyperflash_t *hyperflash, pi_task_t *task, uint
     restore_irq(irq);
     return 1;
   }
+#endif
 
   hyperflash->pending_task = task;
 
@@ -334,6 +343,7 @@ static int hyperflash_stall_erase_task(hyperflash_t *hyperflash, pi_task_t *task
 {
   int irq = disable_irq();
 
+#ifndef PMSIS_DRIVERS
   if (hyperflash->erase_task != NULL)
   {
     task->implem.data[0] = id;
@@ -351,6 +361,7 @@ static int hyperflash_stall_erase_task(hyperflash_t *hyperflash, pi_task_t *task
     restore_irq(irq);
     return 1;
   }
+#endif
 
   hyperflash->erase_task = task;
 

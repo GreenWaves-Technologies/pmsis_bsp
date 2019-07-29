@@ -14,27 +14,30 @@
  * limitations under the License.
  */
 
-/* 
+/*
  * Authors: Francesco Paci, GreenWaves Technologies (francesco.paci@greenwaves-technologies.com)
  *          Germain Haugou, GreenWaves Technologies (germain.haugou@greenwaves-technologies.com)
  */
 
 
 #include "pmsis.h"
+#include "drivers/spi.h"
+#include "drivers/hyperbus.h"
+#include "drivers/gpio.h"
 #include "bsp/display/ili9341.h"
 #include "bsp/bsp.h"
 #include "ili9341.h"
 
 #define TEMP_BUFFER_SIZE 256
 
-L2_DATA unsigned int _width=ILI9341_TFTWIDTH;
-L2_DATA unsigned int _height=ILI9341_TFTHEIGHT;
-L2_DATA int16_t cursor_x=0;
-L2_DATA int16_t cursor_y=0;
-L2_DATA int16_t wrap=0;
-L2_DATA uint8_t textsize=1;
-L2_DATA uint16_t textcolor=ILI9341_GREEN;
-L2_DATA uint16_t textbgcolor=ILI9341_WHITE;
+PI_L2 unsigned int _width=ILI9341_TFTWIDTH;
+PI_L2 unsigned int _height=ILI9341_TFTHEIGHT;
+PI_L2 int16_t cursor_x=0;
+PI_L2 int16_t cursor_y=0;
+PI_L2 int16_t wrap=0;
+PI_L2 uint8_t textsize=1;
+PI_L2 uint16_t textcolor=ILI9341_GREEN;
+PI_L2 uint16_t textbgcolor=ILI9341_WHITE;
 
 typedef struct
 {
@@ -158,7 +161,7 @@ static int __ili_open(struct pi_device *device)
   spi_conf.max_baudrate = 50000000;
   spi_conf.polarity = 0;
   spi_conf.phase = 0;
-  
+
   pi_open_from_conf(&ili->spim, &spi_conf);
 
   if (pi_spi_open(&ili->spim))
@@ -166,7 +169,7 @@ static int __ili_open(struct pi_device *device)
 
   __ili_init(ili);
   __ili_set_rotation(ili,3);
-  
+
   return 0;
 
 error:
@@ -175,7 +178,7 @@ error:
 }
 
 
-static display_api_t ili_api = 
+static display_api_t ili_api =
 {
   .open           = &__ili_open,
   .write_async    = &__ili_write_async,
@@ -194,7 +197,7 @@ void ili9341_conf_init(struct ili9341_conf *conf)
 
 
 
-static void __ili_write_8(ili_t *ili, uint8_t value) 
+static void __ili_write_8(ili_t *ili, uint8_t value)
 {
   ili->temp_buffer[0] = value;
   pi_spi_send(&ili->spim, ili->temp_buffer, 8, PI_SPI_CS_AUTO);
@@ -202,7 +205,7 @@ static void __ili_write_8(ili_t *ili, uint8_t value)
 
 
 
-static void __ili_write_16(ili_t *ili, uint16_t value) 
+static void __ili_write_16(ili_t *ili, uint16_t value)
 {
   __ili_write_8(ili, value >> 8);
   __ili_write_8(ili, value);
@@ -210,7 +213,7 @@ static void __ili_write_16(ili_t *ili, uint16_t value)
 
 
 
-static void __ili_write_32(ili_t *ili, uint32_t value) 
+static void __ili_write_32(ili_t *ili, uint32_t value)
 {
   __ili_write_16(ili, value >> 16);
   __ili_write_16(ili, value);
@@ -401,15 +404,15 @@ void writeColor(struct pi_device *device, uint16_t color, unsigned int len){
 
     ili_t *ili = (ili_t *)device->data;
     for (uint32_t t=0; t<len; t++){
-        
+
         __ili_write_16(ili,color);
-    
+
     }
     return;
 }
 
 void writeFillRect(struct pi_device *device, unsigned short x, unsigned short y, unsigned short w, unsigned short h, unsigned short color){
-    
+
     ili_t *ili = (ili_t *)device->data;
 
     if((x >= _width) || (y >= _height)) return;
@@ -447,7 +450,7 @@ static void __ili_writePixelAtPos(struct pi_device *device,int16_t x, int16_t y,
     ili_t *ili = (ili_t *)device->data;
 
     if((x < 0) ||(x >= (int)_width) || (y < 0) || (y >= (int)_height)) return;
-    
+
     __ili_set_addr_window(ili, x, y, 1, 1); // Clipped area
     __ili_write_16(ili,color);
 
@@ -482,7 +485,7 @@ static void drawChar(struct pi_device *device,int16_t x, int16_t y, unsigned cha
         }
     }
 
- 
+
 static void writeChar(struct pi_device *device,uint8_t c) {
 
      if(c == '\n') {                        // Newline?

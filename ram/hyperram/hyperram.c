@@ -21,6 +21,7 @@
 #include "pmsis.h"
 #include "bsp/bsp.h"
 #include "bsp/ram/hyperram.h"
+#include "drivers/hyperbus.h"
 #include "../extern_alloc.h"
 
 
@@ -42,7 +43,7 @@ static int hyperram_open(struct pi_device *device)
 
   if (extern_alloc_init(&hyperram->alloc, 0, conf->ram_size))
     goto error;
-    
+
   if (bsp_hyperram_open(conf))
     goto error2;
 

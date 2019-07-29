@@ -129,10 +129,15 @@ typedef struct cl_fs_req_s {
 
 static inline __attribute__((always_inline)) int cl_fs_wait(cl_fs_req_t *req)
 {
+#if defined(PMSIS_DRIVERS)
+    pi_task_wait_on_no_mutex(&(req->done));
+    hal_compiler_barrier();
+#else
   while((*(volatile int *)&req->done) == 0)
   {
     eu_evt_maskWaitAndClr(1<<RT_CLUSTER_CALL_EVT);
   }
+#endif
   return req->result;
 }
 

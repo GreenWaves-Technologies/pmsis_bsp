@@ -21,7 +21,7 @@
 #include "bsp/transport.h"
 
 
-static L2_DATA struct transport_header header;
+static PI_L2 struct transport_header header;
 
 
 int transport_open(struct pi_device *device)

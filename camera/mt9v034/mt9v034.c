@@ -18,6 +18,9 @@
 
 #include "pmsis.h"
 #include "drivers/cpi.h"
+#include "drivers/i2c.h"
+#include "drivers/gpio.h"
+#include "drivers/hyperbus.h"
 #include "bsp/camera/mt9v034.h"
 #include "mt9v034.h"
 #include "bsp/bsp.h"
