@@ -20,6 +20,7 @@
 
 #include "pmsis/task.h"
 #include "bsp/camera.h"
+#include "rtos/os_frontend_api/pmsis_task.h"
 
 
 int camera_open(struct pi_device *device)

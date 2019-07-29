@@ -23,12 +23,20 @@
 #include "pmsis_cluster/drivers/delegate/hyperbus/hyperbus_cl_internal.h"
 #endif
 
+#ifdef __PMSIS__
+#include "pmsis_cluster/drivers/delegate/hyperbus/hyperbus_cl_internal.h"
+typedef struct pi_cl_hyper_req_s cl_ram_req_t;
+
+typedef struct pi_cl_hyperram_alloc_req_s cl_ram_alloc_req_t;
+
+typedef struct pi_cl_hyperram_free_req_s cl_ram_free_req_t;
+#else
 typedef struct cl_ram_req_s cl_ram_req_t;
 
 typedef struct cl_ram_alloc_req_s cl_ram_alloc_req_t;
 
 typedef struct cl_ram_free_req_s cl_ram_free_req_t;
-
+#endif
 int ram_open(struct pi_device *device);
 
 static inline void ram_close(struct pi_device *device);
@@ -95,6 +103,7 @@ static inline void cl_ram_free_wait(cl_ram_free_req_t *req);
 
 /// @cond IMPLEM
 
+#ifndef __PMSIS__
 struct cl_ram_req_s {
   struct pi_device *device;
   void *addr;
@@ -141,7 +150,7 @@ struct cl_ram_free_req_s {
 #endif
   char cid;
 };
-
+#endif
 
 typedef struct {
   int (*open)(struct pi_device *device);
@@ -291,8 +300,8 @@ static inline void cl_ram_write_wait(cl_ram_req_t *req)
 
 static inline void cl_ram_copy_wait(cl_ram_req_t *req)
 {
-#if defined(PMSIS_DRIVERS)
-    pi_task_wait_on_no_mutex(&(req->done));
+#if defined(__PMSIS__)
+    pi_task_wait_on_no_mutex(&(req->task_done));
     hal_compiler_barrier();
 #else
   while((*(volatile char *)&req->done) == 0)
@@ -304,8 +313,8 @@ static inline void cl_ram_copy_wait(cl_ram_req_t *req)
 
 static inline int cl_ram_alloc_wait(cl_ram_alloc_req_t *req, uint32_t *chunk)
 {
-#if defined(PMSIS_DRIVERS)
-    pi_task_wait_on_no_mutex(&(req->done));
+#if defined(__PMSIS__)
+    pi_task_wait_on_no_mutex(&(req->task_done));
     hal_compiler_barrier();
 #else
   while((*(volatile char *)&req->done) == 0)
@@ -316,13 +325,17 @@ static inline int cl_ram_alloc_wait(cl_ram_alloc_req_t *req, uint32_t *chunk)
 
   *chunk = req->result;
 
+#if defined(__PMSIS__)
+  return 0;
+#else
   return req->error;
+#endif
 }
 
 static inline void cl_ram_free_wait(cl_ram_free_req_t *req)
 {
-#if defined(PMSIS_DRIVERS)
-    pi_task_wait_on_no_mutex(&(req->done));
+#if defined(__PMSIS__)
+    pi_task_wait_on_no_mutex(&(req->task_done));
     hal_compiler_barrier();
 #else
   while((*(volatile char *)&req->done) == 0)

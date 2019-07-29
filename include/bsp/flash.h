@@ -18,6 +18,8 @@
 #define __BSP_FLASH_H__
 
 #include "pmsis.h"
+#include "rtos/os_frontend_api/pmsis_task.h"
+
 
 typedef enum {
   FLASH_TYPE_SPI,     /*!< SPI flash. */

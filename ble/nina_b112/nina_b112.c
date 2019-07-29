@@ -24,12 +24,6 @@
  * Definitions
  ******************************************************************************/
 
-#ifdef DEBUG
-#define DEBUG_PRINTF printf
-#else
-#define DEBUG_PRINTF(...) ((void) 0)
-#endif  /* DEBUG */
-
 typedef enum
 {
     WR_RES_OK = 0,
