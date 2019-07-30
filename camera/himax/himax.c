@@ -341,7 +341,7 @@ static void __himax_control(struct pi_device *device, camera_cmd_e cmd, void *ar
 
 
 
-void __himax_capture_async(struct pi_device *device, void *buffer, size_t bufferlen, pi_task_t *task)
+void __himax_capture_async(struct pi_device *device, void *buffer, uint32_t bufferlen, pi_task_t *task)
 {
   himax_t *himax = (himax_t *)device->data;
 

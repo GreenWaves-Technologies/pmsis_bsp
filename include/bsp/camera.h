@@ -85,9 +85,9 @@ static inline void camera_control(struct pi_device *device, camera_cmd_e cmd, vo
  * \param size      The size in bytes of the memory buffer.
  * \param event     The event used for managing termination. The event will be notified as soon as the specified amount of bytes have been captured.
  */
-void camera_capture(struct pi_device *device, void *buffer, size_t size);
+void camera_capture(struct pi_device *device, void *buffer, uint32_t size);
 
-static inline void camera_capture_async(struct pi_device *device, void *buffer, size_t size, pi_task_t *task);
+static inline void camera_capture_async(struct pi_device *device, void *buffer, uint32_t size, pi_task_t *task);
 
 /** \brief Close an opened Camera device.
  *
@@ -123,7 +123,7 @@ typedef struct {
   int (*open)(struct pi_device *device);
   void (*close)(struct pi_device *device);
   void (*control)(struct pi_device *device, camera_cmd_e cmd, void *arg);
-  void (*capture_async)(struct pi_device *device, void *buffer, size_t bufferlen, pi_task_t *task);
+  void (*capture_async)(struct pi_device *device, void *buffer, uint32_t bufferlen, pi_task_t *task);
   int (*reg_get)(struct pi_device *device, uint32_t addr, uint8_t *value);
   int (*reg_set)(struct pi_device *device, uint32_t addr, uint8_t *value);
 } camera_api_t;
@@ -139,7 +139,7 @@ static inline void camera_control(struct pi_device *device, camera_cmd_e cmd, vo
   api->control(device, cmd, arg);
 }
 
-static inline void camera_capture_async(struct pi_device *device, void *buffer, size_t bufferlen, pi_task_t *task)
+static inline void camera_capture_async(struct pi_device *device, void *buffer, uint32_t bufferlen, pi_task_t *task)
 {
   camera_api_t *api = (camera_api_t *)device->api;
   api->capture_async(device, buffer, bufferlen, task);
