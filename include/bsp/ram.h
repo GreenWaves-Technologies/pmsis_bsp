@@ -18,6 +18,8 @@
 #define __BSP_RAM_H__
 
 #include "pmsis.h"
+#include "pmsis_api/include/rtos/os_frontend_api/pmsis_task.h"
+#include "pmsis_cluster/drivers/delegate/hyperbus/hyperbus_cl_internal.h"
 
 typedef struct cl_ram_req_s cl_ram_req_t;
 
@@ -99,8 +101,7 @@ struct cl_ram_req_s {
   int32_t stride;
   uint32_t length;
   pi_task_t event;
-  struct pi_cl_hyper_req_s *next;
-  int done;
+  pi_task_t done;
   unsigned char cid;
   unsigned char ext2loc;
   unsigned char is_2d;
@@ -111,7 +112,7 @@ struct cl_ram_alloc_req_s {
   uint32_t result;
   uint32_t  size;
   pi_task_t event;
-  char done;
+  pi_task_t done;
   char cid;
   char error;
 };
@@ -122,7 +123,7 @@ struct cl_ram_free_req_s {
   uint32_t size;
   uint32_t chunk;
   pi_task_t event;
-  char done;
+  pi_task_t done;
   char cid;
 };
 

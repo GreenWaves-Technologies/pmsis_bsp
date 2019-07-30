@@ -14,19 +14,23 @@
  * limitations under the License.
  */
 
-//#include "stddef.h"
-#include <string.h>
+#include "string.h"
 #include "pmsis.h"
-//#include "pmsis_l2_malloc.h"
-//#include "pmsis_task.h"
-#include "drivers/uart.h"
-//#include "udma_uart.h"
+#include "pmsis_api/include/rtos/pmsis_os.h"
+#include "pmsis_api/include/rtos/pmsis_driver_core_api/pmsis_driver_core_api.h"
+#include "pmsis_api/include/drivers/uart.h"
 #include "bsp/bsp.h"
 #include "bsp/ble/nina_b112/nina_b112.h"
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+
+#ifdef DEBUG
+#define DEBUG_PRINTF printf
+#else
+#define DEBUG_PRINTF(...) ((void) 0)
+#endif  /* DEBUG */
 
 typedef enum
 {
@@ -59,7 +63,7 @@ int32_t nina_b112_open(nina_ble_t *ble)
     struct pi_uart_conf *uart_conf = pmsis_l2_malloc(sizeof(struct pi_uart_conf));
     if (uart_conf == NULL)
     {
-        printf("Uart conf null\n");
+        DEBUG_PRINTF("Uart conf null\n");
         return -1;
     }
     pi_uart_conf_init(uart_conf);
@@ -81,13 +85,13 @@ int32_t nina_b112_open(nina_ble_t *ble)
     ble->rx_char = (uint8_t *) pmsis_l2_malloc(sizeof(uint8_t));
     if (ble->rx_char == NULL)
     {
-        printf("Char null\n");
+        DEBUG_PRINTF("Char null\n");
         return -2;
     }
     ble->rx_buffer = (uint8_t *) pmsis_l2_malloc(sizeof(uint8_t) * (uint32_t) AT_RESP_ARRAY_LENGTH);
     if (ble->rx_buffer == NULL)
     {
-        printf("Buffer null\n");
+        DEBUG_PRINTF("Buffer null\n");
         return -3;
     }
     else

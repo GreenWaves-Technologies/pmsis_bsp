@@ -18,6 +18,9 @@
 #define __BSP_CAMERA_H__
 
 #include "pmsis.h"
+#include "pmsis_api/include/drivers/cpi.h"
+#include "pmsis_driver/cpi/cpi_internal.h"
+#include "pmsis_api/include/drivers/i2c.h"
 
 typedef enum {
   CAMERA_CMD_ON,

@@ -16,9 +16,9 @@
 
 #include "pmsis.h"
 
+#include "pmsis_api/include/drivers/gpio.h"
+#include "pmsis_api/include/drivers/pad.h"
 #include "bsp/gapoc_a.h"
-#include "drivers/gpio.h"
-
 #include "bsp/camera/mt9v034.h"
 #include "bsp/flash/hyperflash.h"
 #include "bsp/transport/nina_w10.h"

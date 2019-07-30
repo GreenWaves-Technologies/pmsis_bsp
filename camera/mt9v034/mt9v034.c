@@ -17,10 +17,14 @@
 
 
 #include "pmsis.h"
-#include "drivers/cpi.h"
-#include "drivers/i2c.h"
-#include "drivers/gpio.h"
-#include "drivers/hyperbus.h"
+#include "pmsis_api/include/rtos/pmsis_os.h"
+#include "pmsis_api/include/rtos/pmsis_driver_core_api/pmsis_driver_core_api.h"
+#include "pmsis_api/include/rtos/os_frontend_api/pmsis_time.h"
+#include "pmsis_api/include/drivers/cpi.h"
+#include "pmsis_driver/cpi/cpi_internal.h"
+#include "pmsis_api/include/drivers/gpio.h"
+#include "pmsis_api/include/drivers/hyperbus.h"
+#include "pmsis_api/include/drivers/i2c.h"
 #include "bsp/camera/mt9v034.h"
 #include "mt9v034.h"
 #include "bsp/bsp.h"
