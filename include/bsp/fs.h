@@ -17,7 +17,7 @@
 #ifndef __FS__FS__H__
 #define __FS__FS__H__
 
-
+#include "rtos/os_frontend_api/pmsis_task.h"
 
 typedef enum {
   FS_MOUNT_FLASH_ERROR     = 1,     /*!< There was an error mounting the flash filesystem. */
@@ -130,8 +130,8 @@ typedef struct cl_fs_req_s {
 static inline __attribute__((always_inline)) int cl_fs_wait(cl_fs_req_t *req)
 {
 #if defined(PMSIS_DRIVERS)
-    pi_task_wait_on_no_mutex(&(req->done));
-    hal_compiler_barrier();
+    //pi_task_wait_on_no_mutex(&(req->done));
+    //hal_compiler_barrier();
 #else
   while((*(volatile int *)&req->done) == 0)
   {

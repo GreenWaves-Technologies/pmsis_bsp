@@ -22,7 +22,7 @@
 #include "bsp/fs.h"
 #include "bsp/flash.h"
 #include <string.h>
-
+#include "rtos/os_frontend_api/pmsis_task.h"
 
 #define READ_FS_THRESHOLD            16
 #define READ_FS_THRESHOLD_BLOCK      128
@@ -420,7 +420,6 @@ int fs_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *event)
   // Store the read information into the file in case the read is kept pending
   // when we return
 
-  __rt_task_init(event);
   file->pending_event = event;
   file->pending_buffer = (unsigned int)buffer;
   file->pending_size = real_size;
@@ -453,7 +452,7 @@ int fs_direct_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *
   return real_size;
 }
 
-
+#ifndef PMSIS_DRIVERS
 void __cl_fs_req_done(void *_req)
 {
   cl_fs_req_t *req = (cl_fs_req_t *)_req;
@@ -519,3 +518,4 @@ void cl_fs_seek(fs_file_t *file, unsigned int offset, cl_fs_req_t *req)
   pi_task_callback(&req->task, __cl_fs_seek_req, (void* )req);
   __rt_cluster_push_fc_event(&req->task);
 }
+#endif
