@@ -148,7 +148,7 @@ static himax_reg_init_t __himax_reg_init[] =
 static inline int is_i2c_active()
 {
 #ifdef __ZEPHYR__
-  return 1;
+  return 0;
 #else
   // I2C driver is not yet working on some chips, at least this works on gvsoc.
   // Also there is noI2C connection to camera model on RTL

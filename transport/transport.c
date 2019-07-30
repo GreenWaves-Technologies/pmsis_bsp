@@ -21,9 +21,6 @@
 #include "bsp/transport.h"
 
 
-static PI_L2 struct transport_header header;
-
-
 int transport_open(struct pi_device *device)
 {
   struct transport_conf *conf = (struct transport_conf *)device->config;

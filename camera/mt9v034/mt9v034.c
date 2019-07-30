@@ -25,9 +25,6 @@
 #include "mt9v034.h"
 #include "bsp/bsp.h"
 
-static struct pi_device i2c1;
-static struct pi_device cpi_device;
-
 
 
 typedef struct {
@@ -70,7 +67,7 @@ static void __mt9v034_reg_write(mt9v034_t *mt9v034, uint8_t addr, uint16_t value
   {
     mt9v034->i2c_req.value = ((value >> 8) & 0xff) | ((value & 0xff) << 8);
     mt9v034->i2c_req.addr = addr;
-    pi_i2c_write(&i2c1, (uint8_t *)&mt9v034->i2c_req, 3, PI_I2C_XFER_STOP);
+    pi_i2c_write(&mt9v034->i2c_device, (uint8_t *)&mt9v034->i2c_req, 3, PI_I2C_XFER_STOP);
   }
 }
 
@@ -80,8 +77,8 @@ static uint16_t __mt9v034_reg_read(mt9v034_t *mt9v034, uint8_t addr)
   if (is_i2c_active())
   {
     mt9v034->i2c_req.addr = addr;
-    pi_i2c_write(&i2c1, (uint8_t *)&mt9v034->i2c_req, 1, PI_I2C_XFER_NO_STOP);
-    pi_i2c_read(&i2c1, (uint8_t *)&mt9v034->i2c_req.value, 2, PI_I2C_XFER_STOP);
+    pi_i2c_write(&mt9v034->i2c_device, (uint8_t *)&mt9v034->i2c_req, 1, PI_I2C_XFER_NO_STOP);
+    pi_i2c_read(&mt9v034->i2c_device, (uint8_t *)&mt9v034->i2c_req.value, 2, PI_I2C_XFER_STOP);
     uint16_t value = mt9v034->i2c_req.value;
     return ((value >> 8) & 0xff) | ((value & 0xff) << 8);
   }
@@ -229,8 +226,6 @@ static void __mt9v034_trigger_snapshot(mt9v034_t *mt9v034)
 static int __mt9v034_open(struct pi_device *device)
 {
   struct mt9v034_conf *conf = (struct mt9v034_conf *)device->config;
-  int periph_id;
-  int channel;
 
   mt9v034_t *mt9v034 = (mt9v034_t *)pmsis_l2_malloc(sizeof(mt9v034_t));
   if (mt9v034 == NULL) return -1;
@@ -250,9 +245,9 @@ static int __mt9v034_open(struct pi_device *device)
   pi_i2c_conf_init(&i2c_conf);
   i2c_conf.cs = 0x90;
   i2c_conf.itf = 1;
-  pi_open_from_conf(&i2c1, &i2c_conf);
+  pi_open_from_conf(&mt9v034->i2c_device, &i2c_conf);
 
-  if (pi_i2c_open(&i2c1))
+  if (pi_i2c_open(&mt9v034->i2c_device))
     goto error2;
 
   struct pi_gpio_conf gpio_conf;
