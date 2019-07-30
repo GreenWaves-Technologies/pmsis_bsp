@@ -23,7 +23,7 @@
 #include "pmsis_cluster/drivers/delegate/hyperbus/hyperbus_cl_internal.h"
 #endif
 
-#ifdef __PMSIS__
+#ifdef PMSIS_DRIVERS
 #include "pmsis_cluster/drivers/delegate/hyperbus/hyperbus_cl_internal.h"
 typedef struct pi_cl_hyper_req_s cl_ram_req_t;
 
@@ -103,7 +103,7 @@ static inline void cl_ram_free_wait(cl_ram_free_req_t *req);
 
 /// @cond IMPLEM
 
-#ifndef __PMSIS__
+#ifndef PMSIS_DRIVERS
 struct cl_ram_req_s {
   struct pi_device *device;
   void *addr;
@@ -300,7 +300,7 @@ static inline void cl_ram_write_wait(cl_ram_req_t *req)
 
 static inline void cl_ram_copy_wait(cl_ram_req_t *req)
 {
-#if defined(__PMSIS__)
+#if defined(PMSIS_DRIVERS)
     pi_task_wait_on_no_mutex(&(req->task_done));
     hal_compiler_barrier();
 #else
@@ -313,7 +313,7 @@ static inline void cl_ram_copy_wait(cl_ram_req_t *req)
 
 static inline int cl_ram_alloc_wait(cl_ram_alloc_req_t *req, uint32_t *chunk)
 {
-#if defined(__PMSIS__)
+#if defined(PMSIS_DRIVERS)
     pi_task_wait_on_no_mutex(&(req->task_done));
     hal_compiler_barrier();
 #else
@@ -325,7 +325,7 @@ static inline int cl_ram_alloc_wait(cl_ram_alloc_req_t *req, uint32_t *chunk)
 
   *chunk = req->result;
 
-#if defined(__PMSIS__)
+#if defined(PMSIS_DRIVERS)
   return 0;
 #else
   return req->error;
@@ -334,7 +334,7 @@ static inline int cl_ram_alloc_wait(cl_ram_alloc_req_t *req, uint32_t *chunk)
 
 static inline void cl_ram_free_wait(cl_ram_free_req_t *req)
 {
-#if defined(__PMSIS__)
+#if defined(PMSIS_DRIVERS)
     pi_task_wait_on_no_mutex(&(req->task_done));
     hal_compiler_barrier();
 #else

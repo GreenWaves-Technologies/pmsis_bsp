@@ -19,6 +19,7 @@
  */
 
 #include "bsp/display.h"
+#include "rtos/os_frontend_api/pmsis_task.h"
 
 
 int display_open(struct pi_device *device)
