@@ -220,8 +220,6 @@ fs_file_t *fs_open(struct pi_device *device, const char *file_name, int flags)
 
   //pi_trace(pi_trace_FS, "[FS] Opening file (name: %s)\n", file_name);
 
-  printf("%s %d\n", __FILE__, __LINE__);
-
   // Get information about the file system from the header
   unsigned int *fs_info = fs->fs_info;
   int nb_comps = *fs_info++;
@@ -235,25 +233,17 @@ fs_file_t *fs_open(struct pi_device *device, const char *file_name, int flags)
     fs_info = (unsigned int *)((unsigned int)fs_info + sizeof(fs_desc_t) + desc->path_size);
   }
 
-  printf("%s %d\n", __FILE__, __LINE__);
-
   // Leave if the file is not found
   if (i == nb_comps) goto error;
-
-  printf("%s %d\n", __FILE__, __LINE__);
 
   // Now allocate the file descriptor and fills it
   fs_file_t *file = pmsis_l2_malloc(sizeof(fs_file_t));
   if (file == NULL) goto error;
 
-  printf("%s %d\n", __FILE__, __LINE__);
-
   file->offset = 0;
   file->size = desc->size;
   file->addr = desc->addr;
   file->fs = device;
-
-  printf("%s %d\n", __FILE__, __LINE__);
 
   return file;
 
