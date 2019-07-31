@@ -16,6 +16,8 @@
 
 #include "pmsis.h"
 
+#include "pmsis_api/include/drivers/gpio.h"
+#include "pmsis_api/include/drivers/pad.h"
 #include "bsp/gapuino.h"
 #include "bsp/camera/himax.h"
 #include "bsp/display/ili9341.h"
@@ -69,6 +71,7 @@ int bsp_hyperflash_open(struct hyperflash_conf *conf)
 
 void bsp_himax_conf_init(struct himax_conf *conf)
 {
+  __bsp_init_pads();
   conf->i2c_itf = CONFIG_HIMAX_I2C_ITF;
   conf->cpi_itf = CONFIG_HIMAX_CPI_ITF;
 }

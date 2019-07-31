@@ -21,6 +21,14 @@
  */
 
 #include "pmsis.h"
+#include "pmsis_api/include/rtos/pmsis_os.h"
+#include "pmsis_api/include/rtos/pmsis_driver_core_api/pmsis_driver_core_api.h"
+#include "pmsis_api/include/rtos/os_frontend_api/pmsis_time.h"
+#include "pmsis_api/include/drivers/cpi.h"
+#include "pmsis_driver/cpi/cpi_internal.h"
+#include "pmsis_api/include/drivers/gpio.h"
+#include "pmsis_api/include/drivers/hyperbus.h"
+#include "pmsis_api/include/drivers/i2c.h"
 #include "bsp/camera/himax.h"
 #include "himax.h"
 #include "bsp/bsp.h"
@@ -147,6 +155,7 @@ static himax_reg_init_t __himax_reg_init[] =
 
 static inline int is_i2c_active()
 {
+#if defined (__PULPOS__)
 #ifdef __ZEPHYR__
   return 0;
 #else
@@ -156,6 +165,13 @@ static inline int is_i2c_active()
   return 0;
 #elif defined(ARCHI_PLATFORM_RTL)
   return rt_platform() != ARCHI_PLATFORM_RTL;
+#else
+  return 1;
+#endif
+#endif
+#else
+#if defined (__ZEPHYR__)
+  return 0;
 #else
   return 1;
 #endif
@@ -211,8 +227,10 @@ static void __himax_reset(himax_t *himax)
   while (__himax_reg_read(himax, HIMAX_MODE_SELECT) != HIMAX_STANDBY)
   {
     __himax_reg_write(himax, HIMAX_SW_RESET, HIMAX_RESET);
-#ifndef __ZEPHYR__
+#if defined (__ZEPHYR__)
     pi_time_wait_us(50);
+#elif defined (__FREERTOS__)
+    vTaskDelay(50);
 #endif
   }
 }
