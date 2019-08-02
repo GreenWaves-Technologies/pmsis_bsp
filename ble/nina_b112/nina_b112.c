@@ -16,9 +16,9 @@
 
 #include "string.h"
 #include "pmsis.h"
-#include "pmsis_api/include/rtos/pmsis_os.h"
-#include "pmsis_api/include/rtos/pmsis_driver_core_api/pmsis_driver_core_api.h"
-#include "pmsis_api/include/drivers/uart.h"
+#include "rtos/pmsis_os.h"
+#include "rtos/pmsis_driver_core_api/pmsis_driver_core_api.h"
+#include "drivers/uart.h"
 #include "bsp/bsp.h"
 #include "bsp/ble/nina_b112/nina_b112.h"
 
