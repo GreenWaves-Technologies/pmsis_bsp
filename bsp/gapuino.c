@@ -104,8 +104,8 @@ int bsp_ili9341_open(struct ili9341_conf *conf)
   return 0;
 }
 
-void bsp_init()
+void board_init()
 {
-  __bsp_init_pads();
+    __bsp_init_pads();
 }
 

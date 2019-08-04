@@ -39,4 +39,6 @@
 #define CONFIG_HYPERRAM_START     0
 #define CONFIG_HYPERRAM_SIZE     (1<<20)
 
+void board_init();
+
 #endif
