@@ -4,7 +4,7 @@
 #define __CIS_MT9V034_H   // avoid recursive inclusions
 
 #define MT9V034_DEV_ADDR_WR  0x90   // 8-bit device address for WRITE (0xB8 7-bit I2C device address)
-#define MT9V034_DEV_ADDR_RD  0x91   // 8-bit device address for READ 
+#define MT9V034_DEV_ADDR_RD  0x91   // 8-bit device address for READ
 
 
 // **** REGISTER DEFINITION :     ***************************************************
@@ -16,7 +16,7 @@
 #define MT9V034_SYSCLK_FREQ_DEF				26600000
 
 #define MT9V034_CHIP_ID_REG  			0x00
-#define		MT9V034_CHIP_ID			        0X1324
+#define		MT9V034_CHIP_ID			        0x1324
 
 #define MT9V034_COLUMN_START_A			0x01    // _A for Context A
 #define		MT9V034_COLUMN_START_MIN		1
@@ -28,12 +28,12 @@
 #define		MT9V034_ROW_START_DEF			4   // was 5?
 #define		MT9V034_ROW_START_MAX			482
 
-#define MT9V034_WINDOW_HEIGHT_A			0x03    
+#define MT9V034_WINDOW_HEIGHT_A			0x03
 #define		MT9V034_WINDOW_HEIGHT_MIN		1
 #define		MT9V034_WINDOW_HEIGHT_DEF		480
 #define		MT9V034_WINDOW_HEIGHT_MAX		480
 
-#define MT9V034_WINDOW_WIDTH_A			0x04     
+#define MT9V034_WINDOW_WIDTH_A			0x04
 #define		MT9V034_WINDOW_WIDTH_MIN		1
 #define		MT9V034_WINDOW_WIDTH_DEF		752
 #define		MT9V034_WINDOW_WIDTH_MAX		752
@@ -90,17 +90,17 @@
 #define MT9V034_READ_MODE_A				0x0d
 #define		MT9V034_READ_MODE_ROW_BIN_MASK		(3 << 0)
 #define		MT9V034_READ_MODE_ROW_BIN_SHIFT		0
-#define		MT9V034_READ_MODE_COLUMN_BIN_MASK	(3 << 2) 
+#define		MT9V034_READ_MODE_COLUMN_BIN_MASK	(3 << 2)
 #define		MT9V034_READ_MODE_COLUMN_BIN_SHIFT	2
 #define		MT9V034_READ_MODE_ROW_FLIP_MASK		(1 << 4)
 #define		MT9V034_READ_MODE_ROW_FLIP_SHIFT	4
 #define		MT9V034_READ_MODE_COLUMN_FLIP_MASK	(1 << 5)
 #define		MT9V034_READ_MODE_COLUMN_FLIP_SHIFT	5
-#define		MT9V034_READ_MODE_DARK_ROWS_MASK	(1 << 6)  
+#define		MT9V034_READ_MODE_DARK_ROWS_MASK	(1 << 6)
 #define		MT9V034_READ_MODE_DARK_ROWS_SHIFT	6           //was at posn 7?
-#define		MT9V034_READ_MODE_DARK_COLUMNS_MASK	(1 << 7)  
+#define		MT9V034_READ_MODE_DARK_COLUMNS_MASK	(1 << 7)
 #define		MT9V034_READ_MODE_DARK_COLUMNS_SHIFT    7           // was at posn 6?
-#define		MT9V034_READ_MODE_RESERVED          0x300  
+#define		MT9V034_READ_MODE_RESERVED          0x300
 
 // Register @0x0E = Read Mode Context B...
 
@@ -132,7 +132,7 @@
 #define     MT9V034_VREF_1V1                1   // for ADC input range = 0.79V
 #define     MT9V034_VREF_1V2                2   // for ADC input range = 0.86V
 #define     MT9V034_VREF_1V3                3   // for ADC input range = 0.93V
-#define     MT9V034_VREF_1V4                4   // for ADC input range = 1.0V  (default) 
+#define     MT9V034_VREF_1V4                4   // for ADC input range = 1.0V  (default)
 #define     MT9V034_VREF_1V5                5   // for ADC input range = 1.07V
 #define     MT9V034_VREF_1V6                6   // for ADC input range = 1.14V
 #define     MT9V034_VREF_2V1                7   // for ADC input range = 1.5V
@@ -218,7 +218,7 @@
 #define		MT9V034_AEC_ENABLE_B			(1 << 8)
 #define		MT9V034_AGC_ENABLE_B			(1 << 9)
 
-// Missing @0xB0 (AGC/AEC pixel count), 
+// Missing @0xB0 (AGC/AEC pixel count),
 // Missing 0xB1-0xB9 (LVDS & stereoscopy settings)
 // Missing 0xBA, 0xBB, 0xBC -- AEC/AGC status info
 

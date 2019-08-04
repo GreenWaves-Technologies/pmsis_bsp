@@ -110,7 +110,7 @@ static int __mt9v034_start(mt9v034_t *mt9v034)
 
     if (id != MT9V034_CHIP_ID)
     {
-      printf("Error - Unexpected I2C device address from CIS\n");
+      printf("Error - Unexpected I2C device address from CIS, id got: %x\n", id);
       return -1;
     }
   }
