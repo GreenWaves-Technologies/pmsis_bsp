@@ -18,8 +18,10 @@
 #define __BSP_RAM_H__
 
 #include "pmsis.h"
-#include "pmsis_api/include/rtos/os_frontend_api/pmsis_task.h"
+#include "rtos/os_frontend_api/pmsis_task.h"
+#if defined(PMSIS_DRIVERS)
 #include "pmsis_cluster/drivers/delegate/hyperbus/hyperbus_cl_internal.h"
+#endif
 
 typedef struct cl_ram_req_s cl_ram_req_t;
 
