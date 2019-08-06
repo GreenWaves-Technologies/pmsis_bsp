@@ -52,24 +52,20 @@ typedef struct {
 
 static inline int is_i2c_active()
 {
+#if defined(ARCHI_PLATFORM_RTL)
+
   // I2C driver is not yet working on some chips, at least this works on gvsoc.
   // Also there is noI2C connection to camera model on RTL
-#if defined (__PULPOS__)
 #if PULP_CHIP == CHIP_VEGA || PULP_CHIP == CHIP_ARNOLD || PULP_CHIP == CHIP_PULPISSIMO || PULP_CHIP == CHIP_PULPISSIMO_V1
   return 0;
 #else
-#ifdef ARCHI_PLATFORM_RTL
   return rt_platform() != ARCHI_PLATFORM_RTL;
+#endif
+
 #else
+
   return 1;
-#endif
-#endif
-#else
-#if defined (__ZEPHYR__)
-  return 0;
-#else
-  return 1;
-#endif
+
 #endif
 }
 

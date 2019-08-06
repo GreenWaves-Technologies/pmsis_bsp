@@ -103,7 +103,12 @@ struct cl_ram_req_s {
   int32_t stride;
   uint32_t length;
   pi_task_t event;
+#if defined(PMSIS_DRIVERS)
   pi_task_t done;
+#else
+  struct pi_cl_hyper_req_s *next;
+  int done;
+#endif
   unsigned char cid;
   unsigned char ext2loc;
   unsigned char is_2d;
@@ -114,7 +119,11 @@ struct cl_ram_alloc_req_s {
   uint32_t result;
   uint32_t  size;
   pi_task_t event;
+#if defined(PMSIS_DRIVERS)
   pi_task_t done;
+#else
+  int done;
+#endif
   char cid;
   char error;
 };
@@ -125,7 +134,11 @@ struct cl_ram_free_req_s {
   uint32_t size;
   uint32_t chunk;
   pi_task_t event;
+#if defined(PMSIS_DRIVERS)
   pi_task_t done;
+#else
+  int done;
+#endif
   char cid;
 };
 
