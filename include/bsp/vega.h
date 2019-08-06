@@ -14,35 +14,22 @@
  * limitations under the License.
  */
 
-#include "pmsis.h"
+#ifndef __BSP__VEGA_H__
+#define __BSP__VEGA_H__
 
-#ifndef __BSP__RAM__HYPERRAM_H__
-#define __BSP__RAM__HYPERRAM_H__
+#define CONFIG_HIMAX
+#define CONFIG_HYPERFLASH
+#define CONFIG_HYPERRAM
 
-#include "bsp/ram.h"
+#define CONFIG_HIMAX_CPI_ITF 0
+#define CONFIG_HIMAX_I2C_ITF 1
 
-struct hyperram_conf
-{
-  struct ram_conf ram;
-  int hyper_itf;
-  int hyper_cs;
-  char skip_pads_config;
-  int ram_start;
-  int ram_size;
-  uint32_t baudrate;
-};
+#define CONFIG_HYPERFLASH_HYPER_ITF 0
+#define CONFIG_HYPERFLASH_HYPER_CS  1
 
+#define CONFIG_HYPERRAM_HYPER_ITF 0
+#define CONFIG_HYPERRAM_HYPER_CS  0
+#define CONFIG_HYPERRAM_START     0
+#define CONFIG_HYPERRAM_SIZE     (1<<20)
 
-
-
-/** \brief Initialize an Hyperflash configuration with default values.
- *
- * The structure containing the configuration must be kept alive until the hyperflash device is opened.
- *
- * \param conf A pointer to the hyperflash configuration.
- */
-void hyperram_conf_init(struct hyperram_conf *conf);
-
-
-
-#endif 
+#endif
