@@ -1,6 +1,8 @@
 export GAPUINO_SRC
 export GAPOC_A_SRC
 export AI_DECK_SRC
+export WOLFE_SRC
+export VEGA_SRC
 
 all:
 ifdef PULPOS

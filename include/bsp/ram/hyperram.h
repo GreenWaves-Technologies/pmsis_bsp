@@ -29,6 +29,7 @@ struct hyperram_conf
   char skip_pads_config;
   int ram_start;
   int ram_size;
+  uint32_t baudrate;
 };
 
 

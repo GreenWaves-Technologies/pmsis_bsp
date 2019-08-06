@@ -8,6 +8,22 @@ ifeq '$(pulp_chip_family)' 'gap'
 PULP_LIBS += pibsp_gapoc_a pibsp_gapuino pibsp_ai_deck
 endif
 
+ifeq '$(pulp_chip_family)' 'wolfe'
+PULP_LIBS += pibsp_wolfe
+endif
+
+ifeq '$(pulp_chip_family)' 'vega'
+PULP_LIBS += pibsp_vega
+endif
+
+PULP_LIB_FC_SRCS_pibsp_vega = $(VEGA_SRC)
+PULP_LIB_TARGET_NAME_pibsp_vega = vega/libpibsp.a
+PULP_LIB_CFLAGS_pibsp_vega = -DCONFIG_VEGA
+
+PULP_LIB_FC_SRCS_pibsp_wolfe = $(WOLFE_SRC)
+PULP_LIB_TARGET_NAME_pibsp_wolfe = wolfe/libpibsp.a
+PULP_LIB_CFLAGS_pibsp_wolfe = -DCONFIG_WOLFE
+
 PULP_LIB_FC_SRCS_pibsp_gapoc_a = $(GAPOC_A_SRC)
 PULP_LIB_TARGET_NAME_pibsp_gapoc_a = gapoc_a/libpibsp.a
 PULP_LIB_CFLAGS_pibsp_gapoc_a = -DCONFIG_GAPOC_A

@@ -30,6 +30,14 @@
 #include <bsp/ai_deck.h>
 #endif
 
+#if defined(CONFIG_WOLFE)
+#include <bsp/wolfe.h>
+#endif
+
+#if defined(CONFIG_VEGA)
+#include <bsp/vega.h>
+#endif
+
 #if defined(CONFIG_HIMAX)
 #include "bsp/camera/himax.h"
 void bsp_himax_conf_init(struct himax_conf *conf);

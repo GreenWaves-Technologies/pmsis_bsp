@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
-#ifndef __BSP__GAPUINO_H__
-#define __BSP__GAPUINO_H__
+#ifndef __BSP__WOLFE_H__
+#define __BSP__WOLFE_H__
 
 #define CONFIG_HIMAX
-#define CONFIG_ILI9341
 #define CONFIG_HYPERFLASH
 #define CONFIG_HYPERRAM
 
 #define CONFIG_HIMAX_CPI_ITF 0
 #define CONFIG_HIMAX_I2C_ITF 1
-
-#define CONFIG_ILI9341_SPI_ITF       1
-#define CONFIG_ILI9341_SPI_CS        0
-#define CONFIG_ILI9341_GPIO          19
-#define CONFIG_ILI9341_GPIO_PAD      PI_PAD_33_B12_TIMER0_CH2
-#define CONFIG_ILI9341_GPIO_PAD_FUNC PI_PAD_33_B12_GPIO_A19_FUNC1
 
 #define CONFIG_HYPERFLASH_HYPER_ITF 0
 #define CONFIG_HYPERFLASH_HYPER_CS  1
