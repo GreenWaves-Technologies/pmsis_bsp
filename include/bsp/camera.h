@@ -20,7 +20,6 @@
 #include "pmsis.h"
 #include "drivers/cpi.h"
 #include "drivers/i2c.h"
-#include "pmsis_driver/cpi/cpi_internal.h"
 
 typedef enum {
   CAMERA_CMD_ON,

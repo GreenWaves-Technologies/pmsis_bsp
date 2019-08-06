@@ -81,6 +81,7 @@ void bsp_nina_b112_conf_init(struct nina_b112_conf *conf);
 int bsp_nina_b112_open(struct nina_b112_conf *conf);
 #endif
 
+void bsp_init();
 
 
 #endif
