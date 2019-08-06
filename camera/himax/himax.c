@@ -155,26 +155,20 @@ static himax_reg_init_t __himax_reg_init[] =
 
 static inline int is_i2c_active()
 {
-#if defined (__PULPOS__)
-#ifdef __ZEPHYR__
-  return 0;
-#else
+#if defined(ARCHI_PLATFORM_RTL)
+
   // I2C driver is not yet working on some chips, at least this works on gvsoc.
   // Also there is noI2C connection to camera model on RTL
 #if PULP_CHIP == CHIP_VEGA || PULP_CHIP == CHIP_ARNOLD || PULP_CHIP == CHIP_PULPISSIMO || PULP_CHIP == CHIP_PULPISSIMO_V1
   return 0;
-#elif defined(ARCHI_PLATFORM_RTL)
+#else
   return rt_platform() != ARCHI_PLATFORM_RTL;
+#endif
+
 #else
+
   return 1;
-#endif
-#endif
-#else
-#if defined (__ZEPHYR__)
-  return 0;
-#else
-  return 1;
-#endif
+
 #endif
 }
 
@@ -227,11 +221,7 @@ static void __himax_reset(himax_t *himax)
   while (__himax_reg_read(himax, HIMAX_MODE_SELECT) != HIMAX_STANDBY)
   {
     __himax_reg_write(himax, HIMAX_SW_RESET, HIMAX_RESET);
-#if defined (__ZEPHYR__)
     pi_time_wait_us(50);
-#elif defined (__FREERTOS__)
-    vTaskDelay(50);
-#endif
   }
 }
 
