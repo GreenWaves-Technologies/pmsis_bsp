@@ -77,3 +77,8 @@ int bsp_himax_open(struct himax_conf *conf)
 }
 
 
+
+void bsp_init()
+{
+}
+

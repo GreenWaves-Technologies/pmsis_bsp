@@ -239,6 +239,8 @@ static void __mt9v034_trigger_snapshot(mt9v034_t *mt9v034)
 
 static int __mt9v034_open(struct pi_device *device)
 {
+  bsp_init();
+
   struct mt9v034_conf *conf = (struct mt9v034_conf *)device->config;
 
   mt9v034_t *mt9v034 = (mt9v034_t *)pmsis_l2_malloc(sizeof(mt9v034_t));

@@ -77,3 +77,8 @@ int bsp_nina_w10_open(struct nina_w10_conf *conf)
   return 0;
 }
 
+
+void bsp_init()
+{
+}
+

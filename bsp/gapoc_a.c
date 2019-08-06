@@ -92,7 +92,6 @@ int bsp_hyperflash_open(struct hyperflash_conf *conf)
 
 void bsp_mt9v034_conf_init(struct mt9v034_conf *conf)
 {
-  __bsp_init_pads();
   conf->i2c_itf = CONFIG_MT9V034_I2C_ITF;
   conf->cpi_itf = CONFIG_MT9V034_CPI_ITF;
   conf->power_gpio = CONFIG_MT9V034_POWER_GPIO;
@@ -168,5 +167,11 @@ int bsp_nina_b112_open(struct nina_b112_conf *conf)
 void board_init()
 {
     __bsp_init_pads();
+}
+
+
+void bsp_init()
+{
+  __bsp_init_pads();
 }
 
