@@ -18,6 +18,7 @@
  * Authors: Germain Haugou, GreenWaves Technologies (germain.haugou@greenwaves-technologies.com)
  */
 
+#include "rtos/pmsis_os.h"
 #include "bsp/camera.h"
 
 
