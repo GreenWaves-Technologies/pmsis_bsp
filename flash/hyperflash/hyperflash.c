@@ -391,11 +391,14 @@ static void hyperflash_program_resume(void *arg)
     hyperflash_set_reg_exec(hyperflash, 0x2AA<<1, 0x55);
     hyperflash_set_reg_exec(hyperflash, 0x555<<1, 0xA0);
 
-    pi_hyper_write_async(&hyperflash->hyper_device, hyperflash->pending_hyper_addr, (void *)hyperflash->pending_data, iter_size, pi_task_callback(&hyperflash->task, hyperflash_check_program, device));
+    uint32_t hyper_addr = hyperflash->pending_hyper_addr;
+    uint32_t data = hyperflash->pending_data;
 
     hyperflash->pending_hyper_addr += iter_size;
     hyperflash->pending_data += iter_size;
     hyperflash->pending_size -= iter_size;
+
+    pi_hyper_write_async(&hyperflash->hyper_device, hyper_addr, (void *)data, iter_size, pi_task_callback(&hyperflash->task, hyperflash_check_program, device));
   }
 }
 
