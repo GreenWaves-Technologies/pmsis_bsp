@@ -18,7 +18,7 @@
 #define __BSP_RAM_H__
 
 #include "pmsis.h"
-#include "rtos/os_frontend_api/pmsis_task.h"
+#include "pmsis/task.h"
 #if defined(PMSIS_DRIVERS)
 #include "pmsis_cluster/drivers/delegate/hyperbus/hyperbus_cl_internal.h"
 #endif
