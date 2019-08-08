@@ -188,7 +188,7 @@ int fs_mount(struct pi_device *device)
 
   fs->mount_step = 1;
   fs->fs_info = NULL;
-  fs->pending_event = pi_task(&task);
+  fs->pending_event = pi_task_block(&task);
 
   device->data = (void *)fs;
 

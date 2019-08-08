@@ -20,7 +20,7 @@
 
 #include "pmsis.h"
 #include "bsp/bsp.h"
-#include "drivers/hyperbus.h"
+#include "pmsis/drivers/hyperbus.h"
 
 
 #define SECTOR_SIZE (1<<18)

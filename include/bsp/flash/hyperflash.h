@@ -18,8 +18,6 @@
 #ifndef __BSP__FLASH__HYPERFLASH_H__
 #define __BSP__FLASH__HYPERFLASH_H__
 
-#include "pmsis.h"
-#include "rtos/pmsis_os.h"
 #include "bsp/flash.h"
 
 struct hyperflash_conf

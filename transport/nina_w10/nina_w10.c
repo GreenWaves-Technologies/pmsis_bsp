@@ -284,7 +284,7 @@ int __nina_w10_open(struct pi_device *device)
   nina->access_done = 0;
 
   pi_task_t task;
-  __nina_w10_setup(nina, conf, pi_task(&task));
+  __nina_w10_setup(nina, conf, pi_task_block(&task));
   pi_task_wait_on(&task);
 
   return 0;

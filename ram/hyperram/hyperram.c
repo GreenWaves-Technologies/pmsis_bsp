@@ -21,7 +21,7 @@
 #include "pmsis.h"
 #include "bsp/bsp.h"
 #include "bsp/ram/hyperram.h"
-#include "drivers/hyperbus.h"
+#include "pmsis/drivers/hyperbus.h"
 #include "../extern_alloc.h"
 
 

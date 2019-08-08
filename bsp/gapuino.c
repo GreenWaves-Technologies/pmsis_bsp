@@ -16,8 +16,8 @@
 
 #include "pmsis.h"
 
-#include "drivers/gpio.h"
-#include "drivers/pad.h"
+#include "pmsis/drivers/gpio.h"
+#include "pmsis/drivers/pad.h"
 #include "bsp/gapuino.h"
 #include "bsp/camera/himax.h"
 #include "bsp/display/ili9341.h"

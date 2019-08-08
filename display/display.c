@@ -34,7 +34,7 @@ int display_open(struct pi_device *device)
 void display_write(struct pi_device *device, pi_buffer_t *buffer, uint16_t x, uint16_t y, uint16_t w, uint16_t h)
 {
   pi_task_t task;
-  display_write_async(device, buffer, x, y, w, h, pi_task(&task));
+  display_write_async(device, buffer, x, y, w, h, pi_task_block(&task));
   pi_task_wait_on(&task);
 }
 

@@ -15,7 +15,6 @@
  */
 
 #ifndef __BSP__BSP_H__
-
 #define __BSP__BSP_H__
 
 #if defined(CONFIG_GAPUINO)

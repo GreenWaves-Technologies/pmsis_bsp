@@ -21,16 +21,13 @@
  */
 
 #include "pmsis.h"
-#include "rtos/pmsis_os.h"
-#include "rtos/pmsis_driver_core_api/pmsis_driver_core_api.h"
-#include "rtos/os_frontend_api/pmsis_time.h"
-#include "drivers/cpi.h"
+#include "pmsis/drivers/cpi.h"
 #ifdef PMSIS_DRIVERS
 #include "pmsis_driver/cpi/cpi_internal.h"
 #endif
-#include "drivers/gpio.h"
-#include "drivers/hyperbus.h"
-#include "drivers/i2c.h"
+#include "pmsis/drivers/gpio.h"
+#include "pmsis/drivers/hyperbus.h"
+#include "pmsis/drivers/i2c.h"
 #include "bsp/camera/himax.h"
 #include "himax.h"
 #include "bsp/bsp.h"

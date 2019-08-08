@@ -21,9 +21,9 @@
 
 
 #include "pmsis.h"
-#include "drivers/spi.h"
-#include "drivers/hyperbus.h"
-#include "drivers/gpio.h"
+#include "pmsis/drivers/spi.h"
+#include "pmsis/drivers/hyperbus.h"
+#include "pmsis/drivers/gpio.h"
 #include "bsp/display/ili9341.h"
 #include "bsp/bsp.h"
 #include "ili9341.h"

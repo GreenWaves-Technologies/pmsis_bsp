@@ -202,42 +202,42 @@ static inline void ram_copy_2d_async(struct pi_device *device, uint32_t ram_addr
 static inline void ram_read(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size)
 {
   pi_task_t task;
-  ram_read_async(device, ram_addr, data, size, pi_task(&task));
+  ram_read_async(device, ram_addr, data, size, pi_task_block(&task));
   pi_task_wait_on(&task);
 }
 
 static inline void ram_read_2d(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size, uint32_t stride, uint32_t length)
 {
   pi_task_t task;
-  ram_read_2d_async(device, ram_addr, data, size, stride, length, pi_task(&task));
+  ram_read_2d_async(device, ram_addr, data, size, stride, length, pi_task_block(&task));
   pi_task_wait_on(&task);
 }
 
 static inline void ram_copy(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size, int ext2loc)
 {
   pi_task_t task;
-  ram_copy_async(device, ram_addr, data, size, ext2loc, pi_task(&task));
+  ram_copy_async(device, ram_addr, data, size, ext2loc, pi_task_block(&task));
   pi_task_wait_on(&task);
 }
 
 static inline void ram_copy_2d(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size, uint32_t stride, uint32_t length, int ext2loc)
 {
   pi_task_t task;
-  ram_copy_2d_async(device, ram_addr, data, size, stride, length, ext2loc, pi_task(&task));
+  ram_copy_2d_async(device, ram_addr, data, size, stride, length, ext2loc, pi_task_block(&task));
   pi_task_wait_on(&task);
 }
 
 static inline void ram_write(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size)
 {
   pi_task_t task;
-  ram_write_async(device, ram_addr, data, size, pi_task(&task));
+  ram_write_async(device, ram_addr, data, size, pi_task_block(&task));
   pi_task_wait_on(&task);
 }
 
 static inline void ram_write_2d(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size, uint32_t stride, uint32_t length)
 {
   pi_task_t task;
-  ram_write_2d_async(device, ram_addr, data, size, stride, length, pi_task(&task));
+  ram_write_2d_async(device, ram_addr, data, size, stride, length, pi_task_block(&task));
   pi_task_wait_on(&task);
 }
 
