@@ -21,6 +21,12 @@
 #include "bsp/buffer.h"
 
 
+typedef enum
+{
+  DISPLAY_IOCTL_CUSTOM = 0
+} display_ioctl_cmd_e;
+
+
 /** \brief Open an image sensor device.
  *
  * This function must be called before the Camera device can be used. It configure the device
@@ -37,6 +43,8 @@ int display_open(struct pi_device *device);
 
 void display_write(struct pi_device *device, pi_buffer_t *buffer, uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
+static inline int32_t display_ioctl(struct pi_device *device, uint32_t cmd, void *arg);
+
 static inline void display_write_async(struct pi_device *device, pi_buffer_t *buffer, uint16_t x, uint16_t y,uint16_t w, uint16_t h, pi_task_t *task);
 
 
@@ -52,6 +60,7 @@ static inline void display_write_async(struct pi_device *device, pi_buffer_t *bu
 typedef struct {
   int (*open)(struct pi_device *device);
   void (*write_async)(struct pi_device *device, pi_buffer_t *buffer, uint16_t x, uint16_t y,uint16_t w, uint16_t h, pi_task_t *task);
+  int32_t (*ioctl)(struct pi_device *device, uint32_t cmd, void *arg);
 } display_api_t;
 
 struct display_conf {
@@ -65,6 +74,12 @@ static inline void display_write_async(struct pi_device *device, pi_buffer_t *bu
 }
 
 void __display_conf_init(struct display_conf *conf);
+
+static inline int32_t display_ioctl(struct pi_device *device, uint32_t cmd, void *arg)
+{
+  display_api_t *api = (display_api_t *)device->api;
+  return api->ioctl(device, cmd, arg);
+}
 
 
 /// @endcond

@@ -178,10 +178,28 @@ error:
 }
 
 
+
+static int32_t __ili_ioctl(struct pi_device *device, uint32_t cmd, void *arg)
+{
+  ili_t *ili = (ili_t *)device->data;
+
+  switch (cmd)
+  {
+    case ILI_IOCTL_ORIENTATION:
+      __ili_set_rotation(ili, (uint8_t)(long)arg);
+      return 0;
+
+  }
+  return -1;
+}
+
+
+
 static display_api_t ili_api =
 {
   .open           = &__ili_open,
   .write_async    = &__ili_write_async,
+  .ioctl          = &__ili_ioctl
 };
 
 
@@ -398,6 +416,7 @@ static void __ili_set_addr_window(ili_t *ili,uint16_t x, uint16_t y, uint16_t w,
   __ili_write_32(ili,ya);
   __ili_write_command(ili,ILI9341_RAMWR); // write to RAM
 }
+
 
 
 void writeColor(struct pi_device *device, uint16_t color, unsigned int len){

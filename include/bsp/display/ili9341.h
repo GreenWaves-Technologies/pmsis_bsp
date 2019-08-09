@@ -32,6 +32,21 @@ struct ili9341_conf
 
 
 
+typedef enum
+{
+  ILI_ORIENTATION_0 = 0,
+  ILI_ORIENTATION_90 = 1,
+  ILI_ORIENTATION_180 = 2,
+  ILI_ORIENTATION_270 = 3,
+} ili_orientation_e;
+
+
+typedef enum
+{
+  ILI_IOCTL_ORIENTATION = DISPLAY_IOCTL_CUSTOM
+} ili_ioctl_cmd_e;
+
+
 
 /** \brief Initialize a camera configuration with default values.
  *
