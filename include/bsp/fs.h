@@ -49,6 +49,8 @@ typedef struct fs_file_s {
   pi_task_t step_event;
   unsigned int pending_buffer;
   unsigned int pending_size;
+  unsigned char *cache;
+  unsigned int  cache_addr;
 } fs_file_t;
 
 typedef struct {
@@ -107,8 +109,6 @@ typedef struct fs_s {
   fs_l2_t *fs_l2;
   unsigned int *fs_info;
   int nb_comps;
-  unsigned char *cache;
-  unsigned int  cache_addr;
   //rt_mutex_t mutex;
   pi_task_t event;
   int error;

@@ -82,7 +82,6 @@ static void __fs_free(fs_t *fs)
   {
     if (fs->fs_info) pmsis_l2_malloc_free(fs->fs_info, fs->fs_l2->fs_size);
     if (fs->fs_l2) pmsis_l2_malloc_free(fs->fs_l2, sizeof(fs_l2_t));
-    if (fs->cache) pmsis_l2_malloc_free(fs->cache, READ_FS_THRESHOLD_BLOCK_FULL);
   }
 }
 
@@ -176,15 +175,11 @@ int fs_mount(struct pi_device *device)
 
   // Initialize all fields where something needs to be closed in case of error
   fs->fs_l2 = NULL;
-  fs->cache = NULL;
   fs->fs_info = NULL;
   fs->flash = conf->flash;
 
   fs->fs_l2 = pmsis_l2_malloc(sizeof(fs_l2_t));
   if (fs->fs_l2 == NULL) goto error;
-
-  fs->cache = pmsis_l2_malloc(READ_FS_THRESHOLD_BLOCK_FULL);
-  if (fs->cache == NULL) goto error;
 
   fs->mount_step = 1;
   fs->fs_info = NULL;
@@ -240,6 +235,9 @@ fs_file_t *fs_open(struct pi_device *device, const char *file_name, int flags)
   fs_file_t *file = pmsis_l2_malloc(sizeof(fs_file_t));
   if (file == NULL) goto error;
 
+  file->cache = pmsis_l2_malloc(READ_FS_THRESHOLD_BLOCK_FULL);
+  if (file->cache == NULL) goto error1;
+
   file->offset = 0;
   file->size = desc->size;
   file->addr = desc->addr;
@@ -247,6 +245,8 @@ fs_file_t *fs_open(struct pi_device *device, const char *file_name, int flags)
 
   return file;
 
+error1:
+  pmsis_l2_malloc_free(file, sizeof(fs_file_t));
 error:
   return NULL;
 }
@@ -254,6 +254,7 @@ error:
 void fs_close(fs_file_t *file)
 {
   //printf("[FS] Closing file (file: %p)\n", file);
+  pmsis_l2_malloc_free(file->cache, READ_FS_THRESHOLD_BLOCK_FULL);
   pmsis_l2_malloc_free((void *)file, sizeof(fs_file_t));
 }
 
@@ -276,7 +277,7 @@ static int __fs_read_from_cache(fs_file_t *file, unsigned int buffer, unsigned i
 
   fs_t *fs = (fs_t *)file->fs->data;
 
-  memcpy((void *)buffer, &fs->cache[addr - fs->cache_addr], size);
+  memcpy((void *)buffer, &file->cache[addr - file->cache_addr], size);
 
   return size;
 
@@ -294,9 +295,9 @@ static int __fs_read_cached(fs_file_t *file, unsigned int buffer, unsigned int a
 
   fs_t *fs = (fs_t *)file->fs->data;
 
-  if (addr < fs->cache_addr || addr + size > fs->cache_addr + READ_FS_THRESHOLD_BLOCK_FULL) {
-    fs->cache_addr = addr & ~0x7;
-    __fs_read_block(fs, fs->cache_addr, (int)fs->cache, READ_FS_THRESHOLD_BLOCK_FULL, event);
+  if (addr < file->cache_addr || addr + size > file->cache_addr + READ_FS_THRESHOLD_BLOCK_FULL) {
+    file->cache_addr = addr & ~0x7;
+    __fs_read_block(fs, file->cache_addr, (int)file->cache, READ_FS_THRESHOLD_BLOCK_FULL, event);
     *pending = 1;
     return 0;
   }
@@ -319,8 +320,8 @@ int __fs_read(fs_file_t *file, unsigned int buffer, unsigned int addr, int size,
 
   // Cache hit
   if (size <= READ_FS_THRESHOLD_BLOCK_FULL &&
-    addr >= fs->cache_addr &&
-    addr + size < fs->cache_addr + READ_FS_THRESHOLD_BLOCK_FULL) {
+    addr >= file->cache_addr &&
+    addr + size < file->cache_addr + READ_FS_THRESHOLD_BLOCK_FULL) {
     return __fs_read_from_cache(file, buffer, addr, size);
   }
 
