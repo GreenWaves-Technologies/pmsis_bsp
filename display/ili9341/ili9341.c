@@ -167,7 +167,7 @@ static int __ili_open(struct pi_device *device)
     goto error;
 
   __ili_init(ili);
-  __ili_set_rotation(ili,3);
+  __ili_set_rotation(ili,0);
 
 
   ili->_width = ILI9341_TFTWIDTH;
@@ -195,9 +195,8 @@ static int32_t __ili_ioctl(struct pi_device *device, uint32_t cmd, void *arg)
   switch (cmd)
   {
     case ILI_IOCTL_ORIENTATION:
-      __ili_set_rotation(ili, (uint8_t)(long)arg);
-      return 0;
-
+    __ili_set_rotation(ili, (uint8_t)(long)arg);
+    return 0;
   }
   return -1;
 }
@@ -384,26 +383,26 @@ static void __ili_set_rotation(ili_t *ili, uint8_t m)
   {
     case 0:
       m = (MADCTL_MX | MADCTL_BGR);
-      ili->_width  = ILI9341_TFTHEIGHT;
-      ili->_height = ILI9341_TFTWIDTH;
+      ili->_width  = ILI9341_TFTWIDTH;
+      ili->_height = ILI9341_TFTHEIGHT;
       break;
 
     case 1:
       m = (MADCTL_MV | MADCTL_BGR);
-      ili->_width  = ILI9341_TFTWIDTH;
-      ili->_height = ILI9341_TFTHEIGHT;
-      break;
-
-    case 2:
-      m = (MADCTL_MY | MADCTL_BGR);
       ili->_width  = ILI9341_TFTHEIGHT;
       ili->_height = ILI9341_TFTWIDTH;
       break;
 
-    case 3:
-      m = (MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR);
+    case 2:
+      m = (MADCTL_MY | MADCTL_BGR);
       ili->_width  = ILI9341_TFTWIDTH;
       ili->_height = ILI9341_TFTHEIGHT;
+      break;
+
+    case 3:
+      m = (MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR);
+      ili->_width  = ILI9341_TFTHEIGHT;
+      ili->_height = ILI9341_TFTWIDTH;
       break;
   }
 
@@ -501,8 +500,8 @@ static void drawChar(struct pi_device *device,int16_t x, int16_t y, unsigned cha
 {
   ili_t *ili = (ili_t *)device->data;
 
-  if((x >= (int)ili->_width)            || // Clip right
-     (y >= (int)ili->_height)           || // Clip bottom
+  if((x >= (int)ili->_width)  || // Clip right
+     (y >= (int)ili->_height) || // Clip bottom
      ((x + 6 * size - 1) < 0) || // Clip left
      ((y + 8 * size - 1) < 0))   // Clip top
     return;
