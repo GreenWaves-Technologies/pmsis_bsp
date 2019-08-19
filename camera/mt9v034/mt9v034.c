@@ -15,16 +15,9 @@
  */
 
 #include "pmsis.h"
-#include "pmsis/drivers/gpio.h"
-#include "pmsis/drivers/i2c.h"
-#include "pmsis/drivers/cpi.h"
-#include "pmsis/rtos/os_frontend_api/pmsis_time.h"
-#if defined(PMSIS_DRIVERS)
-#include "pmsis_driver/cpi/cpi_internal.h"
-#endif
+#include "bsp/bsp.h"
 #include "bsp/camera/mt9v034.h"
 #include "mt9v034.h"
-#include "bsp/bsp.h"
 
 
 
