@@ -28,7 +28,7 @@
 #include "bsp/bsp.h"
 #include "ili9341.h"
 
-#define TEMP_BUFFER_SIZE 256
+#define TEMP_BUFFER_SIZE (256*16)
 
 typedef struct
 {
@@ -54,7 +54,7 @@ typedef struct
   uint16_t textbgcolor;
 } ili_t;
 
-
+#if 1
 
 static void __ili_init(ili_t *ili);
 static void __ili_set_rotation(ili_t *ili,uint8_t m);
@@ -92,19 +92,18 @@ static void __ili9341_write_buffer_iter(void *arg)
 
   __ili_gray8_to_rgb565((uint8_t *)ili->current_data, (uint16_t *)ili->temp_buffer, size, 1);
 
-  pi_spi_send_async(&ili->spim, ili->temp_buffer, size*2*8, flags, task);
-
   ili->current_data += size;
 
   if (ili->buffer->stride != 0)
   {
-    ili->current_line_len -= size;
-    if (ili->current_line_len == 0)
-    {
-      ili->current_line_len = ili->width;
-      ili->current_data += ili->buffer->stride;
-    }
+      ili->current_line_len -= size;
+      if (ili->current_line_len == 0)
+      {
+          ili->current_line_len = ili->width;
+          ili->current_data += ili->buffer->stride;
+      }
   }
+  pi_spi_send_async(&ili->spim, ili->temp_buffer, size*2*8, flags, task);
 }
 
 
@@ -563,3 +562,4 @@ void writeText(struct pi_device *device,char* str,int fontsize)
   while(str[i] != '\0')
     writeChar(device,str[i++]);
 }
+#endif
