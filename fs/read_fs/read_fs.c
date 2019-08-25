@@ -124,16 +124,14 @@ static void __fs_mount_step(void *arg)
       flash_read_async(fs->flash, fs_offset + 8, (void *)fs->fs_info, fs_size, pi_task_callback(&fs->step_event, __fs_mount_step, (void *)arg));
       break;
     }
+
+    case 4: {
+      fs->error = 0;
+      pi_task_push(fs->pending_event);
+    }
   }
 
   fs->mount_step++;
-
-  // Notify the user
-  if (fs->mount_step == 4)
-  {
-    fs->error = 0;
-    pi_task_push(fs->pending_event);
-  }
 
   return;
 
