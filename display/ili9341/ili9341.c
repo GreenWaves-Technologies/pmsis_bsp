@@ -28,7 +28,7 @@
 #include "bsp/bsp.h"
 #include "ili9341.h"
 
-#define TEMP_BUFFER_SIZE (256*16)
+#define TEMP_BUFFER_SIZE (256)
 
 typedef struct
 {
