@@ -18,10 +18,8 @@
  * Authors: Germain Haugou, GreenWaves Technologies (germain.haugou@greenwaves-technologies.com)
  */
 
-#include "pmsis/task.h"
+#include "pmsis.h"
 #include "bsp/camera.h"
-#include "rtos/os_frontend_api/pmsis_task.h"
-
 
 int camera_open(struct pi_device *device)
 {
