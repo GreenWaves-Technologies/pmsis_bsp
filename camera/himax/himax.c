@@ -20,18 +20,11 @@
             Germain Haugou, GreenWaves Technologies (germain.haugou@greenwaves-technologies.com)
  */
 
-#include "pmsis/device.h"
-#include "pmsis/rtos/os_frontend_api/pmsis_task.h"
+#include "pmsis.h"
 #include "pmsis/rtos/os_frontend_api/pmsis_time.h"
-#include "pmsis/rtos/malloc/pmsis_l2_malloc.h"
-#include "pmsis/drivers/cpi.h"
-#include "pmsis/drivers/i2c.h"
-#if defined(PMSIS_DRIVERS)
-#include "pmsis_driver/cpi/cpi_internal.h"
-#endif  /* PMSIS_DRIVERS */
+#include "bsp/bsp.h"
 #include "bsp/camera/himax.h"
 #include "himax.h"
-#include "bsp/bsp.h"
 
 
 typedef struct {

@@ -37,15 +37,22 @@ static int hyperram_open(struct pi_device *device)
   struct hyperram_conf *conf = (struct hyperram_conf *)device->config;
 
   hyperram_t *hyperram = (hyperram_t *)pmsis_l2_malloc(sizeof(hyperram_t));
-  if (hyperram == NULL) return -1;
+  if (hyperram == NULL)
+  {
+      return -1;
+  }
 
   device->data = (void *)hyperram;
 
   if (extern_alloc_init(&hyperram->alloc, 0, conf->ram_size))
-    goto error;
+  {
+      goto error;
+  }
 
   if (bsp_hyperram_open(conf))
-    goto error2;
+  {
+      goto error2;
+  }
 
   struct pi_hyper_conf hyper_conf;
   pi_hyper_conf_init(&hyper_conf);
@@ -54,12 +61,17 @@ static int hyperram_open(struct pi_device *device)
   hyper_conf.cs = conf->hyper_cs;
   hyper_conf.type = PI_HYPER_TYPE_RAM;
   if (conf->baudrate)
-    hyper_conf.baudrate = conf->baudrate;
+  {
+      hyper_conf.baudrate = conf->baudrate;
+  }
 
   pi_open_from_conf(&hyperram->hyper_device, &hyper_conf);
 
-  if (pi_hyper_open(&hyperram->hyper_device))
-    goto error2;
+  int32_t error = pi_hyper_open(&hyperram->hyper_device);
+  if (error)
+  {
+      goto error2;
+  }
 
   return 0;
 
@@ -67,7 +79,7 @@ error2:
   extern_alloc_init(&hyperram->alloc, 0, conf->ram_size);
 error:
   pmsis_l2_malloc_free(hyperram, sizeof(hyperram_t));
-  return -1;
+  return -2;
 }
 
 
