@@ -124,12 +124,17 @@ static int hyperflash_open(struct pi_device *device)
   struct hyperflash_conf *conf = (struct hyperflash_conf *)device->config;
 
   hyperflash_t *hyperflash = (hyperflash_t *)pmsis_l2_malloc(sizeof(hyperflash_t));
-  if (hyperflash == NULL) return -1;
+  if (hyperflash == NULL)
+  {
+      return -1;
+  }
 
   device->data = (void *)hyperflash;
 
   if (bsp_hyperflash_open(conf))
-    goto error;
+  {
+      goto error;
+  }
 
   struct pi_hyper_conf hyper_conf;
   pi_hyper_conf_init(&hyper_conf);
@@ -140,8 +145,11 @@ static int hyperflash_open(struct pi_device *device)
 
   pi_open_from_conf(&hyperflash->hyper_device, &hyper_conf);
 
-  if (pi_hyper_open(&hyperflash->hyper_device))
-    goto error;
+  int32_t error = pi_hyper_open(&hyperflash->hyper_device);
+  if (error)
+  {
+      goto error;
+  }
 
   hyperflash->pending_task = NULL;
   hyperflash->waiting_first = NULL;
@@ -153,7 +161,7 @@ static int hyperflash_open(struct pi_device *device)
 
 error:
   pmsis_l2_malloc_free(hyperflash, sizeof(hyperflash_t));
-  return -1;
+  return -2;
 }
 
 
@@ -626,7 +634,9 @@ static void hyperflash_erase_async(struct pi_device *device, uint32_t addr, int 
   hyperflash_t *hyperflash = (hyperflash_t *)device->data;
 
   if (hyperflash_stall_erase_task(hyperflash, task, 3, addr, size, 0))
+  {
     return;
+  }
 
   hyperflash->pending_erase_hyper_addr = addr;
   hyperflash->pending_erase_size = size;

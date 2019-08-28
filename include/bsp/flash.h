@@ -188,7 +188,8 @@ static inline void flash_erase_async(struct pi_device *device, uint32_t flash_ad
 static inline void flash_erase(struct pi_device *device, uint32_t flash_addr, int size)
 {
   pi_task_t task;
-  flash_erase_async(device, flash_addr, size, pi_task_block(&task));
+  pi_task_block(&task);
+  flash_erase_async(device, flash_addr, size, &task);
   pi_task_wait_on(&task);
 }
 
