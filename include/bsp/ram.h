@@ -287,6 +287,7 @@ static inline void cl_ram_copy_wait(cl_ram_req_t *req)
     }
     #endif  /* PMSIS_DRIVERS */
 }
+
 static inline int cl_ram_alloc_wait(cl_ram_alloc_req_t *req, uint32_t *chunk)
 {
     #if defined(PMSIS_DRIVERS)

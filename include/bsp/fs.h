@@ -17,7 +17,7 @@
 #ifndef __FS__FS__H__
 #define __FS__FS__H__
 
-#include "rtos/os_frontend_api/pmsis_task.h"
+#include "pmsis.h"
 
 typedef enum {
   FS_MOUNT_FLASH_ERROR     = 1,     /*!< There was an error mounting the flash filesystem. */

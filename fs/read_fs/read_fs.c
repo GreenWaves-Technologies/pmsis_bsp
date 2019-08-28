@@ -22,7 +22,6 @@
 #include "bsp/fs.h"
 #include "bsp/flash.h"
 #include <string.h>
-#include "rtos/os_frontend_api/pmsis_task.h"
 
 #define READ_FS_THRESHOLD            16
 #define READ_FS_THRESHOLD_BLOCK      128
@@ -420,6 +419,9 @@ int fs_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *event)
   // Store the read information into the file in case the read is kept pending
   // when we return
 
+  #if defined(__PULP_OS__)
+  __rt_task_init(event);
+  #endif
   file->pending_event = event;
   file->pending_buffer = (unsigned int)buffer;
   file->pending_size = real_size;
