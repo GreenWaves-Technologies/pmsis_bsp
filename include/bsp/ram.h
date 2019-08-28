@@ -19,20 +19,12 @@
 
 #include "pmsis.h"
 
-#ifdef PMSIS_DRIVERS
-#include "pmsis_cluster/drivers/delegate/hyperbus/hyperbus_cl_internal.h"
-typedef struct pi_cl_hyper_req_s cl_ram_req_t;
-
-typedef struct pi_cl_hyperram_alloc_req_s cl_ram_alloc_req_t;
-
-typedef struct pi_cl_hyperram_free_req_s cl_ram_free_req_t;
-#else
 typedef struct cl_ram_req_s cl_ram_req_t;
 
 typedef struct cl_ram_alloc_req_s cl_ram_alloc_req_t;
 
 typedef struct cl_ram_free_req_s cl_ram_free_req_t;
-#endif
+
 int ram_open(struct pi_device *device);
 
 static inline void ram_close(struct pi_device *device);
@@ -136,7 +128,6 @@ struct cl_ram_free_req_s
     uint8_t done;
     char cid;
 };
-#endif
 
 typedef struct
 {
@@ -329,4 +320,4 @@ static inline void cl_ram_free_wait(cl_ram_free_req_t *req)
 
 
 
-#endif
+#endif  /* __BSP_RAM_H__ */

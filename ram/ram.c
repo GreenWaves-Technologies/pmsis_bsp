@@ -20,8 +20,6 @@
 
 #include "bsp/ram.h"
 
-#ifndef PMSIS_DRIVERS
-
 int ram_open(struct pi_device *device)
 {
     struct ram_conf *conf = (struct ram_conf *)device->config;
@@ -168,4 +166,3 @@ void cl_ram_free(struct pi_device *device, uint32_t chunk, uint32_t size, cl_ram
     __rt_cluster_push_fc_event(&req->event);
     #endif
 }
-#endif
