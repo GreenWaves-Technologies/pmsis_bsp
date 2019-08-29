@@ -496,13 +496,6 @@ static void hyperflash_check_program(void *arg)
   struct pi_device *device = (struct pi_device *)arg;
   hyperflash_t *hyperflash = (hyperflash_t *)device->data;
 
-  #if defined(PMSIS_DRIVERS)
-  if (&hyperflash->task)
-  {
-      pi_task_destroy(&hyperflash->task);
-  }
-  #endif  /* PMSIS_DRIVERS */
-
   if (((hyperflash_get_status_reg(hyperflash) >> 7) & 1) == 0)
   {
     // Typical buffer programming time is 475us
@@ -557,13 +550,6 @@ static void hyperflash_check_erase(void *arg)
   struct pi_device *device = (struct pi_device *)arg;
   hyperflash_t *hyperflash = (hyperflash_t *)device->data;
 
-  #if defined(PMSIS_DRIVERS)
-  if (&hyperflash->task)
-  {
-      pi_task_destroy(&hyperflash->task);
-  }
-  #endif  /* PMSIS_DRIVERS */
-
   uint32_t reg_status = hyperflash_get_status_reg(hyperflash);
   if (((reg_status >> 7) & 1) == 0)
   {
@@ -602,13 +588,6 @@ static void hyperflash_erase_resume(void *arg)
 {
   struct pi_device *device = (struct pi_device *)arg;
   hyperflash_t *hyperflash = (hyperflash_t *)device->data;
-
-  #if defined(PMSIS_DRIVERS)
-  if (&hyperflash->task2)
-  {
-      pi_task_destroy(&hyperflash->task2);
-  }
-  #endif  /* PMSIS_DRIVERS */
 
   if (hyperflash->pending_erase_size == 0)
   {
