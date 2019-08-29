@@ -107,13 +107,12 @@ static void __fs_mount_step(void *arg)
       break;
 
   case 2:
-      pi_task_destroy(&(fs->step_event));
       // Read the header size at the first header word
       flash_read_async(fs->flash, (int)fs->fs_l2->fs_offset, &fs->fs_l2->fs_size, 8, pi_task_callback(&fs->step_event, __fs_mount_step, (void *)arg));
       break;
 
   case 3:
-      pi_task_destroy(&(fs->step_event));
+  {
       // Allocate roon for the file-system header and read it
       int fs_size = ((fs->fs_l2->fs_size + 7) & ~7);
       int fs_offset = fs->fs_l2->fs_offset;
@@ -124,10 +123,10 @@ static void __fs_mount_step(void *arg)
           goto error;
       }
       flash_read_async(fs->flash, fs_offset + 8, (void *)fs->fs_info, fs_size, pi_task_callback(&fs->step_event, __fs_mount_step, (void *)arg));
+  }
       break;
 
   case 4:
-      pi_task_destroy(&(fs->step_event));
       fs->error = 0;
       pi_task_push(fs->pending_event);
   }
@@ -459,7 +458,6 @@ int fs_direct_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *
 void __cl_fs_req_done(void *_req)
 {
     cl_fs_req_t *req = (cl_fs_req_t *)_req;
-    pi_task_destroy(&(req->task));
     #if defined(PMSIS_DRIVERS)
     cl_notify_task_done(&(req->done), req->cid);
     #else
@@ -472,7 +470,6 @@ void __cl_fs_req(void *_req)
 {
     cl_fs_req_t *req = (cl_fs_req_t *)_req;
     fs_file_t *file = req->file;
-    pi_task_destroy(&(req->task));
     if (req->direct)
     {
         req->result = fs_direct_read_async(file, req->buffer, req->size, pi_task_callback(&req->task, __cl_fs_req_done, (void *)req));
@@ -527,7 +524,6 @@ void __cl_fs_seek_req(void *_req)
 {
     cl_fs_req_t *req = (cl_fs_req_t *)_req;
     req->result = fs_seek(req->file, req->offset);
-    pi_task_destroy(&(req->task));
     #if defined(PMSIS_DRIVERS)
     cl_notify_task_done(&(req->done), req->cid);
     #else
