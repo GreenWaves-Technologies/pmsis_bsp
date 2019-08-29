@@ -124,12 +124,17 @@ static int hyperflash_open(struct pi_device *device)
   struct hyperflash_conf *conf = (struct hyperflash_conf *)device->config;
 
   hyperflash_t *hyperflash = (hyperflash_t *)pmsis_l2_malloc(sizeof(hyperflash_t));
-  if (hyperflash == NULL) return -1;
+  if (hyperflash == NULL)
+  {
+      return -1;
+  }
 
   device->data = (void *)hyperflash;
 
   if (bsp_hyperflash_open(conf))
-    goto error;
+  {
+      goto error;
+  }
 
   struct pi_hyper_conf hyper_conf;
   pi_hyper_conf_init(&hyper_conf);
@@ -140,8 +145,11 @@ static int hyperflash_open(struct pi_device *device)
 
   pi_open_from_conf(&hyperflash->hyper_device, &hyper_conf);
 
-  if (pi_hyper_open(&hyperflash->hyper_device))
-    goto error;
+  int32_t error = pi_hyper_open(&hyperflash->hyper_device);
+  if (error)
+  {
+      goto error;
+  }
 
   hyperflash->pending_task = NULL;
   hyperflash->waiting_first = NULL;
@@ -153,7 +161,7 @@ static int hyperflash_open(struct pi_device *device)
 
 error:
   pmsis_l2_malloc_free(hyperflash, sizeof(hyperflash_t));
-  return -1;
+  return -2;
 }
 
 
@@ -230,22 +238,51 @@ static void hyperflash_handle_pending_task(void *arg)
   struct pi_device *device = (struct pi_device *)arg;
   hyperflash_t *hyperflash = (hyperflash_t *)device->data;
 
-  int irq = disable_irq();
+  uint32_t irq = disable_irq();
 
   pi_task_enqueue(hyperflash->pending_task);
   hyperflash->pending_task = NULL;
 
   pi_task_t *task = hyperflash->waiting_first;
-#ifndef PMSIS_DRIVERS
   if (task)
   {
+#if defined(PMSIS_DRIVERS)
+      hyperflash->waiting_first = task->next;
+#else
     hyperflash->waiting_first = task->implem.next;
+#endif  /* PMSIS_DRIVERS */
   }
 
   restore_irq(irq);
 
   if (task)
   {
+#if defined(PMSIS_DRIVERS)
+      if (task->data[0] == STALL_TASK_PROGRAM)
+      {
+          hyperflash_program_async(device, task->data[1], (void *)task->data[2], task->data[3], task);
+      }
+      else if (task->data[0] == STALL_TASK_ERASE_CHIP)
+      {
+          hyperflash_erase_chip_async(device, task);
+      }
+      else if (task->data[0] == STALL_TASK_ERASE_SECTOR)
+      {
+          hyperflash_erase_sector_async(device, task->data[1], task);
+      }
+      else if (task->data[0] == STALL_TASK_REG_SET)
+      {
+          hyperflash_reg_set_async(device, task->data[1], (uint8_t *)task->data[2], task);
+      }
+      else if (task->data[0] == STALL_TASK_REG_GET)
+      {
+          hyperflash_reg_get_async(device, task->data[1], (uint8_t *)task->data[2], task);
+      }
+      else if (task->data[0] == STALL_TASK_READ)
+      {
+          hyperflash_read_async(device, task->data[1], (void *)task->data[2], task->data[3], task);
+      }
+#else
     if (task->implem.data[0] == STALL_TASK_PROGRAM)
     {
       hyperflash_program_async(device, task->implem.data[1], (void *)task->implem.data[2], task->implem.data[3], task);
@@ -270,8 +307,8 @@ static void hyperflash_handle_pending_task(void *arg)
     {
       hyperflash_read_async(device, task->implem.data[1], (void *)task->implem.data[2], task->implem.data[3], task);
     }
+#endif  /* PMSIS_DRIVERS */
   }
-#endif
 }
 
 
@@ -281,36 +318,63 @@ static void hyperflash_handle_pending_erase_task(void *arg)
   struct pi_device *device = (struct pi_device *)arg;
   hyperflash_t *hyperflash = (hyperflash_t *)device->data;
 
-  int irq = disable_irq();
+  uint32_t irq = disable_irq();
 
   pi_task_enqueue(hyperflash->erase_task);
   hyperflash->erase_task = NULL;
 
   pi_task_t *task = hyperflash->erase_waiting_first;
-#ifndef PMSIS_DRIVERS
   if (task)
   {
+#if defined(PMSIS_DRIVERS)
+      hyperflash->erase_waiting_first = task->next;
+#else
     hyperflash->erase_waiting_first = task->implem.next;
+#endif  /* PMSIS_DRIVERS */
   }
-#endif
 
   restore_irq(irq);
 
-#ifndef PMSIS_DRIVERS
   if (task)
   {
+#if defined(PMSIS_DRIVERS)
+      hyperflash_erase_async(device, task->data[1], task->data[2], task);
+#else
     hyperflash_erase_async(device, task->implem.data[1], task->implem.data[2], task);
+#endif  /* PMSIS_DRIVERS */
   }
-#endif
 }
 
 
 
 static int hyperflash_stall_task(hyperflash_t *hyperflash, pi_task_t *task, uint32_t id, uint32_t arg0, uint32_t arg1, uint32_t arg2)
 {
-  int irq = disable_irq();
+  uint32_t irq = disable_irq();
 
-#ifndef PMSIS_DRIVERS
+#if defined(PMSIS_DRIVERS)
+  if (hyperflash->pending_task != NULL)
+  {
+      task->data[0] = id;
+      task->data[1] = arg0;
+      task->data[2] = arg1;
+      task->data[3] = arg2;
+      task->next = NULL;
+
+      if (hyperflash->waiting_first)
+      {
+          hyperflash->waiting_last->next = task;
+      }
+      else
+      {
+          hyperflash->waiting_first = task;
+      }
+
+      hyperflash->waiting_last = task;
+
+      restore_irq(irq);
+      return 1;
+  }
+#else
   if (hyperflash->pending_task != NULL)
   {
     task->implem.data[0] = id;
@@ -329,7 +393,7 @@ static int hyperflash_stall_task(hyperflash_t *hyperflash, pi_task_t *task, uint
     restore_irq(irq);
     return 1;
   }
-#endif
+#endif  /* PMSIS_DRIVERS */
 
   hyperflash->pending_task = task;
 
@@ -341,9 +405,32 @@ static int hyperflash_stall_task(hyperflash_t *hyperflash, pi_task_t *task, uint
 
 static int hyperflash_stall_erase_task(hyperflash_t *hyperflash, pi_task_t *task, uint32_t id, uint32_t arg0, uint32_t arg1, uint32_t arg2)
 {
-  int irq = disable_irq();
+  uint32_t irq = disable_irq();
 
-#ifndef PMSIS_DRIVERS
+#if defined(PMSIS_DRIVERS)
+  if (hyperflash->erase_task != NULL)
+  {
+      task->data[0] = id;
+      task->data[1] = arg0;
+      task->data[2] = arg1;
+      task->data[3] = arg2;
+      task->next = NULL;
+
+      if (hyperflash->erase_waiting_first)
+      {
+          hyperflash->erase_waiting_last->next = task;
+      }
+      else
+      {
+          hyperflash->erase_waiting_first = task;
+      }
+
+      hyperflash->erase_waiting_last = task;
+
+      restore_irq(irq);
+      return 1;
+  }
+#else
   if (hyperflash->erase_task != NULL)
   {
     task->implem.data[0] = id;
@@ -361,7 +448,7 @@ static int hyperflash_stall_erase_task(hyperflash_t *hyperflash, pi_task_t *task
     restore_irq(irq);
     return 1;
   }
-#endif
+#endif  /* PMSIS_DRIVERS */
 
   hyperflash->erase_task = task;
 
@@ -408,6 +495,13 @@ static void hyperflash_check_program(void *arg)
 {
   struct pi_device *device = (struct pi_device *)arg;
   hyperflash_t *hyperflash = (hyperflash_t *)device->data;
+
+  #if defined(PMSIS_DRIVERS)
+  if (&hyperflash->task)
+  {
+      pi_task_destroy(&hyperflash->task);
+  }
+  #endif  /* PMSIS_DRIVERS */
 
   if (((hyperflash_get_status_reg(hyperflash) >> 7) & 1) == 0)
   {
@@ -463,7 +557,15 @@ static void hyperflash_check_erase(void *arg)
   struct pi_device *device = (struct pi_device *)arg;
   hyperflash_t *hyperflash = (hyperflash_t *)device->data;
 
-  if (((hyperflash_get_status_reg(hyperflash) >> 7) & 1) == 0)
+  #if defined(PMSIS_DRIVERS)
+  if (&hyperflash->task)
+  {
+      pi_task_destroy(&hyperflash->task);
+  }
+  #endif  /* PMSIS_DRIVERS */
+
+  uint32_t reg_status = hyperflash_get_status_reg(hyperflash);
+  if (((reg_status >> 7) & 1) == 0)
   {
     pi_task_push_delayed_us(pi_task_callback(&hyperflash->task, hyperflash_check_erase, device), 100000);
   }
@@ -501,6 +603,13 @@ static void hyperflash_erase_resume(void *arg)
   struct pi_device *device = (struct pi_device *)arg;
   hyperflash_t *hyperflash = (hyperflash_t *)device->data;
 
+  #if defined(PMSIS_DRIVERS)
+  if (&hyperflash->task2)
+  {
+      pi_task_destroy(&hyperflash->task2);
+  }
+  #endif  /* PMSIS_DRIVERS */
+
   if (hyperflash->pending_erase_size == 0)
   {
     hyperflash_handle_pending_erase_task(device);
@@ -525,7 +634,9 @@ static void hyperflash_erase_async(struct pi_device *device, uint32_t addr, int 
   hyperflash_t *hyperflash = (hyperflash_t *)device->data;
 
   if (hyperflash_stall_erase_task(hyperflash, task, 3, addr, size, 0))
+  {
     return;
+  }
 
   hyperflash->pending_erase_hyper_addr = addr;
   hyperflash->pending_erase_size = size;

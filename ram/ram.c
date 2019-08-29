@@ -70,7 +70,7 @@ void cl_ram_copy(struct pi_device *device,
     #if defined(__PULP_OS__)
     __rt_task_init_from_cluster(&req->event);
     #endif  /* __PULP_OS__ */
-    pi_task_callback(&req->event, __ram_cluster_req, (void* )req);
+    pi_task_callback(&req->event, __ram_cluster_req, (void *) req);
     #if defined(PMSIS_DRIVERS)
     cl_send_task_to_fc(&(req->event));
     #else
@@ -96,7 +96,7 @@ void cl_ram_copy_2d(struct pi_device *device,
     #if defined(__PULP_OS__)
     __rt_task_init_from_cluster(&req->event);
     #endif  /* __PULP_OS__ */
-    pi_task_callback(&req->event, __ram_cluster_req, (void* )req);
+    pi_task_callback(&req->event, __ram_cluster_req, (void *) req);
     #if defined(PMSIS_DRIVERS)
     cl_send_task_to_fc(&(req->event));
     #else
@@ -141,7 +141,7 @@ void cl_ram_alloc(struct pi_device *device, uint32_t size, cl_ram_alloc_req_t *r
     #if defined(__PULP_OS__)
     __rt_task_init_from_cluster(&req->event);
     #endif  /* __PULP_OS__ */
-    pi_task_callback(&req->event, __ram_alloc_cluster_req, (void* )req);
+    pi_task_callback(&req->event, __ram_alloc_cluster_req, (void *) req);
     #if defined(PMSIS_DRIVERS)
     cl_send_task_to_fc(&(req->event));
     #else
@@ -159,7 +159,7 @@ void cl_ram_free(struct pi_device *device, uint32_t chunk, uint32_t size, cl_ram
     #if defined(__PULP_OS__)
     __rt_task_init_from_cluster(&req->event);
     #endif  /* __PULP_OS__ */
-    pi_task_callback(&req->event, __ram_free_cluster_req, (void* )req);
+    pi_task_callback(&req->event, __ram_free_cluster_req, (void *) req);
     #if defined(PMSIS_DRIVERS)
     cl_send_task_to_fc(&(req->event));
     #else

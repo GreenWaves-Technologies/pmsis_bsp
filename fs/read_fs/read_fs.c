@@ -101,33 +101,35 @@ static void __fs_mount_step(void *arg)
   // It can also be NULL to do everything synchronously
   switch (fs->mount_step)
   {
-    case 1:
+  case 1:
       // Read the offset telling where is the file-system header
       flash_read_async(fs->flash, 0, &fs->fs_l2->fs_offset, 8, pi_task_callback(&fs->step_event, __fs_mount_step, (void *)arg));
       break;
 
-    case 2:
+  case 2:
+      pi_task_destroy(&(fs->step_event));
       // Read the header size at the first header word
       flash_read_async(fs->flash, (int)fs->fs_l2->fs_offset, &fs->fs_l2->fs_size, 8, pi_task_callback(&fs->step_event, __fs_mount_step, (void *)arg));
       break;
 
-    case 3: {
+  case 3:
+      pi_task_destroy(&(fs->step_event));
       // Allocate roon for the file-system header and read it
       int fs_size = ((fs->fs_l2->fs_size + 7) & ~7);
       int fs_offset = fs->fs_l2->fs_offset;
       fs->fs_info = pmsis_l2_malloc(fs_size);
-      if (fs->fs_info == NULL) {
-        //__fs_abort(fs->pending_event, FS_MOUNT_MEM_ERROR, (void *)fs);
-        goto error;
+      if (fs->fs_info == NULL)
+      {
+          //__fs_abort(fs->pending_event, FS_MOUNT_MEM_ERROR, (void *)fs);
+          goto error;
       }
       flash_read_async(fs->flash, fs_offset + 8, (void *)fs->fs_info, fs_size, pi_task_callback(&fs->step_event, __fs_mount_step, (void *)arg));
       break;
-    }
 
-    case 4: {
+  case 4:
+      pi_task_destroy(&(fs->step_event));
       fs->error = 0;
       pi_task_push(fs->pending_event);
-    }
   }
 
   fs->mount_step++;
@@ -454,70 +456,100 @@ int fs_direct_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *
   return real_size;
 }
 
-#ifndef PMSIS_DRIVERS
 void __cl_fs_req_done(void *_req)
 {
-  cl_fs_req_t *req = (cl_fs_req_t *)_req;
-  req->done = 1;
-  __rt_cluster_notif_req_done(req->cid);
+    cl_fs_req_t *req = (cl_fs_req_t *)_req;
+    pi_task_destroy(&(req->task));
+    #if defined(PMSIS_DRIVERS)
+    cl_notify_task_done(&(req->done), req->cid);
+    #else
+    req->done = 1;
+    __rt_cluster_notif_req_done(req->cid);
+    #endif  /* PMSIS_DRIVERS */
 }
 
 void __cl_fs_req(void *_req)
 {
-  cl_fs_req_t *req = (cl_fs_req_t *)_req;
-  fs_file_t *file = req->file;
-  if (req->direct) {
-    req->result = fs_direct_read_async(file, req->buffer, req->size, pi_task_callback(&req->task, __cl_fs_req_done, (void *)req));
-  } else {
-    req->result = fs_read_async(req->file, req->buffer, req->size, pi_task_callback(&req->task, __cl_fs_req_done, (void *)req));
-  }
+    cl_fs_req_t *req = (cl_fs_req_t *)_req;
+    fs_file_t *file = req->file;
+    pi_task_destroy(&(req->task));
+    if (req->direct)
+    {
+        req->result = fs_direct_read_async(file, req->buffer, req->size, pi_task_callback(&req->task, __cl_fs_req_done, (void *)req));
+    }
+    else
+    {
+        req->result = fs_read_async(req->file, req->buffer, req->size, pi_task_callback(&req->task, __cl_fs_req_done, (void *)req));
+    }
 }
 
 void cl_fs_read(fs_file_t *file, void *buffer, size_t size, cl_fs_req_t *req)
 {
-  req->file = file;
-  req->buffer = buffer;
-  req->size = size;
-  req->cid = pi_cluster_id();
-  req->done = 0;
-  req->direct = 0;
+    req->file = file;
+    req->buffer = buffer;
+    req->size = size;
+    req->cid = pi_cluster_id();
+    req->done = 0;
+    req->direct = 0;
 
-  __rt_task_init_from_cluster(&req->task);
-  pi_task_callback(&req->task, __cl_fs_req, (void* )req);
-  __rt_cluster_push_fc_event(&req->task);
+    #if defined(__PULP_OS__)
+    __rt_task_init_from_cluster(&req->task);
+    #endif  /* __PULP_OS__ */
+    pi_task_callback(&req->task, __cl_fs_req, (void *) req);
+    #if defined(PMSIS_DRIVERS)
+    cl_send_task_to_fc(&(req->task));
+    #else
+    __rt_cluster_push_fc_event(&req->task);
+    #endif  /* PMSIS_DRIVERS */
 }
 
 void cl_fs_direct_read(fs_file_t *file, void *buffer, size_t size, cl_fs_req_t *req)
 {
-  req->file = file;
-  req->buffer = buffer;
-  req->size = size;
-  req->cid = pi_cluster_id();
-  req->done = 0;
-  req->direct = 1;
+    req->file = file;
+    req->buffer = buffer;
+    req->size = size;
+    req->cid = pi_cluster_id();
+    req->done = 0;
+    req->direct = 1;
 
-  __rt_task_init_from_cluster(&req->task);
-  pi_task_callback(&req->task, __cl_fs_req, (void* )req);
-  __rt_cluster_push_fc_event(&req->task);
+    #if defined(__PULP_OS__)
+    __rt_task_init_from_cluster(&req->task);
+    #endif  /* __PULP_OS__ */
+    pi_task_callback(&req->task, __cl_fs_req, (void *) req);
+    #if defined(PMSIS_DRIVERS)
+    cl_send_task_to_fc(&(req->task));
+    #else
+    __rt_cluster_push_fc_event(&req->task);
+    #endif  /* PMSIS_DRIVERS */
 }
 
 void __cl_fs_seek_req(void *_req)
 {
-  cl_fs_req_t *req = (cl_fs_req_t *)_req;
-  req->result = fs_seek(req->file, req->offset);
-  req->done = 1;
-  __rt_cluster_notif_req_done(req->cid);
+    cl_fs_req_t *req = (cl_fs_req_t *)_req;
+    req->result = fs_seek(req->file, req->offset);
+    pi_task_destroy(&(req->task));
+    #if defined(PMSIS_DRIVERS)
+    cl_notify_task_done(&(req->done), req->cid);
+    #else
+    req->done = 1;
+    __rt_cluster_notif_req_done(req->cid);
+    #endif  /* PMSIS_DRIVERS */
 }
 
 void cl_fs_seek(fs_file_t *file, unsigned int offset, cl_fs_req_t *req)
 {
-  req->file = file;
-  req->offset = offset;
-  req->cid = pi_cluster_id();
-  req->done = 0;
+    req->file = file;
+    req->offset = offset;
+    req->cid = pi_cluster_id();
+    req->done = 0;
 
-  __rt_task_init_from_cluster(&req->task);
-  pi_task_callback(&req->task, __cl_fs_seek_req, (void* )req);
-  __rt_cluster_push_fc_event(&req->task);
+    #if defined(__PULP_OS__)
+    __rt_task_init_from_cluster(&req->task);
+    #endif  /* __PULP_OS__ */
+    pi_task_callback(&req->task, __cl_fs_seek_req, (void *) req);
+    #if defined(PMSIS_DRIVERS)
+    cl_send_task_to_fc(&(req->task));
+    #else
+    __rt_cluster_push_fc_event(&req->task);
+    #endif  /* PMSIS_DRIVERS */
 }
-#endif
