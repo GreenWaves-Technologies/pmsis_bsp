@@ -93,14 +93,16 @@ static inline int cl_fs_wait(cl_fs_req_t *req);
 
 /// @cond IMPLEM
 
-typedef struct fs_l2_s {
+typedef struct fs_l2_s
+{
   uint32_t fs_offset;
   uint32_t reserved0;
   uint32_t fs_size;
   uint32_t reserved1;
 } fs_l2_t;
 
-typedef struct fs_s {
+typedef struct fs_s
+{
   struct pi_device *flash;
   pi_task_t step_event;
   pi_task_t *pending_event;
@@ -115,12 +117,13 @@ typedef struct fs_s {
 } fs_t;
 
 
-typedef struct cl_fs_req_s {
+typedef struct cl_fs_req_s
+{
   fs_file_t *file;
   void *buffer;
   size_t size;
   pi_task_t task;
-  int done;
+  uint8_t done;
   int result;
   unsigned char cid;
   unsigned char direct;
@@ -129,16 +132,15 @@ typedef struct cl_fs_req_s {
 
 static inline __attribute__((always_inline)) int cl_fs_wait(cl_fs_req_t *req)
 {
-#if defined(PMSIS_DRIVERS)
-    //pi_task_wait_on_no_mutex(&(req->done));
-    //hal_compiler_barrier();
-#else
-  while((*(volatile int *)&req->done) == 0)
-  {
-    eu_evt_maskWaitAndClr(1<<RT_CLUSTER_CALL_EVT);
-  }
-#endif
-  return req->result;
+    #if defined(PMSIS_DRIVERS)
+    cl_wait_task(&(req->done));
+    #else
+    while((*(volatile char *)&req->done) == 0)
+    {
+        eu_evt_maskWaitAndClr(1<<RT_CLUSTER_CALL_EVT);
+    }
+    #endif  /* PMSIS_DRIVERS */
+    return req->result;
 }
 
 /// @endcond
