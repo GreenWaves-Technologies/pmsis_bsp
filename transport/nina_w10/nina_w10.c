@@ -64,15 +64,19 @@ static int __nina_w10_send_command(nina_t *nina, uint8_t *command, int size, pi_
   if (nina->access_done)
   {
     // Nina module is generating a rising edge when it is ready to receive a command
-    while(pi_gpio_pin_notif_get(&nina->gpio_ready, 0) == 0)
+    while(pi_gpio_pin_notif_get(&nina->gpio_ready, CONFIG_NINA_GPIO_NINA_ACK) == 0)
     {
       pi_yield();
     }
   }
 
-  pi_gpio_pin_notif_clear(&nina->gpio_ready, 0);
+  pi_gpio_pin_notif_clear(&nina->gpio_ready, CONFIG_NINA_GPIO_NINA_ACK);
 
-  pi_spi_send_async(&nina->spim, (void *)command, ((size + 3) & ~0x3)*8, PI_SPI_CS_AUTO, task);
+  // TODO this is needed when using JPEG which generates sizes which are not a multiple of 4, but then is not compatible
+  // with the streamer which contains a packet size in the request which is sent which is then not aligned with the
+  // real size sent. Try to see on the silicon why sending a non-mutiple of 4 is an issue if we have aligned buffers.
+  //pi_spi_send_async(&nina->spim, (void *)command, ((size + 3) & ~0x3)*8, PI_SPI_CS_AUTO, task);
+  pi_spi_send_async(&nina->spim, (void *)command, size*8, PI_SPI_CS_AUTO, task);
 
   nina->access_done = 1;
 
@@ -86,15 +90,16 @@ static int __nina_w10_get_response(nina_t *nina, uint8_t *response, int size, pi
   if (nina->access_done)
   {
     // Nina module is generating a rising edge when it is ready to receive a command
-    while(pi_gpio_pin_notif_get(&nina->gpio_ready, 0) == 0)
+    while(pi_gpio_pin_notif_get(&nina->gpio_ready, CONFIG_NINA_GPIO_NINA_ACK) == 0)
     {
       pi_yield();
     }
   }
 
-  pi_gpio_pin_notif_clear(&nina->gpio_ready, 0);
-
-  pi_spi_receive_async(&nina->spim, (void *)response, ((size + 3) & ~0x3)*8, PI_SPI_CS_AUTO, task);
+  pi_gpio_pin_notif_clear(&nina->gpio_ready, CONFIG_NINA_GPIO_NINA_ACK);
+ 
+  //pi_spi_receive_async(&nina->spim, (void *)response, ((size + 3) & ~0x3)*8, PI_SPI_CS_AUTO, task);
+  pi_spi_receive_async(&nina->spim, (void *)response, size*8, PI_SPI_CS_AUTO, task);
 
   nina->access_done = 1;
 
@@ -247,10 +252,11 @@ int __nina_w10_open(struct pi_device *device)
   pi_open_from_conf(&nina->gpio_ready, &gpio_conf);
   pi_gpio_open(&nina->gpio_ready);
 
-  pi_gpio_pin_configure(&nina->gpio_ready, 0, PI_GPIO_INPUT);
-  pi_gpio_pin_notif_configure(&nina->gpio_ready, 0, PI_GPIO_NOTIF_RISE);
+  pi_gpio_pin_configure(&nina->gpio_ready, CONFIG_NINA_GPIO_NINA_ACK, PI_GPIO_INPUT);
+  pi_gpio_pin_notif_configure(&nina->gpio_ready, CONFIG_NINA_GPIO_NINA_ACK, PI_GPIO_NOTIF_RISE);
 
-  pi_pad_set_function(PI_PAD_12_A3_RF_PACTRL0, PI_PAD_12_A3_GPIO_A0_FUNC1);
+  pi_pad_set_function(CONFIG_NINA_GPIO_NINA_ACK_PAD, CONFIG_NINA_GPIO_NINA_ACK_PAD_FUNC);
+
 
   struct pi_spi_conf spi_conf;
   pi_spi_conf_init(&spi_conf);
@@ -275,7 +281,7 @@ int __nina_w10_open(struct pi_device *device)
 
   do {
     uint32_t value;
-    pi_gpio_pin_read(&nina->gpio_ready, 0, &value);
+    pi_gpio_pin_read(&nina->gpio_ready, CONFIG_NINA_GPIO_NINA_ACK, &value);
     if (value == 1)
       break;
     pi_time_wait_us(10);

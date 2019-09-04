@@ -26,6 +26,7 @@ struct transport_header
 {
   uint32_t channel;
   uint32_t packet_size;
+  uint32_t info;
 };
 
 int transport_open(struct pi_device *device);
