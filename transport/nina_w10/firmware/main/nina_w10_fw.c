@@ -55,11 +55,19 @@
 
 //SPI code
 //SPI pin on the EVK Board
+#if 0
 #define GPIO_HANDSHAKE 22
 #define GPIO_MOSI 14
 #define GPIO_MISO 5
 #define GPIO_SCLK 12
 #define GPIO_CS 13
+#else
+#define GPIO_HANDSHAKE 3
+#define GPIO_MOSI 19
+#define GPIO_MISO 23
+#define GPIO_SCLK 18
+#define GPIO_CS 5
+#endif
 
 
 #define NINA_W10_CMD_SETUP        0x80
@@ -123,6 +131,7 @@ static void on_wifi_disconnect(void* arg, esp_event_base_t event_base,
 
 static void start(wifi_config_t *wifi_config)
 {
+  //uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
@@ -133,7 +142,9 @@ static void start(wifi_config_t *wifi_config)
     ESP_LOGI(TAG, "Connecting to %s...", wifi_config->sta.ssid);
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, wifi_config));
+    //ESP_ERROR_CHECK(esp_base_mac_addr_set(mac));
     ESP_ERROR_CHECK(esp_wifi_start());
+    //ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(8));
     ESP_ERROR_CHECK(esp_wifi_connect());
     s_connection_name = (const char *)wifi_config->sta.ssid;
 }
@@ -220,21 +231,6 @@ void spi_slave_init()
     responseBuffer = (uint8_t*)heap_caps_malloc(SPI_BUFFER_LEN, MALLOC_CAP_DMA);
 
 }
-
-
-
-  nina_conf.ssid = "HONOR_KIW-L21_ACD9";
-  nina_conf.passwd = "gejeseclha22140";
-  nina_conf.ip_addr = "192.168.43.237";
-  nina_conf.port = 3333;
-
-
-
-
-
-
-
-
 
 static int command_extract_string(uint8_t *buffer, const char **str, int max_len)
 {
@@ -360,7 +356,6 @@ static int handle_send_packet_command(uint8_t *command_buffer, uint8_t *response
 static int handle_command(uint8_t *command_buffer, uint8_t *response_buffer)
 {
   nina_req_t *req = (nina_req_t *)command_buffer;
-
   //printf("Handling command %x\n", req->type);
 
   switch (req->type)
@@ -373,6 +368,7 @@ static int handle_command(uint8_t *command_buffer, uint8_t *response_buffer)
       handle_send_packet_command(command_buffer, response_buffer);
       break;
   }
+
 
   spi_slave_transaction_t t;
   memset(&t, 0, sizeof(t));
@@ -403,7 +399,7 @@ static int get_command(uint8_t *buffer)
   t.trans_len = 0;
 
   if (spi_slave_transmit(VSPI_HOST, &t, portMAX_DELAY))
-      return -1;
+    return -1;
 
   if (t.trans_len == 0)
       return 0;
