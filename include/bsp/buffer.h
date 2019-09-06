@@ -39,6 +39,7 @@ typedef struct {
   uint32_t height;
   uint32_t channels;
   uint32_t stride;
+  uint32_t size;
   pi_buffer_format_e format;
 } pi_buffer_t;
 
