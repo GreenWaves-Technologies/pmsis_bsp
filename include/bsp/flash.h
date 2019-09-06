@@ -81,6 +81,8 @@ typedef struct {
   void (*erase_async)(struct pi_device *device, uint32_t flash_addr, int size, pi_task_t *task);
   void (*reg_set_async)(struct pi_device *device, uint32_t flash_addr, uint8_t *value, pi_task_t *task);
   void (*reg_get_async)(struct pi_device *device, uint32_t flash_addr, uint8_t *value, pi_task_t *task);
+  int (*copy_async)(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, int ext2loc, pi_task_t *task);
+  int (*copy_2d_async)(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_task_t *task);
 } flash_api_t;
 
 struct flash_conf {
@@ -191,6 +193,38 @@ static inline void flash_erase(struct pi_device *device, uint32_t flash_addr, in
   pi_task_block(&task);
   flash_erase_async(device, flash_addr, size, &task);
   pi_task_wait_on(&task);
+}
+
+static inline int flash_copy_async(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, int ext2loc, pi_task_t *task)
+{
+  flash_api_t *api = (flash_api_t *)device->api;
+  return api->copy_async(device, flash_addr, buffer, size, ext2loc, task);
+}
+
+static inline int flash_copy_2d_async(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_task_t *task)
+{
+  flash_api_t *api = (flash_api_t *)device->api;
+  return api->copy_2d_async(device, flash_addr, buffer, size, stride, length, ext2loc, task);
+}
+
+static inline int flash_copy(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, int ext2loc)
+{
+  pi_task_t task;
+  pi_task_block(&task);
+  if (flash_copy_async(device, flash_addr, buffer, size, ext2loc, &task))
+    return -1;
+  pi_task_wait_on(&task);
+  return 0;
+}
+
+static inline int flash_copy_2d(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc)
+{
+  pi_task_t task;
+  pi_task_block(&task);
+  if (flash_copy_2d_async(device, flash_addr, buffer, size, ext2loc, stride, length, &task))
+    return -1;
+  pi_task_wait_on(&task);
+  return 0;
 }
 
 void __flash_conf_init(struct flash_conf *conf);

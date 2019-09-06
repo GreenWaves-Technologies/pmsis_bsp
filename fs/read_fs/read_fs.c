@@ -455,6 +455,30 @@ int fs_direct_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *
   return real_size;
 }
 
+int fs_copy(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, int ext2loc)
+{
+  fs_t *fs = (fs_t *)file->fs->data;
+  return flash_copy(fs->flash, file->addr + index, buffer, size, ext2loc);
+}
+
+int fs_copy_2d(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc)
+{
+  fs_t *fs = (fs_t *)file->fs->data;
+  return flash_copy_2d(fs->flash, file->addr + index, buffer, size, stride, length, ext2loc);
+}
+
+int fs_copy_async(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, int ext2loc, pi_task_t *task)
+{
+  fs_t *fs = (fs_t *)file->fs->data;
+  return flash_copy_async(fs->flash, file->addr + index, buffer, size, ext2loc, task);
+}
+
+int fs_copy_2d_async(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_task_t *task)
+{
+  fs_t *fs = (fs_t *)file->fs->data;
+  return flash_copy_2d_async(fs->flash, file->addr + index, buffer, size, stride, length, ext2loc, task);
+}
+
 void __cl_fs_req_done(void *_req)
 {
     cl_fs_req_t *req = (cl_fs_req_t *)_req;
@@ -548,4 +572,66 @@ void cl_fs_seek(fs_file_t *file, unsigned int offset, cl_fs_req_t *req)
     #else
     __rt_cluster_push_fc_event(&req->task);
     #endif  /* PMSIS_DRIVERS */
+}
+
+void __cl_fs_copy_req_done(void *_req)
+{
+    cl_fs_req_t *req = (cl_fs_req_t *)_req;
+    #if defined(PMSIS_DRIVERS)
+    cl_notify_task_done(&(req->done), req->cid);
+    #else
+    req->done = 1;
+    __rt_cluster_notif_req_done(req->cid);
+    #endif  /* PMSIS_DRIVERS */
+}
+
+void __cl_fs_copy_req(void *_req)
+{
+  cl_fs_req_t *req = (cl_fs_req_t *)_req;
+  if (req->length)
+    req->result = fs_copy_2d_async(req->file, req->index, req->buffer, req->size, req->stride, req->length, req->ext2loc, pi_task_callback(&req->task, __cl_fs_copy_req_done, (void *)req));
+  else
+    req->result = fs_copy_async(req->file, req->index, req->buffer, req->size, req->ext2loc, pi_task_callback(&req->task, __cl_fs_copy_req_done, (void *)req));
+
+  if (req->result)
+    __cl_fs_copy_req_done(_req);
+}
+
+void cl_fs_copy(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, int ext2loc, cl_fs_req_t *req)
+{
+  req->file = file;
+  req->index = index;
+  req->buffer = buffer;
+  req->size = size;
+  req->ext2loc = ext2loc;
+  req->length = 0;
+  #if defined(__PULP_OS__)
+  __rt_task_init_from_cluster(&req->task);
+  #endif  /* __PULP_OS__ */
+  pi_task_callback(&req->task, __cl_fs_copy_req, (void *) req);
+  #if defined(PMSIS_DRIVERS)
+  cl_send_task_to_fc(&(req->task));
+  #else
+  __rt_cluster_push_fc_event(&req->task);
+  #endif  /* PMSIS_DRIVERS */
+}
+
+void cl_fs_copy_2d(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, cl_fs_req_t *req)
+{
+  req->file = file;
+  req->index = index;
+  req->buffer = buffer;
+  req->size = size;
+  req->stride = stride;
+  req->length = length;
+  req->ext2loc = ext2loc;
+  #if defined(__PULP_OS__)
+  __rt_task_init_from_cluster(&req->task);
+  #endif  /* __PULP_OS__ */
+  pi_task_callback(&req->task, __cl_fs_copy_req, (void *) req);
+  #if defined(PMSIS_DRIVERS)
+  cl_send_task_to_fc(&(req->task));
+  #else
+  __rt_cluster_push_fc_event(&req->task);
+  #endif  /* PMSIS_DRIVERS */
 }

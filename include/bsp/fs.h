@@ -82,11 +82,23 @@ int fs_direct_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *
 
 int fs_seek(fs_file_t *file, unsigned int offset);
 
+int fs_copy(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, int ext2loc);
+
+int fs_copy_2d(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc);
+
+int fs_copy_async(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, int ext2loc, pi_task_t *task);
+
+int fs_copy_2d_async(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_task_t *task);
+
 void cl_fs_read(fs_file_t *file, void *buffer, size_t size, cl_fs_req_t *req);
 
 void cl_fs_direct_read(fs_file_t *file, void *buffer, size_t size, cl_fs_req_t *req);
 
 void cl_fs_seek(fs_file_t *file, unsigned int offset, cl_fs_req_t *req);
+
+void cl_fs_copy(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, int ext2loc, cl_fs_req_t *req);
+
+void cl_fs_copy_2d(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, cl_fs_req_t *req);
 
 static inline int cl_fs_wait(cl_fs_req_t *req);
 
@@ -120,8 +132,12 @@ typedef struct fs_s
 typedef struct cl_fs_req_s
 {
   fs_file_t *file;
+  uint32_t index;
   void *buffer;
   size_t size;
+  uint32_t stride;
+  uint32_t length;
+  uint32_t ext2loc;
   pi_task_t task;
   uint8_t done;
   int result;
