@@ -24,7 +24,7 @@
  * Definitions
  ******************************************************************************/
 
-#define DBG 1
+//#define DBG 1
 
 #ifdef DBG
 #define DBG_PRINT printf
