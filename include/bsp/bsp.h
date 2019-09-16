@@ -68,6 +68,12 @@ void bsp_hyperram_conf_init(struct hyperram_conf *conf);
 int bsp_hyperram_open(struct hyperram_conf *conf);
 #endif
 
+#if defined(CONFIG_SPIRAM)
+#include "bsp/ram/spiram.h"
+void bsp_spiram_conf_init(struct spiram_conf *conf);
+int bsp_spiram_open(struct spiram_conf *conf);
+#endif
+
 #if defined(CONFIG_NINA_W10)
 #include "bsp/transport/nina_w10.h"
 void bsp_nina_w10_conf_init(struct nina_w10_conf *conf);

@@ -24,6 +24,7 @@
 #include "bsp/transport/nina_w10.h"
 #include "bsp/display/ili9341.h"
 #include "bsp/ram/hyperram.h"
+#include "bsp/ram/spiram.h"
 #include "bsp/ble/nina_b112/nina_b112.h"
 
 
@@ -32,6 +33,7 @@ static int __bsp_init_pads_done = 0;
 
 static void __gpio_init()
 {
+#if 0
     pi_gpio_pin_configure(0, GPIOA0_LED      , PI_GPIO_OUTPUT);
     pi_gpio_pin_configure(0, GPIOA1          , PI_GPIO_INPUT);
     pi_gpio_pin_configure(0, GPIOA2_NINA_RST , PI_GPIO_OUTPUT);
@@ -44,6 +46,7 @@ static void __gpio_init()
     pi_gpio_pin_write(0, GPIOA2_NINA_RST, 0);
     pi_gpio_pin_write(0, GPIOA4_1V8_EN, 1);
     pi_gpio_pin_write(0, GPIOA21_NINA17, 1);
+#endif
 }
 
 static void __bsp_init_pads()
@@ -51,9 +54,9 @@ static void __bsp_init_pads()
   if (!__bsp_init_pads_done)
   {
     __bsp_init_pads_done = 1;
-    uint32_t pads_value[] = {0x00055500, 0x0f450000, 0x003fffff, 0x00000000};
-    pi_pad_init(pads_value);
-    __gpio_init();
+    //uint32_t pads_value[] = {0x00055500, 0x0f450000, 0x003fffff, 0x00000000};
+    //pi_pad_init(pads_value);
+    //__gpio_init();
   }
 }
 
@@ -70,6 +73,23 @@ int bsp_hyperram_open(struct hyperram_conf *conf)
 {
   __bsp_init_pads();
   pi_pad_set_function(CONFIG_HYPERBUS_DATA6_PAD, CONFIG_HYPERRAM_DATA6_PAD_FUNC);
+  return 0;
+}
+
+
+
+void bsp_spiram_conf_init(struct spiram_conf *conf)
+{
+  conf->ram_start = CONFIG_SPIRAM_START;
+  conf->ram_size = CONFIG_SPIRAM_SIZE;
+  conf->skip_pads_config = 0;
+  conf->spi_itf = CONFIG_SPIRAM_SPI_ITF;
+  conf->spi_cs = CONFIG_SPIRAM_SPI_CS;
+}
+
+int bsp_spiram_open(struct spiram_conf *conf)
+{
+  __bsp_init_pads();
   return 0;
 }
 

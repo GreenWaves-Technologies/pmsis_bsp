@@ -35,6 +35,7 @@ GAPUINO_SRC = \
   fs/read_fs/read_fs.c \
   flash/hyperflash/hyperflash.c \
   ram/hyperram/hyperram.c \
+  ram/spiram/spiram.c \
   ram/ram.c \
   ram/alloc_extern.c
 
@@ -62,6 +63,7 @@ GAPOC_A_SRC = \
   display/display.c \
   display/ili9341/ili9341.c \
   transport/nina_w10/nina_w10.c \
+  ram/spiram/spiram.c \
   ram/hyperram/hyperram.c \
   ram/ram.c \
   ram/alloc_extern.c \

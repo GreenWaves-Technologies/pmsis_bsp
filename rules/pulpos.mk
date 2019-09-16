@@ -5,7 +5,7 @@ include $(TARGET_INSTALL_DIR)/rules/pulp_properties.mk
 INSTALL_FILES += $(shell find include -name *.h)
 
 ifeq '$(pulp_chip_family)' 'gap'
-PULP_LIBS += pibsp_gapoc_a pibsp_gapuino pibsp_ai_deck
+PULP_LIBS += pibsp_gapoc_a pibsp_gapuino pibsp_ai_deck pibsp_gapuino_revc
 endif
 
 ifeq '$(pulp_chip_family)' 'wolfe'

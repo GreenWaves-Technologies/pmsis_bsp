@@ -167,8 +167,7 @@ static int __ili_open(struct pi_device *device)
     goto error;
 
   __ili_init(ili);
-  __ili_set_rotation(ili,0);
-
+  __ili_set_rotation(ili, CONFIG_ILI9341_ORIENTATION);
 
   ili->_width = ILI9341_TFTWIDTH;
   ili->_height = ILI9341_TFTHEIGHT;

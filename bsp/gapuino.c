@@ -23,6 +23,7 @@
 #include "bsp/display/ili9341.h"
 #include "bsp/flash/hyperflash.h"
 #include "bsp/ram/hyperram.h"
+#include "bsp/ram/spiram.h"
 
 
 static int __bsp_init_pads_done = 0;
@@ -32,8 +33,8 @@ static void __bsp_init_pads()
   if (!__bsp_init_pads_done)
   {
     __bsp_init_pads_done = 1;
-    uint32_t pads_value[] = {0x00055500, 0x0f000000, 0x003fffff, 0x00000000};
-    pi_pad_init(pads_value);
+    //uint32_t pads_value[] = {0x00055500, 0x0f000000, 0x003fffff, 0x00000000};
+    //pi_pad_init(pads_value);
   }
 }
 
@@ -48,6 +49,22 @@ void bsp_hyperram_conf_init(struct hyperram_conf *conf)
 }
 
 int bsp_hyperram_open(struct hyperram_conf *conf)
+{
+  __bsp_init_pads();
+  return 0;
+}
+
+
+void bsp_spiram_conf_init(struct spiram_conf *conf)
+{
+  conf->ram_start = CONFIG_SPIRAM_START;
+  conf->ram_size = CONFIG_SPIRAM_SIZE;
+  conf->skip_pads_config = 0;
+  conf->spi_itf = CONFIG_SPIRAM_SPI_ITF;
+  conf->spi_cs = CONFIG_SPIRAM_SPI_CS;
+}
+
+int bsp_spiram_open(struct spiram_conf *conf)
 {
   __bsp_init_pads();
   return 0;
