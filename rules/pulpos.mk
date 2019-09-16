@@ -1,11 +1,23 @@
-PULP_PROPERTIES += udma/cpi/version pulp_chip_family
+PULP_PROPERTIES += udma/cpi/version pulp_chip_family board/name
 
 include $(TARGET_INSTALL_DIR)/rules/pulp_properties.mk
 
 INSTALL_FILES += $(shell find include -name *.h)
 
+ifneq '$(board/name)' ''
+ifeq '$(board/name)' 'gapoc_a'
+PULP_LIBS += pibsp_gapoc_a
+endif
+ifeq '$(board/name)' 'gapuino'
+PULP_LIBS += pibsp_gapuino
+endif
+ifeq '$(board/name)' 'ai_deck'
+PULP_LIBS += pibsp_ai_deck
+endif
+else
 ifeq '$(pulp_chip_family)' 'gap'
 PULP_LIBS += pibsp_gapoc_a pibsp_gapuino pibsp_ai_deck
+endif
 endif
 
 ifeq '$(pulp_chip_family)' 'wolfe'
