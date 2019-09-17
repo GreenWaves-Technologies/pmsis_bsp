@@ -28,6 +28,14 @@ ifeq '$(pulp_chip_family)' 'vega'
 PULP_LIBS += pibsp_vega
 endif
 
+ifeq '$(pulp_chip_family)' 'gap9'
+PULP_LIBS += pibsp_gap9
+endif
+
+PULP_LIB_FC_SRCS_pibsp_gap9 = $(VEGA_SRC)
+PULP_LIB_TARGET_NAME_pibsp_gap9 = gap9/libpibsp.a
+PULP_LIB_CFLAGS_pibsp_gap9 = -DCONFIG_GAP9
+
 PULP_LIB_FC_SRCS_pibsp_vega = $(VEGA_SRC)
 PULP_LIB_TARGET_NAME_pibsp_vega = vega/libpibsp.a
 PULP_LIB_CFLAGS_pibsp_vega = -DCONFIG_VEGA

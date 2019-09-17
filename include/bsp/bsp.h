@@ -37,6 +37,10 @@
 #include <bsp/vega.h>
 #endif
 
+#if defined(CONFIG_GAP9)
+#include <bsp/gap9.h>
+#endif
+
 #if defined(CONFIG_HIMAX)
 #include "bsp/camera/himax.h"
 void bsp_himax_conf_init(struct himax_conf *conf);
