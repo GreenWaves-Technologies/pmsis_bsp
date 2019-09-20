@@ -42,9 +42,11 @@ TARGET_INSTALL_DIR ?= $(CURDIR)/install
 LIB_DIR ?= $(TARGET_INSTALL_DIR)/lib/gap
 BUILD_DIR   ?= $(CURDIR)/build
 
+LIB_VEGA = $(LIB_DIR)/vega/libpibsp.a
 LIB_GAPUINO = $(LIB_DIR)/gapuino/libpibsp.a
 LIB_GAPOC_A = $(LIB_DIR)/gapoc_a/libpibsp.a
 
+VEGA_BUILD_DIR = $(BUILD_DIR)/bsp/vega
 GAPUINO_BUILD_DIR = $(BUILD_DIR)/bsp/gapuino
 GAPOC_A_BUILD_DIR = $(BUILD_DIR)/bsp/gapoc_a
 
@@ -71,19 +73,33 @@ INC = $(BSP_INC) $(TARGET_INSTALL_DIR)/include/io $(TARGET_INSTALL_DIR)/include
 INC_PATH = $(foreach d, $(INC), -I$d)
 INC_PATH += -include $(TARGET_INSTALL_DIR)/include/rt/chips/$(TARGET_NAME)/config.h
 
+OBJECTS_VEGA = $(patsubst %.c, $(VEGA_BUILD_DIR)/%.o, $(wildcard $(VEGA_SRC)))
 OBJECTS_GAPUINO = $(patsubst %.c, $(GAPUINO_BUILD_DIR)/%.o, $(wildcard $(GAPUINO_SRC)))
 OBJECTS_GAPOC_A = $(patsubst %.c, $(GAPOC_A_BUILD_DIR)/%.o, $(wildcard $(GAPOC_A_SRC)))
 
-CFLAGS += -std=gnu99 -march=rv32imcxgap8 -mPE=8 -mFC=1 -D__riscv__ -Os -g -Werror -Wall
+ifeq '$(TARGET_CHIP)' 'GAP9'
+CFLAGS += -march=rv32imcxgap9
+else
+CFLAGS += -march=rv32imcxgap8
+endif
+CFLAGS += -std=gnu99 -mPE=8 -mFC=1 -D__riscv__ -Os -g -Werror -Wall
 CFLAGS += -Wno-unused-variable -Wno-unused-function
 CFLAGS += -MMD -MP -c
 
+ifeq '$(TARGET_CHIP)' 'GAP9'
+all: dir header vega_bsp
+else
 all: dir header gapuino_bsp gapoc_a_bsp
+endif
 
 dir:
 	mkdir -p $(BUILD_DIR) $(TARGET_INSTALL_DIR) $(LIB_DIR)
 
 header: $(INSTALL_HEADERS)
+
+$(OBJECTS_VEGA) : $(VEGA_BUILD_DIR)/%.o : %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -DCONFIG_VEGA $< $(INC_PATH) -o $@
 
 $(OBJECTS_GAPUINO) : $(GAPUINO_BUILD_DIR)/%.o : %.c
 	@mkdir -p $(dir $@)
@@ -92,6 +108,10 @@ $(OBJECTS_GAPUINO) : $(GAPUINO_BUILD_DIR)/%.o : %.c
 $(OBJECTS_GAPOC_A) : $(GAPOC_A_BUILD_DIR)/%.o : %.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -DCONFIG_GAPOC_A $< $(INC_PATH) -o $@
+
+vega_bsp: $(OBJECTS_VEGA)
+	mkdir -p $(LIB_DIR)/vega
+	$(AR) -r $(LIB_VEGA) $^
 
 gapuino_bsp: $(OBJECTS_GAPUINO)
 	mkdir -p $(LIB_DIR)/gapuino
@@ -104,7 +124,7 @@ gapoc_a_bsp: $(OBJECTS_GAPOC_A)
 install: all
 
 clean:
-	rm -rf $(GAPUINO_BUILD_DIR) $(GAPOC_A_BUILD_DIR)
+	rm -rf $(GAPUINO_BUILD_DIR) $(GAPOC_A_BUILD_DIR) $(VEGA_BUILD_DIR)
 	rm -rf $(INSTALL_HEADERS)
-	rm -rf $(LIB_GAPUINO) $(LIB_GAPOC_A)
+	rm -rf $(LIB_GAPUINO) $(LIB_GAPOC_A) $(LIB_VEGA)
 	rm -rf $(CURDIR)/build $(CURDIR)/install
