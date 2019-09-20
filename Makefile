@@ -1,10 +1,16 @@
-ifndef GAP_SDK_HOME
-PULP_PROPERTIES += udma/cpi/version pulp_chip_family
-include $(TARGET_INSTALL_DIR)/rules/pulp_properties.mk
-endif
-
 VEGA_SRC = \
   bsp/vega.c \
+  camera/camera.c \
+  camera/himax/himax.c \
+  flash/flash.c \
+  fs/read_fs/read_fs.c \
+  flash/hyperflash/hyperflash.c \
+  ram/hyperram/hyperram.c \
+  ram/ram.c \
+  ram/alloc_extern.c
+
+GAP9_SRC = \
+  bsp/gap9.c \
   camera/camera.c \
   camera/himax/himax.c \
   flash/flash.c \
