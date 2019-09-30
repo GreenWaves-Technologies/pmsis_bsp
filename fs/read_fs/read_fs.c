@@ -240,6 +240,7 @@ fs_file_t *fs_open(struct pi_device *device, const char *file_name, int flags)
   file->size = desc->size;
   file->addr = desc->addr;
   file->fs = device;
+  file->cache_addr = -1;
 
   return file;
 
