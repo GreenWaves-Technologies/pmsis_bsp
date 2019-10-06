@@ -69,7 +69,7 @@ endef
 INSTALL_FILES  = $(shell find include -name *.h)
 $(foreach file, $(INSTALL_FILES), $(eval $(call declareInstallFile,$(file))))
 
-INC = $(BSP_INC) $(GAP_SDK_HOME)/pulp-os/include $(TARGET_INSTALL_DIR)/include/io $(TARGET_INSTALL_DIR)/include
+INC = $(BSP_INC) $(TARGET_INSTALL_DIR)/include/io $(TARGET_INSTALL_DIR)/include
 INC_PATH = $(foreach d, $(INC), -I$d)
 INC_PATH += -include $(TARGET_INSTALL_DIR)/include/rt/chips/$(TARGET_NAME)/config.h
 
