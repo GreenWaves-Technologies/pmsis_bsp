@@ -21,7 +21,7 @@
 #include "pmsis.h"
 #include "bsp/camera.h"
 
-int camera_open(struct pi_device *device)
+int32_t camera_open(struct pi_device *device)
 {
   struct camera_conf *conf = (struct camera_conf *)device->config;
   camera_api_t *api = (camera_api_t *)conf->api;

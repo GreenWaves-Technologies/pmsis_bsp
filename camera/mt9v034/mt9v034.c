@@ -221,7 +221,7 @@ static void __mt9v034_trigger_snapshot(mt9v034_t *mt9v034)
 
 
 
-static int __mt9v034_open(struct pi_device *device)
+static int32_t __mt9v034_open(struct pi_device *device)
 {
   struct mt9v034_conf *conf = (struct mt9v034_conf *)device->config;
 
@@ -293,7 +293,7 @@ static void __mt9v034_close(struct pi_device *device)
 
 
 
-static void __mt9v034_control(struct pi_device *device, camera_cmd_e cmd, void *arg)
+static int32_t __mt9v034_control(struct pi_device *device, camera_cmd_e cmd, void *arg)
 {
   mt9v034_t *mt9v034 = (mt9v034_t *)device->data;
 
@@ -319,6 +319,8 @@ static void __mt9v034_control(struct pi_device *device, camera_cmd_e cmd, void *
     default:
       break;
   }
+
+  return 0;
 }
 
 
@@ -330,7 +332,7 @@ static void __mt9v034_capture_async(struct pi_device *device, void *buffer, uint
   pi_cpi_capture_async(&mt9v034->cpi_device, buffer, bufferlen, task);
 }
 
-static int __mt9v034_reg_set(struct pi_device *device, uint32_t addr, uint8_t *value)
+static int32_t __mt9v034_reg_set(struct pi_device *device, uint32_t addr, uint8_t *value)
 {
   mt9v034_t *mt9v034 = (mt9v034_t *)device->data;
   __mt9v034_reg_write(mt9v034, addr, *(uint16_t *)value);
@@ -339,7 +341,7 @@ static int __mt9v034_reg_set(struct pi_device *device, uint32_t addr, uint8_t *v
 
 
 
-static int __mt9v034_reg_get(struct pi_device *device, uint32_t addr, uint8_t *value)
+static int32_t __mt9v034_reg_get(struct pi_device *device, uint32_t addr, uint8_t *value)
 {
   mt9v034_t *mt9v034 = (mt9v034_t *)device->data;
   *(uint16_t *)value = __mt9v034_reg_read(mt9v034, addr);

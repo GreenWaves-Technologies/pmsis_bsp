@@ -142,7 +142,6 @@ static int hyperflash_open(struct pi_device *device)
 
   hyper_conf.id = (unsigned char) conf->hyper_itf;
   hyper_conf.cs = conf->hyper_cs;
-  hyper_conf.type = PI_HYPER_TYPE_FLASH;
 
   pi_open_from_conf(&hyperflash->hyper_device, &hyper_conf);
 
@@ -176,7 +175,7 @@ static void hyperflash_close(struct pi_device *device)
 
 
 
-static void hyperflash_ioctl(struct pi_device *device, uint32_t cmd, void *arg)
+static int32_t hyperflash_ioctl(struct pi_device *device, uint32_t cmd, void *arg)
 {
   switch (cmd)
   {
@@ -188,6 +187,7 @@ static void hyperflash_ioctl(struct pi_device *device, uint32_t cmd, void *arg)
       flash_info->flash_start = flash_info->sector_size;
     }
   }
+  return 0;
 }
 
 
@@ -693,7 +693,6 @@ static flash_api_t hyperflash_api = {
 void hyperflash_conf_init(struct hyperflash_conf *conf)
 {
   conf->flash.api = &hyperflash_api;
-  conf->flash.type = FLASH_TYPE_HYPERFLASH;
   bsp_hyperflash_conf_init(conf);
   __flash_conf_init(&conf->flash);
 }

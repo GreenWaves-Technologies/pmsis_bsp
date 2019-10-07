@@ -20,7 +20,7 @@
 
 #include "bsp/ram.h"
 
-int ram_open(struct pi_device *device)
+int32_t ram_open(struct pi_device *device)
 {
     struct ram_conf *conf = (struct ram_conf *)device->config;
     ram_api_t *api = (ram_api_t *)conf->api;
@@ -50,18 +50,18 @@ static void __ram_cluster_req(void *_req)
     cl_ram_req_t *req = (cl_ram_req_t* )_req;
 
     if (req->is_2d)
-  	ram_copy_2d_async(req->device, req->hyper_addr, req->addr, req->size, req->stride, req->length, req->ext2loc, pi_task_callback(&req->event, __ram_cluster_req_done, (void *)req));
+  	ram_copy_2d_async(req->device, req->ram_addr, req->addr, req->size, req->stride, req->length, req->ext2loc, pi_task_callback(&req->event, __ram_cluster_req_done, (void *)req));
     else
-  	ram_copy_async(req->device, req->hyper_addr, req->addr, req->size, req->ext2loc, pi_task_callback(&req->event, __ram_cluster_req_done, (void *)req));
+  	ram_copy_async(req->device, req->ram_addr, req->addr, req->size, req->ext2loc, pi_task_callback(&req->event, __ram_cluster_req_done, (void *)req));
 }
 
 
 void cl_ram_copy(struct pi_device *device,
-                 uint32_t hyper_addr, void *addr, uint32_t size, int ext2loc, cl_ram_req_t *req)
+                 uint32_t ram_addr, void *addr, uint32_t size, int ext2loc, cl_ram_req_t *req)
 {
     req->device = device;
     req->addr = addr;
-    req->hyper_addr = hyper_addr;
+    req->ram_addr = ram_addr;
     req->size = size;
     req->cid = pi_cluster_id();
     req->done = 0;
@@ -81,11 +81,11 @@ void cl_ram_copy(struct pi_device *device,
 
 
 void cl_ram_copy_2d(struct pi_device *device,
-                    uint32_t hyper_addr, void *addr, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, cl_ram_req_t *req)
+                    uint32_t ram_addr, void *addr, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, cl_ram_req_t *req)
 {
     req->device = device;
     req->addr = addr;
-    req->hyper_addr = hyper_addr;
+    req->ram_addr = ram_addr;
     req->size = size;
     req->stride = stride;
     req->length = length;
@@ -122,7 +122,7 @@ void __ram_alloc_cluster_req(void *_req)
 void __ram_free_cluster_req(void *_req)
 {
     cl_ram_free_req_t *req = (cl_ram_free_req_t *)_req;
-    ram_free(req->device, req->chunk, req->size);
+    req->error = ram_free(req->device, req->chunk, req->size);
     #if defined(PMSIS_DRIVERS)
     cl_notify_task_done(&(req->done), req->cid);
     #else

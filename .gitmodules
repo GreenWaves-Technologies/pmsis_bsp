@@ -1,6 +1,6 @@
 [submodule "tests"]
 	path = tests
-	url = git@github.com:GreenWaves-Technologies/pmsis_bsp_tests.git
+	url = https://github.com/GreenWaves-Technologies/pmsis_bsp_tests.git
 [submodule "examples"]
 	path = examples
-	url = git@github.com:GreenWaves-Technologies/pmsis_bsp_examples.git
+	url = https://github.com/GreenWaves-Technologies/pmsis_bsp_examples.git

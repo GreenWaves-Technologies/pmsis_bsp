@@ -152,7 +152,7 @@ void fs_unmount(struct pi_device *device)
 }
 
 
-int fs_mount(struct pi_device *device)
+int32_t fs_mount(struct pi_device *device)
 {
 
   struct fs_conf *conf = (struct fs_conf *)device->config;

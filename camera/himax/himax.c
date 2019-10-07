@@ -249,7 +249,7 @@ static void __himax_standby(himax_t *himax)
 
 
 
-int __himax_open(struct pi_device *device)
+int32_t __himax_open(struct pi_device *device)
 {
   struct himax_conf *conf = (struct himax_conf *)device->config;
 
@@ -309,7 +309,7 @@ static void __himax_close(struct pi_device *device)
 
 
 
-static void __himax_control(struct pi_device *device, camera_cmd_e cmd, void *arg)
+static int32_t __himax_control(struct pi_device *device, camera_cmd_e cmd, void *arg)
 {
   int irq = disable_irq();
 
@@ -338,6 +338,8 @@ static void __himax_control(struct pi_device *device, camera_cmd_e cmd, void *ar
   }
 
   restore_irq(irq);
+
+  return 0;
 }
 
 
@@ -351,7 +353,7 @@ void __himax_capture_async(struct pi_device *device, void *buffer, uint32_t buff
 
 
 
-int __himax_reg_set(struct pi_device *device, uint32_t addr, uint8_t *value)
+int32_t __himax_reg_set(struct pi_device *device, uint32_t addr, uint8_t *value)
 {
   himax_t *himax = (himax_t *)device->data;
   __himax_reg_write(himax, addr, *value);
@@ -360,7 +362,7 @@ int __himax_reg_set(struct pi_device *device, uint32_t addr, uint8_t *value)
 
 
 
-int __himax_reg_get(struct pi_device *device, uint32_t addr, uint8_t *value)
+int32_t __himax_reg_get(struct pi_device *device, uint32_t addr, uint8_t *value)
 {
   himax_t *himax = (himax_t *)device->data;
   *value = __himax_reg_read(himax, addr);
