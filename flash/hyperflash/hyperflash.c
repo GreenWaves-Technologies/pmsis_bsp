@@ -142,6 +142,7 @@ static int hyperflash_open(struct pi_device *device)
 
   hyper_conf.id = (unsigned char) conf->hyper_itf;
   hyper_conf.cs = conf->hyper_cs;
+  hyper_conf.type = PI_HYPER_TYPE_FLASH;
 
   pi_open_from_conf(&hyperflash->hyper_device, &hyper_conf);
 
