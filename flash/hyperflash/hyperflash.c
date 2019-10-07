@@ -694,6 +694,7 @@ static flash_api_t hyperflash_api = {
 void hyperflash_conf_init(struct hyperflash_conf *conf)
 {
   conf->flash.api = &hyperflash_api;
+  conf->flash.type = FLASH_TYPE_HYPERFLASH;
   bsp_hyperflash_conf_init(conf);
   __flash_conf_init(&conf->flash);
 }
