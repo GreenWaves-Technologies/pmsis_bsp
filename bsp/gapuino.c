@@ -38,6 +38,7 @@ static void __bsp_init_pads()
 }
 
 
+
 void bsp_hyperram_conf_init(struct hyperram_conf *conf)
 {
   conf->ram_start = CONFIG_HYPERRAM_START;
