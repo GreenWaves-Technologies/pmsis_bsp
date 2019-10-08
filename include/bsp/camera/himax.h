@@ -19,13 +19,13 @@
 
 #include "bsp/camera.h"
 
-struct himax_conf
+struct pi_himax_conf
 {
-  struct camera_conf camera;
+  struct pi_camera_conf camera;
   int cpi_itf;
   int i2c_itf;
   char skip_pads_config;
-  camera_format_e format;
+  pi_camera_format_e format;
 };
 
 /** \brief Initialize a camera configuration with default values.
@@ -35,7 +35,7 @@ struct himax_conf
  *
  * \param conf A pointer to the camera configuration.
  */
-void himax_conf_init(struct himax_conf *conf);
+void pi_himax_conf_init(struct pi_himax_conf *conf);
 
 
 

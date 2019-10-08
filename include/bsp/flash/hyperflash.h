@@ -31,9 +31,9 @@
  * This structure is used to pass the desired Hyperflash configuration to the
  * runtime when opening the device.
  */
-struct hyperflash_conf
+struct pi_hyperflash_conf
 {
-  struct flash_conf flash;  /*!< Generic flash configuration. */
+  struct pi_flash_conf flash;  /*!< Generic flash configuration. */
   int hyper_itf;            /*!< Hyperbus interface where the flash is
       connected. */
   int hyper_cs;             /*!< Chip select where the flash is connected. */
@@ -47,7 +47,7 @@ struct hyperflash_conf
  *
  * \param conf A pointer to the hyperflash configuration.
  */
-void hyperflash_conf_init(struct hyperflash_conf *conf);
+void pi_hyperflash_conf_init(struct pi_hyperflash_conf *conf);
 
 //!@}
 

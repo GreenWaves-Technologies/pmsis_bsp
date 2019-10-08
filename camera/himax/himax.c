@@ -251,7 +251,7 @@ static void __himax_standby(himax_t *himax)
 
 int32_t __himax_open(struct pi_device *device)
 {
-  struct himax_conf *conf = (struct himax_conf *)device->config;
+  struct pi_himax_conf *conf = (struct pi_himax_conf *)device->config;
 
   himax_t *himax = (himax_t *)pmsis_l2_malloc(sizeof(himax_t));
   if (himax == NULL) return -1;
@@ -309,7 +309,7 @@ static void __himax_close(struct pi_device *device)
 
 
 
-static int32_t __himax_control(struct pi_device *device, camera_cmd_e cmd, void *arg)
+static int32_t __himax_control(struct pi_device *device, pi_camera_cmd_e cmd, void *arg)
 {
   int irq = disable_irq();
 
@@ -317,19 +317,19 @@ static int32_t __himax_control(struct pi_device *device, camera_cmd_e cmd, void 
 
   switch (cmd)
   {
-    case CAMERA_CMD_ON:
+    case PI_CAMERA_CMD_ON:
       __himax_wakeup(himax);
       break;
 
-    case CAMERA_CMD_OFF:
+    case PI_CAMERA_CMD_OFF:
       __himax_standby(himax);
       break;
 
-    case CAMERA_CMD_START:
+    case PI_CAMERA_CMD_START:
       pi_cpi_control_start(&himax->cpi_device);
       break;
 
-    case CAMERA_CMD_STOP:
+    case PI_CAMERA_CMD_STOP:
       pi_cpi_control_stop(&himax->cpi_device);
       break;
 
@@ -371,7 +371,7 @@ int32_t __himax_reg_get(struct pi_device *device, uint32_t addr, uint8_t *value)
 
 
 
-static camera_api_t himax_api =
+static pi_camera_api_t himax_api =
 {
   .open           = &__himax_open,
   .close          = &__himax_close,
@@ -383,7 +383,7 @@ static camera_api_t himax_api =
 
 
 
-void himax_conf_init(struct himax_conf *conf)
+void pi_himax_conf_init(struct pi_himax_conf *conf)
 {
   conf->camera.api = &himax_api;
   conf->skip_pads_config = 0;

@@ -40,32 +40,32 @@
 
 
 
-/** \enum fs_type_e
+/** \enum pi_fs_type_e
  * \brief File-system type.
  *
  * This can be used to select the type of file-system to mount.
  */
 typedef enum {
-  FS_READ_ONLY     = 0     /*!< Read-only file system. */
-} fs_type_e;
+  PI_FS_READ_ONLY     = 0     /*!< Read-only file system. */
+} pi_fs_type_e;
 
 
 
-/** \struct fs_conf
+/** \struct pi_fs_conf
  * \brief File-system configuration structure.
  *
  * This structure is used to pass the desired file-system configuration to the
  * runtime when mounting the file-system.
  */
-struct fs_conf {
-  fs_type_e type;           /*!< File-system type. */
+struct pi_fs_conf {
+  pi_fs_type_e type;           /*!< File-system type. */
   struct pi_device *flash;  /*!< Flash device. The flash device must be first
     opened and its device structure passed here. */
 };
 
-typedef struct fs_file_s fs_file_t;
+typedef struct pi_fs_file_s pi_fs_file_t;
 
-typedef struct fs_file_s {
+typedef struct pi_fs_file_s {
   unsigned int offset;
   unsigned int size;
   unsigned int addr;
@@ -77,16 +77,16 @@ typedef struct fs_file_s {
   unsigned int pending_size;
   unsigned char *cache;
   unsigned int  cache_addr;
-} fs_file_t;
+} pi_fs_file_t;
 
 typedef struct {
   unsigned int addr;
   unsigned int size;
   unsigned int path_size;
   char name[];
-} fs_desc_t;
+} pi_fs_desc_t;
 
-typedef struct cl_fs_req_s cl_fs_req_t;
+typedef struct cl_pi_fs_req_s cl_pi_fs_req_t;
 
 /** \brief Initialize a file-system configuration with default values.
  *
@@ -95,7 +95,7 @@ typedef struct cl_fs_req_s cl_fs_req_t;
  *
  * \param conf A pointer to the file-system configuration.
  */
-void fs_conf_init(struct fs_conf *conf);
+void pi_fs_conf_init(struct pi_fs_conf *conf);
 
 /** \brief Mount a file-system.
  *
@@ -108,7 +108,7 @@ void fs_conf_init(struct fs_conf *conf);
  *   device is closed.
  * \return          0 if the operation is successfull, -1 if there was an error.
  */
-int32_t fs_mount(struct pi_device *device);
+int32_t pi_fs_mount(struct pi_device *device);
 
 /** \brief Unmount a mounted file-system.
  *
@@ -121,7 +121,7 @@ int32_t fs_mount(struct pi_device *device);
  * \param handle    The handle of the file-system which was returned when the file-system was mounted.
  * \param event     The event used for managing termination.
  */
-void fs_unmount(struct pi_device *device);
+void pi_fs_unmount(struct pi_device *device);
 
 /** \brief Open a file.
  *
@@ -135,7 +135,7 @@ void fs_unmount(struct pi_device *device);
  * \param event     The event used for managing termination.
  * \return          NULL if the file is not found, or a handle identifying the file which can be used with other functions.
  */
-fs_file_t *fs_open(struct pi_device *device, const char *file, int flags);
+pi_fs_file_t *pi_fs_open(struct pi_device *device, const char *file, int flags);
 
 /** \brief Close a file.
  *
@@ -146,7 +146,7 @@ fs_file_t *fs_open(struct pi_device *device, const char *file, int flags);
  * \param file      The handle of the file to be closed.
  * \param event     The event used for managing termination.
  */
-void fs_close(fs_file_t *file);
+void pi_fs_close(pi_fs_file_t *file);
 
 /** \brief Read data from a file.
  *
@@ -155,7 +155,7 @@ void fs_close(fs_file_t *file);
  * bytes read by the call to this function.
  * This operation is asynchronous and its termination can be managed through an event.
  * This can only be called on the fabric-controller.
- * Compared to rt_fs_direct_read, this functions can use intermediate transfers to support any alignment constraint
+ * Compared to rt_pi_fs_direct_read, this functions can use intermediate transfers to support any alignment constraint
  * from the flash. So it can be slower in case part of the transfer has to be emulated.
  *
  * \param file      The handle of the file where to read data.
@@ -164,9 +164,9 @@ void fs_close(fs_file_t *file);
  * \param event     The event used for managing termination.
  * \return          The number of bytes actually read from the file. This can be smaller than the requested size if the end of file is reached.
  */
-int fs_read(fs_file_t *file, void *buffer, size_t size);
+int pi_fs_read(pi_fs_file_t *file, void *buffer, size_t size);
 
-int fs_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *task);
+int pi_fs_read_async(pi_fs_file_t *file, void *buffer, size_t size, pi_task_t *task);
 
 /** \brief Read data from a file with no intermediate cache.
  *
@@ -175,7 +175,7 @@ int fs_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *task);
  * bytes read by the call to this function.
  * This operation is asynchronous and its termination can be managed through an event.
  * This can only be called on the fabric-controller.
- * Compared to rt_fs_read, this function does direct read transfers from the flash. So the flash address and the size
+ * Compared to rt_pi_fs_read, this function does direct read transfers from the flash. So the flash address and the size
  * of the transfer can have some constraints depending on the flash.
  *
  * \param file      The handle of the file where to read data.
@@ -184,9 +184,9 @@ int fs_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *task);
  * \param event     The event used for managing termination.
  * \return          The number of bytes actually read from the file. This can be smaller than the requested size if the end of file is reached.
  */
-int fs_direct_read(fs_file_t *file, void *buffer, size_t size);
+int pi_fs_direct_read(pi_fs_file_t *file, void *buffer, size_t size);
 
-int fs_direct_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *task);
+int pi_fs_direct_read_async(pi_fs_file_t *file, void *buffer, size_t size, pi_task_t *task);
 
 /** \brief Reposition the current file position.
  *
@@ -198,28 +198,28 @@ int fs_direct_read_async(fs_file_t *file, void *buffer, size_t size, pi_task_t *
  * \param offset    The offset where to set the current position. The offset can be between 0 for the beginning of the file and the file size.
  * \return          RT_STATUS_OK if the operation was successful, RT_STATUS_ERR otherwise.
  */
-int fs_seek(fs_file_t *file, unsigned int offset);
+int pi_fs_seek(pi_fs_file_t *file, unsigned int offset);
 
-int fs_copy(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, int ext2loc);
+int pi_fs_copy(pi_fs_file_t *file, uint32_t index, void *buffer, uint32_t size, int ext2loc);
 
-int fs_copy_2d(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc);
+int pi_fs_copy_2d(pi_fs_file_t *file, uint32_t index, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc);
 
-int fs_copy_async(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, int ext2loc, pi_task_t *task);
+int pi_fs_copy_async(pi_fs_file_t *file, uint32_t index, void *buffer, uint32_t size, int ext2loc, pi_task_t *task);
 
-int fs_copy_2d_async(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_task_t *task);
+int pi_fs_copy_2d_async(pi_fs_file_t *file, uint32_t index, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_task_t *task);
 
 /** \brief Read data from a file from cluster side.
  *
- * This function implements the same feature as rt_fs_read but can be called from cluster side in order to expose
+ * This function implements the same feature as rt_pi_fs_read but can be called from cluster side in order to expose
  * the feature on the cluster.
  * This function can be called to read data from an opened file. The data is read from the current position which
  * is the beginning of the file when the file is opened. The current position is incremented by the number of
  * bytes read by the call to this function.
  * This operation is asynchronous and its termination is managed through the request structure.
  * This can only be called on the cluster.
- * Compared to rt_fs_direct_read, this functions can use intermediate transfers to support any alignment constraint
+ * Compared to rt_pi_fs_direct_read, this functions can use intermediate transfers to support any alignment constraint
  * from the flash. So it can be slower in case part of the transfer has to be emulated.
- * The only difference compared to rt_fs_read is that the file position is automatically set to 0 for the next
+ * The only difference compared to rt_pi_fs_read is that the file position is automatically set to 0 for the next
  * transfer if the current transfer reaches the end of the file.
  *
  * \param file      The handle of the file where to read data.
@@ -227,18 +227,18 @@ int fs_copy_2d_async(fs_file_t *file, uint32_t index, void *buffer, uint32_t siz
  * \param size      The size in bytes to read from the file.
  * \param req       The request structure used for termination.
  */
-void cl_fs_read(fs_file_t *file, void *buffer, size_t size, cl_fs_req_t *req);
+void cl_pi_fs_read(pi_fs_file_t *file, void *buffer, size_t size, cl_pi_fs_req_t *req);
 
 /** \brief Read data from a file with no intermediate cache from cluster side.
  *
- * This function implements the same feature as rt_fs_direct_read but can be called from cluster side in order to expose
+ * This function implements the same feature as rt_pi_fs_direct_read but can be called from cluster side in order to expose
  * the feature on the cluster.
  * This function can be called to read data from an opened file. The data is read from the current position which
  * is the beginning of the file when the file is opened. The current position is incremented by the number of
  * bytes read by the call to this function.
  * This operation is asynchronous and its termination can be managed through an event.
  * Can only be called from cluster side.
- * Compared to rt_fs_direct_read, this function does direct read transfers from the flash. So the flash address and the size
+ * Compared to rt_pi_fs_direct_read, this function does direct read transfers from the flash. So the flash address and the size
  * of the transfer can have some constraints depending on the flash.
  *
  * \param file      The handle of the file where to read data.
@@ -246,7 +246,7 @@ void cl_fs_read(fs_file_t *file, void *buffer, size_t size, cl_fs_req_t *req);
  * \param size      The size in bytes to read from the file.
  * \param req       The request structure used for termination.
  */
-void cl_fs_direct_read(fs_file_t *file, void *buffer, size_t size, cl_fs_req_t *req);
+void cl_pi_fs_direct_read(pi_fs_file_t *file, void *buffer, size_t size, cl_pi_fs_req_t *req);
 
 /** \brief Reposition the current file position from cluster side.
  *
@@ -257,11 +257,11 @@ void cl_fs_direct_read(fs_file_t *file, void *buffer, size_t size, cl_fs_req_t *
  * \param offset    The offset where to set the current position. The offset can be between 0 for the beginning of the file and the file size.
  * \param req       The request structure used for termination.
  */
-void cl_fs_seek(fs_file_t *file, unsigned int offset, cl_fs_req_t *req);
+void cl_pi_fs_seek(pi_fs_file_t *file, unsigned int offset, cl_pi_fs_req_t *req);
 
-void cl_fs_copy(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, int ext2loc, cl_fs_req_t *req);
+void cl_pi_fs_copy(pi_fs_file_t *file, uint32_t index, void *buffer, uint32_t size, int ext2loc, cl_pi_fs_req_t *req);
 
-void cl_fs_copy_2d(fs_file_t *file, uint32_t index, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, cl_fs_req_t *req);
+void cl_pi_fs_copy_2d(pi_fs_file_t *file, uint32_t index, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, cl_pi_fs_req_t *req);
 
 /** \brief Wait until the specified fs request has finished.
  *
@@ -271,9 +271,9 @@ void cl_fs_copy_2d(fs_file_t *file, uint32_t index, void *buffer, uint32_t size,
  *
  * \param req       The request structure used for termination.
  * \return          The number of bytes actually read from the file. This can be smaller than the requested size if the end of file is reached.
- *                  Could be also RT_STATUS_OK if the rt_fs_cluster_seek was successful, RT_STATUS_ERR otherwise.
+ *                  Could be also RT_STATUS_OK if the rt_pi_fs_cluster_seek was successful, RT_STATUS_ERR otherwise.
  */
-static inline int cl_fs_wait(cl_fs_req_t *req);
+static inline int cl_pi_fs_wait(cl_pi_fs_req_t *req);
 
 
 /// @cond IMPLEM
@@ -281,35 +281,35 @@ static inline int cl_fs_wait(cl_fs_req_t *req);
 typedef enum {
   FS_MOUNT_FLASH_ERROR     = 1,     /*!< There was an error mounting the flash filesystem. */
   FS_MOUNT_MEM_ERROR       = 2      /*!< There was an error allocating memory when mounting the file-system. */
-} fs_error_e;
+} pi_fs_error_e;
 
-typedef struct fs_l2_s
+typedef struct pi_fs_l2_s
 {
-  uint32_t fs_offset;
+  uint32_t pi_fs_offset;
   uint32_t reserved0;
-  uint32_t fs_size;
+  uint32_t pi_fs_size;
   uint32_t reserved1;
-} fs_l2_t;
+} pi_fs_l2_t;
 
-typedef struct fs_s
+typedef struct pi_fs_s
 {
   struct pi_device *flash;
   pi_task_t step_event;
   pi_task_t *pending_event;
   int mount_step;
-  int fs_size;
-  fs_l2_t *fs_l2;
-  unsigned int *fs_info;
+  int pi_fs_size;
+  pi_fs_l2_t *pi_fs_l2;
+  unsigned int *pi_fs_info;
   int nb_comps;
   //rt_mutex_t mutex;
   pi_task_t event;
   int error;
-} fs_t;
+} pi_fs_t;
 
 
-typedef struct cl_fs_req_s
+typedef struct cl_pi_fs_req_s
 {
-  fs_file_t *file;
+  pi_fs_file_t *file;
   uint32_t index;
   void *buffer;
   size_t size;
@@ -322,9 +322,9 @@ typedef struct cl_fs_req_s
   unsigned char cid;
   unsigned char direct;
   unsigned int offset;
-} cl_fs_req_t;
+} cl_pi_fs_req_t;
 
-static inline __attribute__((always_inline)) int cl_fs_wait(cl_fs_req_t *req)
+static inline __attribute__((always_inline)) int cl_pi_fs_wait(cl_pi_fs_req_t *req)
 {
     #if defined(PMSIS_DRIVERS)
     cl_wait_task(&(req->done));

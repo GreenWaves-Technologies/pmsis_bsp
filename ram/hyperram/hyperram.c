@@ -34,7 +34,7 @@ typedef struct
 
 static int hyperram_open(struct pi_device *device)
 {
-  struct hyperram_conf *conf = (struct hyperram_conf *)device->config;
+  struct pi_hyperram_conf *conf = (struct pi_hyperram_conf *)device->config;
 
   hyperram_t *hyperram = (hyperram_t *)pmsis_l2_malloc(sizeof(hyperram_t));
   if (hyperram == NULL)
@@ -185,7 +185,7 @@ void pi_cl_hyperram_free(struct pi_device *device, uint32_t chunk, uint32_t size
 
 #endif
 
-static ram_api_t hyperram_api = {
+static pi_ram_api_t hyperram_api = {
   .open                 = &hyperram_open,
   .close                = &hyperram_close,
   .copy_async           = &hyperram_copy_async,
@@ -195,7 +195,7 @@ static ram_api_t hyperram_api = {
 };
 
 
-void hyperram_conf_init(struct hyperram_conf *conf)
+void pi_hyperram_conf_init(struct pi_hyperram_conf *conf)
 {
   conf->ram.api = &hyperram_api;
   conf->baudrate = 0;

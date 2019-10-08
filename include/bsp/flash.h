@@ -21,7 +21,7 @@
 
 /// @cond IMPLEM
 
-typedef struct __flash_api_t flash_api_t;
+typedef struct __pi_flash_api_t pi_flash_api_t;
 
 /// @endcond
 
@@ -41,7 +41,7 @@ typedef struct __flash_api_t flash_api_t;
 
 /**@{*/
 
-/** \struct flash_conf
+/** \struct pi_flash_conf
  * \brief Flash configuration structure.
  *
  * This structure is used to pass the desired flash configuration to the
@@ -49,28 +49,28 @@ typedef struct __flash_api_t flash_api_t;
  * directly as it is meant to be encapsulated into a specific device
  * configuration.
  */
-struct flash_conf {
-  flash_api_t *api;    /*!< Pointer to specific flash methods. Reserved for 
+struct pi_flash_conf {
+  pi_flash_api_t *api;    /*!< Pointer to specific flash methods. Reserved for 
     internal runtime usage. */
 };
 
-/** \enum flash_ioctl_e
- * \brief Command ID for flash_ioctl.
+/** \enum pi_flash_ioctl_e
+ * \brief Command ID for pi_flash_ioctl.
  *
  */
 typedef enum {
-  FLASH_IOCTL_INFO   /*!< Command for getting flash information. The argument
-    must be a pointer to a variable of type struct flash_info so that the
+  PI_FLASH_IOCTL_INFO   /*!< Command for getting flash information. The argument
+    must be a pointer to a variable of type struct pi_flash_info so that the
     call is returning information there. */
-} flash_ioctl_e;
+} pi_flash_ioctl_e;
 
-/** \struct flash_info
+/** \struct pi_flash_info
  * \brief Parameter for FLASH_IOCTL_INFO command.
  *
  * This structure is used to return flash information when executing the
  * FLASH_IOCTL_INFO ioctl command.
  */
-struct flash_info {
+struct pi_flash_info {
   uint32_t sector_size; /*!< Size in bytes of a sector. */
   uint32_t flash_start; /*!< Start address in the flash. What is before is
     reserved for runtime usage and should not be accessed. */
@@ -89,7 +89,7 @@ struct flash_info {
  *   device is closed.
  * \return          0 if the operation is successfull, -1 if there was an error.
  */
-int flash_open(struct pi_device *device);
+int pi_flash_open(struct pi_device *device);
 
 /** \brief Close an opened flash device.
  *
@@ -100,7 +100,7 @@ int flash_open(struct pi_device *device);
  *
  * \param device    The device structure of the device to close.
  */
-static inline void flash_close(struct pi_device *device);
+static inline void pi_flash_close(struct pi_device *device);
 
 /** \brief Control device.
  *
@@ -112,7 +112,7 @@ static inline void flash_close(struct pi_device *device);
  * \param arg       The argument to the command. The size and meaning of this
  *  parameter depends on the command which is passed.
  */
-static inline int32_t flash_ioctl(struct pi_device *device, uint32_t cmd,
+static inline int32_t pi_flash_ioctl(struct pi_device *device, uint32_t cmd,
   void *arg);
 
 /** \brief Set flash register.
@@ -127,7 +127,7 @@ static inline int32_t flash_ioctl(struct pi_device *device, uint32_t cmd,
  * \param value     A pointer to the value to be set. The size of this variable
  *   depends on the register being accessed.
  */
-static inline void flash_reg_set(struct pi_device *device, uint32_t reg_addr,
+static inline void pi_flash_reg_set(struct pi_device *device, uint32_t reg_addr,
   uint8_t *value);
 
 /** \brief Get flash register.
@@ -141,7 +141,7 @@ static inline void flash_reg_set(struct pi_device *device, uint32_t reg_addr,
  * \param value     A pointer to the value where the read value will be stored.
  *   The size of this variable depends on the register being accessed.
  */
-static inline void flash_reg_get(struct pi_device *device, uint32_t reg_addr,
+static inline void pi_flash_reg_get(struct pi_device *device, uint32_t reg_addr,
   uint8_t *value);
 
 /** \brief Set flash register asynchronously.
@@ -160,7 +160,7 @@ static inline void flash_reg_get(struct pi_device *device, uint32_t reg_addr,
  * \param task      The task used to notify the end of transfer. See the
  *   documentation of pi_task_t for more details.
  */
-static inline void flash_reg_set_async(struct pi_device *device,
+static inline void pi_flash_reg_set_async(struct pi_device *device,
   uint32_t reg_addr, uint8_t *value, pi_task_t *task);
 
 /** \brief Get flash register asynchronously.
@@ -178,7 +178,7 @@ static inline void flash_reg_set_async(struct pi_device *device,
  * \param task      The task used to notify the end of transfer. See the
  *   documentation of pi_task_t for more details.
  */
-static inline void flash_reg_get_async(struct pi_device *device,
+static inline void pi_flash_reg_get_async(struct pi_device *device,
   uint32_t reg_addr, uint8_t *value, pi_task_t *task);
 
 /** \brief Enqueue a read copy to the flash (from flash to processor).
@@ -191,11 +191,11 @@ static inline void flash_reg_get_async(struct pi_device *device,
  *
  * \param device      The device descriptor of the flash chip on which to do
  *   the copy.
- * \param flash_addr  The address of the copy in the flash.
+ * \param pi_flash_addr  The address of the copy in the flash.
  * \param data        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  */
-static inline void flash_read(struct pi_device *device, uint32_t flash_addr,
+static inline void pi_flash_read(struct pi_device *device, uint32_t pi_flash_addr,
   void *data, uint32_t size);
 
 /** \brief Enqueue a write copy to the flash (from processor to flash).
@@ -209,11 +209,11 @@ static inline void flash_read(struct pi_device *device, uint32_t flash_addr,
  *
  * \param device      The device descriptor of the flash chip on which to do
  *   the copy.
- * \param flash_addr    The address of the copy in the flash.
+ * \param pi_flash_addr    The address of the copy in the flash.
  * \param data        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  */
-static inline void flash_program(struct pi_device *device, uint32_t flash_addr,
+static inline void pi_flash_program(struct pi_device *device, uint32_t pi_flash_addr,
   void *data, uint32_t size);
 
 /** \brief Erase the whole flash.
@@ -225,7 +225,7 @@ static inline void flash_program(struct pi_device *device, uint32_t flash_addr,
  * \param device      The device descriptor of the flash chip on which to do
  *   the operation.
  */
-static inline void flash_erase_chip(struct pi_device *device);
+static inline void pi_flash_erase_chip(struct pi_device *device);
 
 /** \brief Erase a sector.
  *
@@ -235,10 +235,10 @@ static inline void flash_erase_chip(struct pi_device *device);
  *
  * \param device      The device descriptor of the flash chip on which to do
  *   the operation.
- * \param flash_addr  The address of the sector to be erased.
+ * \param pi_flash_addr  The address of the sector to be erased.
  */
-static inline void flash_erase_sector(struct pi_device *device,
-  uint32_t flash_addr);
+static inline void pi_flash_erase_sector(struct pi_device *device,
+  uint32_t pi_flash_addr);
 
 /** \brief Erase an area in the flash.
  *
@@ -250,10 +250,10 @@ static inline void flash_erase_sector(struct pi_device *device,
  *
  * \param device      The device descriptor of the flash chip on which to do
  *   the operation.
- * \param flash_addr  The address of the area to be erased.
+ * \param pi_flash_addr  The address of the area to be erased.
  * \param size  The size of the area to be erased.
  */
-static inline void flash_erase(struct pi_device *device, uint32_t flash_addr,
+static inline void pi_flash_erase(struct pi_device *device, uint32_t pi_flash_addr,
   int size);
 
 /** \brief Enqueue an asynchronous read copy to the flash
@@ -268,14 +268,14 @@ static inline void flash_erase(struct pi_device *device, uint32_t flash_addr,
  *
  * \param device      The device descriptor of the flash chip on which to do
  *   the copy.
- * \param flash_addr  The address of the copy in the flash.
+ * \param pi_flash_addr  The address of the copy in the flash.
  * \param data        The address of the copy in the processor.
  * \param size        The size in bytes of the copy.
  * \param task        The task used to notify the end of transfer.
    See the documentation of pi_task_t for more details.
  */
-static inline void flash_read_async(struct pi_device *device,
-  uint32_t flash_addr, void *data, uint32_t size, pi_task_t *task);
+static inline void pi_flash_read_async(struct pi_device *device,
+  uint32_t pi_flash_addr, void *data, uint32_t size, pi_task_t *task);
 
 /** \brief Enqueue an asynchronous write copy to the flash (from processor
  * to flash).
@@ -290,14 +290,14 @@ static inline void flash_read_async(struct pi_device *device,
  *
  * \param device      The device descriptor of the flash chip on which to do
  *   the copy.
- * \param flash_addr    The address of the copy in the flash.
+ * \param pi_flash_addr    The address of the copy in the flash.
  * \param data        The address of the copy in the processor.
  * \param size        The size in bytes of the copy.
  * \param task        The task used to notify the end of transfer.
    See the documentation of pi_task_t for more details.
  */
-static inline void flash_program_async(struct pi_device *device,
-  uint32_t flash_addr, void *data, uint32_t size, pi_task_t *task);
+static inline void pi_flash_program_async(struct pi_device *device,
+  uint32_t pi_flash_addr, void *data, uint32_t size, pi_task_t *task);
 
 /** \brief Erase the whole flash asynchronously.
  *
@@ -311,7 +311,7 @@ static inline void flash_program_async(struct pi_device *device,
  * \param task        The task used to notify the end of transfer.
    See the documentation of pi_task_t for more details.
  */
-static inline void flash_erase_chip_async(struct pi_device *device,
+static inline void pi_flash_erase_chip_async(struct pi_device *device,
   pi_task_t *task);
 
 /** \brief Erase a sector asynchronously.
@@ -323,12 +323,12 @@ static inline void flash_erase_chip_async(struct pi_device *device,
  *
  * \param device      The device descriptor of the flash chip on which to do
  *   the operation.
- * \param flash_addr  The address of the sector to be erased.
+ * \param pi_flash_addr  The address of the sector to be erased.
  * \param task        The task used to notify the end of transfer.
    See the documentation of pi_task_t for more details.
  */
-static inline void flash_erase_sector_async(struct pi_device *device,
-  uint32_t flash_addr, pi_task_t *task);
+static inline void pi_flash_erase_sector_async(struct pi_device *device,
+  uint32_t pi_flash_addr, pi_task_t *task);
 
 /** \brief Erase an area in the flash asynchronously.
  *
@@ -341,13 +341,13 @@ static inline void flash_erase_sector_async(struct pi_device *device,
  *
  * \param device      The device descriptor of the flash chip on which to do
  *   the operation.
- * \param flash_addr  The address of the area to be erased.
+ * \param pi_flash_addr  The address of the area to be erased.
  * \param size  The size of the area to be erased.
  * \param task        The task used to notify the end of transfer.
    See the documentation of pi_task_t for more details.
  */
-static inline void flash_erase_async(struct pi_device *device,
-  uint32_t flash_addr, int size, pi_task_t *task);
+static inline void pi_flash_erase_async(struct pi_device *device,
+  uint32_t pi_flash_addr, int size, pi_task_t *task);
 
 //!@}
 
@@ -357,159 +357,159 @@ static inline void flash_erase_async(struct pi_device *device,
 
 /// @cond IMPLEM
 
-typedef struct __flash_api_t {
+typedef struct __pi_flash_api_t {
   int (*open)(struct pi_device *device);
   void (*close)(struct pi_device *device);
   int32_t (*ioctl)(struct pi_device *device, uint32_t cmd, void *arg);
-  void (*read_async)(struct pi_device *device, uint32_t flash_addr, void *data, uint32_t size, pi_task_t *task);
-  void (*program_async)(struct pi_device *device, uint32_t flash_addr, void *data, uint32_t size, pi_task_t *task);
+  void (*read_async)(struct pi_device *device, uint32_t pi_flash_addr, void *data, uint32_t size, pi_task_t *task);
+  void (*program_async)(struct pi_device *device, uint32_t pi_flash_addr, void *data, uint32_t size, pi_task_t *task);
   void (*erase_chip_async)(struct pi_device *device, pi_task_t *task);
-  void (*erase_sector_async)(struct pi_device *device, uint32_t flash_addr, pi_task_t *task);
-  void (*erase_async)(struct pi_device *device, uint32_t flash_addr, int size, pi_task_t *task);
-  void (*reg_set_async)(struct pi_device *device, uint32_t flash_addr, uint8_t *value, pi_task_t *task);
-  void (*reg_get_async)(struct pi_device *device, uint32_t flash_addr, uint8_t *value, pi_task_t *task);
-  int (*copy_async)(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, int ext2loc, pi_task_t *task);
-  int (*copy_2d_async)(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_task_t *task);
-} flash_api_t;
+  void (*erase_sector_async)(struct pi_device *device, uint32_t pi_flash_addr, pi_task_t *task);
+  void (*erase_async)(struct pi_device *device, uint32_t pi_flash_addr, int size, pi_task_t *task);
+  void (*reg_set_async)(struct pi_device *device, uint32_t pi_flash_addr, uint8_t *value, pi_task_t *task);
+  void (*reg_get_async)(struct pi_device *device, uint32_t pi_flash_addr, uint8_t *value, pi_task_t *task);
+  int (*copy_async)(struct pi_device *device, uint32_t pi_flash_addr, void *buffer, uint32_t size, int ext2loc, pi_task_t *task);
+  int (*copy_2d_async)(struct pi_device *device, uint32_t pi_flash_addr, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_task_t *task);
+} pi_flash_api_t;
 
 
-static inline void flash_close(struct pi_device *device)
+static inline void pi_flash_close(struct pi_device *device)
 {
-  flash_api_t *api = (flash_api_t *)device->api;
+  pi_flash_api_t *api = (pi_flash_api_t *)device->api;
   api->close(device);
 }
 
-static inline int32_t flash_ioctl(struct pi_device *device, uint32_t cmd, void *arg)
+static inline int32_t pi_flash_ioctl(struct pi_device *device, uint32_t cmd, void *arg)
 {
-  flash_api_t *api = (flash_api_t *)device->api;
+  pi_flash_api_t *api = (pi_flash_api_t *)device->api;
   return api->ioctl(device, cmd, arg);
 }
 
-static inline void flash_reg_set_async(struct pi_device *device, uint32_t flash_addr, uint8_t *value, pi_task_t *task)
+static inline void pi_flash_reg_set_async(struct pi_device *device, uint32_t pi_flash_addr, uint8_t *value, pi_task_t *task)
 {
-  flash_api_t *api = (flash_api_t *)device->api;
-  api->reg_set_async(device, flash_addr, value, task);
+  pi_flash_api_t *api = (pi_flash_api_t *)device->api;
+  api->reg_set_async(device, pi_flash_addr, value, task);
 }
 
-static inline void flash_reg_set(struct pi_device *device, uint32_t flash_addr, uint8_t *value)
+static inline void pi_flash_reg_set(struct pi_device *device, uint32_t pi_flash_addr, uint8_t *value)
 {
   pi_task_t task;
-  flash_reg_set_async(device, flash_addr, value, pi_task_block(&task));
+  pi_flash_reg_set_async(device, pi_flash_addr, value, pi_task_block(&task));
   pi_task_wait_on(&task);
 }
 
-static inline void flash_reg_get_async(struct pi_device *device, uint32_t flash_addr, uint8_t *value, pi_task_t *task)
+static inline void pi_flash_reg_get_async(struct pi_device *device, uint32_t pi_flash_addr, uint8_t *value, pi_task_t *task)
 {
-  flash_api_t *api = (flash_api_t *)device->api;
-  api->reg_get_async(device, flash_addr, value, task);
+  pi_flash_api_t *api = (pi_flash_api_t *)device->api;
+  api->reg_get_async(device, pi_flash_addr, value, task);
 }
 
-static inline void flash_reg_get(struct pi_device *device, uint32_t flash_addr, uint8_t *value)
+static inline void pi_flash_reg_get(struct pi_device *device, uint32_t pi_flash_addr, uint8_t *value)
 {
   pi_task_t task;
-  flash_reg_get_async(device, flash_addr, value, pi_task_block(&task));
+  pi_flash_reg_get_async(device, pi_flash_addr, value, pi_task_block(&task));
   pi_task_wait_on(&task);
 }
 
-static inline void flash_read_async(struct pi_device *device, uint32_t flash_addr, void *data, uint32_t size, pi_task_t *task)
+static inline void pi_flash_read_async(struct pi_device *device, uint32_t pi_flash_addr, void *data, uint32_t size, pi_task_t *task)
 {
-  flash_api_t *api = (flash_api_t *)device->api;
-  api->read_async(device, flash_addr, data, size, task);
+  pi_flash_api_t *api = (pi_flash_api_t *)device->api;
+  api->read_async(device, pi_flash_addr, data, size, task);
 }
 
-static inline void flash_read(struct pi_device *device, uint32_t flash_addr, void *data, uint32_t size)
+static inline void pi_flash_read(struct pi_device *device, uint32_t pi_flash_addr, void *data, uint32_t size)
 {
   pi_task_t task;
-  flash_read_async(device, flash_addr, data, size, pi_task_block(&task));
+  pi_flash_read_async(device, pi_flash_addr, data, size, pi_task_block(&task));
   pi_task_wait_on(&task);
 }
 
-static inline void flash_program_async(struct pi_device *device, uint32_t flash_addr, void *data, uint32_t size, pi_task_t *task)
+static inline void pi_flash_program_async(struct pi_device *device, uint32_t pi_flash_addr, void *data, uint32_t size, pi_task_t *task)
 {
-  flash_api_t *api = (flash_api_t *)device->api;
-  api->program_async(device, flash_addr, data, size, task);
+  pi_flash_api_t *api = (pi_flash_api_t *)device->api;
+  api->program_async(device, pi_flash_addr, data, size, task);
 }
 
-static inline void flash_program(struct pi_device *device, uint32_t flash_addr, void *data, uint32_t size)
+static inline void pi_flash_program(struct pi_device *device, uint32_t pi_flash_addr, void *data, uint32_t size)
 {
   pi_task_t task;
-  flash_program_async(device, flash_addr, data, size, pi_task_block(&task));
+  pi_flash_program_async(device, pi_flash_addr, data, size, pi_task_block(&task));
   pi_task_wait_on(&task);
 }
 
-static inline void flash_erase_chip_async(struct pi_device *device, pi_task_t *task)
+static inline void pi_flash_erase_chip_async(struct pi_device *device, pi_task_t *task)
 {
-  flash_api_t *api = (flash_api_t *)device->api;
+  pi_flash_api_t *api = (pi_flash_api_t *)device->api;
   api->erase_chip_async(device, task);
 }
 
-static inline void flash_erase_chip(struct pi_device *device)
+static inline void pi_flash_erase_chip(struct pi_device *device)
 {
   pi_task_t task;
-  flash_erase_chip_async(device, pi_task_block(&task));
+  pi_flash_erase_chip_async(device, pi_task_block(&task));
   pi_task_wait_on(&task);
 }
 
-static inline void flash_erase_sector_async(struct pi_device *device, uint32_t flash_addr, pi_task_t *task)
+static inline void pi_flash_erase_sector_async(struct pi_device *device, uint32_t pi_flash_addr, pi_task_t *task)
 {
-  flash_api_t *api = (flash_api_t *)device->api;
-  api->erase_sector_async(device, flash_addr, task);
+  pi_flash_api_t *api = (pi_flash_api_t *)device->api;
+  api->erase_sector_async(device, pi_flash_addr, task);
 }
 
-static inline void flash_erase_sector(struct pi_device *device, uint32_t flash_addr)
+static inline void pi_flash_erase_sector(struct pi_device *device, uint32_t pi_flash_addr)
 {
   pi_task_t task;
-  flash_erase_sector_async(device, flash_addr, pi_task_block(&task));
+  pi_flash_erase_sector_async(device, pi_flash_addr, pi_task_block(&task));
   pi_task_wait_on(&task);
 }
 
-static inline void flash_erase_async(struct pi_device *device, uint32_t flash_addr, int size, pi_task_t *task)
+static inline void pi_flash_erase_async(struct pi_device *device, uint32_t pi_flash_addr, int size, pi_task_t *task)
 {
-  flash_api_t *api = (flash_api_t *)device->api;
-  api->erase_async(device, flash_addr, size, task);
+  pi_flash_api_t *api = (pi_flash_api_t *)device->api;
+  api->erase_async(device, pi_flash_addr, size, task);
 }
 
-static inline void flash_erase(struct pi_device *device, uint32_t flash_addr, int size)
+static inline void pi_flash_erase(struct pi_device *device, uint32_t pi_flash_addr, int size)
 {
   pi_task_t task;
   pi_task_block(&task);
-  flash_erase_async(device, flash_addr, size, &task);
+  pi_flash_erase_async(device, pi_flash_addr, size, &task);
   pi_task_wait_on(&task);
 }
 
-static inline int flash_copy_async(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, int ext2loc, pi_task_t *task)
+static inline int pi_flash_copy_async(struct pi_device *device, uint32_t pi_flash_addr, void *buffer, uint32_t size, int ext2loc, pi_task_t *task)
 {
-  flash_api_t *api = (flash_api_t *)device->api;
-  return api->copy_async(device, flash_addr, buffer, size, ext2loc, task);
+  pi_flash_api_t *api = (pi_flash_api_t *)device->api;
+  return api->copy_async(device, pi_flash_addr, buffer, size, ext2loc, task);
 }
 
-static inline int flash_copy_2d_async(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_task_t *task)
+static inline int pi_flash_copy_2d_async(struct pi_device *device, uint32_t pi_flash_addr, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_task_t *task)
 {
-  flash_api_t *api = (flash_api_t *)device->api;
-  return api->copy_2d_async(device, flash_addr, buffer, size, stride, length, ext2loc, task);
+  pi_flash_api_t *api = (pi_flash_api_t *)device->api;
+  return api->copy_2d_async(device, pi_flash_addr, buffer, size, stride, length, ext2loc, task);
 }
 
-static inline int flash_copy(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, int ext2loc)
+static inline int pi_flash_copy(struct pi_device *device, uint32_t pi_flash_addr, void *buffer, uint32_t size, int ext2loc)
 {
   pi_task_t task;
   pi_task_block(&task);
-  if (flash_copy_async(device, flash_addr, buffer, size, ext2loc, &task))
+  if (pi_flash_copy_async(device, pi_flash_addr, buffer, size, ext2loc, &task))
     return -1;
   pi_task_wait_on(&task);
   return 0;
 }
 
-static inline int flash_copy_2d(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc)
+static inline int pi_flash_copy_2d(struct pi_device *device, uint32_t pi_flash_addr, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc)
 {
   pi_task_t task;
   pi_task_block(&task);
-  if (flash_copy_2d_async(device, flash_addr, buffer, size, ext2loc, stride, length, &task))
+  if (pi_flash_copy_2d_async(device, pi_flash_addr, buffer, size, ext2loc, stride, length, &task))
     return -1;
   pi_task_wait_on(&task);
   return 0;
 }
 
-void __flash_conf_init(struct flash_conf *conf);
+void __flash_conf_init(struct pi_flash_conf *conf);
 
 /// @endcond
 

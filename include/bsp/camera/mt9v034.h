@@ -19,9 +19,9 @@
 
 #include "bsp/camera.h"
 
-struct mt9v034_conf
+struct pi_mt9v034_conf
 {
-  struct camera_conf camera;
+  struct pi_camera_conf camera;
   char cpi_itf;
   char i2c_itf;
   char power_gpio;
@@ -29,7 +29,7 @@ struct mt9v034_conf
   char column_flip;
   char row_flip;
   char skip_pads_config;
-  camera_format_e format;
+  pi_camera_format_e format;
 };
 
 /** \brief Initialize a camera configuration with default values.
@@ -39,7 +39,7 @@ struct mt9v034_conf
  *
  * \param conf A pointer to the camera configuration.
  */
-void mt9v034_conf_init(struct mt9v034_conf *conf);
+void pi_mt9v034_conf_init(struct pi_mt9v034_conf *conf);
 
 
 
