@@ -21,7 +21,7 @@
 
 /// @cond IMPLEM
 
-typedef struct __ram_api_t ram_api_t;
+typedef struct __pi_ram_api_t pi_ram_api_t;
 
 /// @endcond
 
@@ -41,7 +41,7 @@ typedef struct __ram_api_t ram_api_t;
 
 /**@{*/
 
-/** \struct ram_conf
+/** \struct pi_ram_conf
  * \brief RAM configuration structure.
  *
  * This structure is used to pass the desired RAM configuration to the
@@ -49,8 +49,8 @@ typedef struct __ram_api_t ram_api_t;
  * directly as it is meant to be encapsulated into a specific device
  * configuration.
  */
-struct ram_conf {
-    ram_api_t *api;   /*!< Pointer to specific RAM methods. Reserved for 
+struct pi_ram_conf {
+    pi_ram_api_t *api;   /*!< Pointer to specific RAM methods. Reserved for 
     internal runtime usage. */
 };
 
@@ -62,7 +62,7 @@ struct ram_conf {
  * variable, for example as a global variable, a local one on the stack,
  * or through a memory allocator.
  */
-typedef struct cl_ram_req_s cl_ram_req_t;
+typedef struct cl_pi_ram_req_s cl_pi_ram_req_t;
 
 /** \brief RAM cluster alloc request structure.
  *
@@ -72,7 +72,7 @@ typedef struct cl_ram_req_s cl_ram_req_t;
  * variable, for example as a global variable, a local one on the stack,
  * or through a memory allocator.
  */
-typedef struct cl_ram_alloc_req_s cl_ram_alloc_req_t;
+typedef struct cl_pi_ram_alloc_req_s cl_pi_ram_alloc_req_t;
 
 /** \brief RAM cluster free request structure.
  *
@@ -82,7 +82,7 @@ typedef struct cl_ram_alloc_req_s cl_ram_alloc_req_t;
  * variable, for example as a global variable, a local one on the stack,
  * or through a memory allocator.
  */
-typedef struct cl_ram_free_req_s cl_ram_free_req_t;
+typedef struct cl_pi_ram_free_req_s cl_pi_ram_free_req_t;
 
 /** \brief Open a RAM device.
  *
@@ -97,7 +97,7 @@ typedef struct cl_ram_free_req_s cl_ram_free_req_t;
  *   device is closed.
  * \return          0 if the operation is successfull, -1 if there was an error.
  */
-int32_t ram_open(struct pi_device *device);
+int32_t pi_ram_open(struct pi_device *device);
 
 /** \brief Close an opened RAM device.
  *
@@ -108,7 +108,7 @@ int32_t ram_open(struct pi_device *device);
  *
  * \param device    The device structure of the device to close.
  */
-static inline void ram_close(struct pi_device *device);
+static inline void pi_ram_close(struct pi_device *device);
 
 /** \brief Allocate RAM memory
  *
@@ -124,7 +124,7 @@ static inline void ram_close(struct pi_device *device);
  * \return          0 if the allocation succeeded, -1 if not enough memory was
  *   available.
  */
-static inline int ram_alloc(struct pi_device *device, uint32_t *addr,
+static inline int pi_ram_alloc(struct pi_device *device, uint32_t *addr,
   uint32_t size);
 
 /** \brief Free RAM memory
@@ -139,7 +139,7 @@ static inline int ram_alloc(struct pi_device *device, uint32_t *addr,
  * \param size   The size in bytes of the memory chunk which was allocated
  * \return       0 if the operation was successful, -1 otherwise
  */
-static inline int ram_free(struct pi_device *device, uint32_t addr,
+static inline int pi_ram_free(struct pi_device *device, uint32_t addr,
   uint32_t size);
 
 /** \brief Enqueue a read copy to the RAM (from RAM to processor).
@@ -152,11 +152,11 @@ static inline int ram_free(struct pi_device *device, uint32_t addr,
  *
  * \param device      The device descriptor of the RAM chip on which to do
  *   the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param data        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  */
-static inline void ram_read(struct pi_device *device, uint32_t ram_addr,
+static inline void pi_ram_read(struct pi_device *device, uint32_t pi_ram_addr,
   void *data, uint32_t size);
 
 /** \brief Enqueue a write copy to the RAM (from processor to RAM).
@@ -169,11 +169,11 @@ static inline void ram_read(struct pi_device *device, uint32_t ram_addr,
  *
  * \param device      The device descriptor of the RAM chip on which to do
  *   the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param data        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  */
-static inline void ram_write(struct pi_device *device, uint32_t ram_addr,
+static inline void pi_ram_write(struct pi_device *device, uint32_t pi_ram_addr,
   void *data, uint32_t size);
 
 /** \brief Enqueue a copy with the RAM.
@@ -186,13 +186,13 @@ static inline void ram_write(struct pi_device *device, uint32_t ram_addr,
  *
  * \param device      The device descriptor of the RAM chip on which to do
  *   the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param data        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  * \param ext2loc     1 if the copy is from RAM to the chip or 0 for the
  *   contrary.
  */
-static inline void ram_copy(struct pi_device *device, uint32_t ram_addr,
+static inline void pi_ram_copy(struct pi_device *device, uint32_t pi_ram_addr,
   void *data, uint32_t size, int ext2loc);
 
 /** \brief Enqueue a 2D read copy (rectangle area) to the RAM (from
@@ -206,7 +206,7 @@ static inline void ram_copy(struct pi_device *device, uint32_t ram_addr,
  *
  * \param device      The device descriptor of the RAM chip on which to do
  *   the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param data        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  * \param stride      2D stride, which is the number of bytes which are added
@@ -214,7 +214,7 @@ static inline void ram_copy(struct pi_device *device, uint32_t ram_addr,
  * \param length      2D length, which is the number of transfered bytes after
  *   which the driver will switch to the next line.
  */
-static inline void ram_read_2d(struct pi_device *device, uint32_t ram_addr,
+static inline void pi_ram_read_2d(struct pi_device *device, uint32_t pi_ram_addr,
   void *data, uint32_t size, uint32_t stride, uint32_t length);
 
 /** \brief Enqueue a 2D write copy (rectangle area) to the RAM (from
@@ -228,7 +228,7 @@ static inline void ram_read_2d(struct pi_device *device, uint32_t ram_addr,
  *
  * \param device      The device descriptor of the RAM chip on which to do
  * the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param data        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  * \param stride      2D stride, which is the number of bytes which are added
@@ -236,7 +236,7 @@ static inline void ram_read_2d(struct pi_device *device, uint32_t ram_addr,
  * \param length      2D length, which is the number of transfered bytes after
  *   which the driver will switch to the next line.
  */
-static inline void ram_write_2d(struct pi_device *device, uint32_t ram_addr,
+static inline void pi_ram_write_2d(struct pi_device *device, uint32_t pi_ram_addr,
   void *data, uint32_t size, uint32_t stride, uint32_t length);
 
 /** \brief Enqueue a 2D copy (rectangle area) with the RAM.
@@ -249,7 +249,7 @@ static inline void ram_write_2d(struct pi_device *device, uint32_t ram_addr,
  *
  * \param device      The device descriptor of the RAM chip on which to do
  * the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param data        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  * \param stride      2D stride, which is the number of bytes which are added
@@ -259,7 +259,7 @@ static inline void ram_write_2d(struct pi_device *device, uint32_t ram_addr,
  * \param ext2loc     1 if the copy is from RAM to the chip or 0 for the
  *   contrary.
  */
-static inline void ram_copy_2d(struct pi_device *device, uint32_t ram_addr,
+static inline void pi_ram_copy_2d(struct pi_device *device, uint32_t pi_ram_addr,
   void *data, uint32_t size, uint32_t stride, uint32_t length, int ext2loc);
 
 /** \brief Enqueue an asynchronous read copy to the RAM (from RAM
@@ -274,13 +274,13 @@ static inline void ram_copy_2d(struct pi_device *device, uint32_t ram_addr,
  *
  * \param device      The device descriptor of the RAM chip on which to do
  *   the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param data        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  * \param task        The task used to notify the end of transfer.
    See the documentation of pi_task_t for more details.
  */
-static inline void ram_read_async(struct pi_device *device, uint32_t ram_addr,
+static inline void pi_ram_read_async(struct pi_device *device, uint32_t pi_ram_addr,
   void *data, uint32_t size, pi_task_t *task);
 
 /** \brief Enqueue an asynchronous write copy to the RAM (from processor
@@ -295,13 +295,13 @@ static inline void ram_read_async(struct pi_device *device, uint32_t ram_addr,
  *
  * \param device      The device descriptor of the RAM chip on which to do
  *   the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param data        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  * \param task        The task used to notify the end of transfer. See the
  *   documentation of pi_task_t for more details.
  */
-static inline void ram_write_async(struct pi_device *device, uint32_t ram_addr,
+static inline void pi_ram_write_async(struct pi_device *device, uint32_t pi_ram_addr,
   void *data, uint32_t size, pi_task_t *task);
 
 /** \brief Enqueue an asynchronous copy with the RAM.
@@ -315,7 +315,7 @@ static inline void ram_write_async(struct pi_device *device, uint32_t ram_addr,
  *
  * \param device      The device descriptor of the RAM chip on which to do
  *   the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param data        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  * \param ext2loc     1 if the copy is from RAM to the chip or 0 for the
@@ -323,7 +323,7 @@ static inline void ram_write_async(struct pi_device *device, uint32_t ram_addr,
  * \param task        The task used to notify the end of transfer. See the
  *   documentation of pi_task_t for more details.
  */
-static inline void ram_copy_async(struct pi_device *device, uint32_t ram_addr,
+static inline void pi_ram_copy_async(struct pi_device *device, uint32_t pi_ram_addr,
   void *data, uint32_t size, int ext2loc, pi_task_t *task);
 
 /** \brief Enqueue an asynchronous 2D read copy (rectangle area) to the
@@ -338,7 +338,7 @@ static inline void ram_copy_async(struct pi_device *device, uint32_t ram_addr,
  *
  * \param device      The device descriptor of the RAM chip on which to do
  * the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param data        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  * \param stride      2D stride, which is the number of bytes which are added
@@ -348,8 +348,8 @@ static inline void ram_copy_async(struct pi_device *device, uint32_t ram_addr,
  * \param task        The task used to notify the end of transfer. See the
  * documentation of pi_task_t for more details.
  */
-static inline void ram_read_2d_async(struct pi_device *device,
-  uint32_t ram_addr, void *data, uint32_t size, uint32_t stride,
+static inline void pi_ram_read_2d_async(struct pi_device *device,
+  uint32_t pi_ram_addr, void *data, uint32_t size, uint32_t stride,
   uint32_t length, pi_task_t *task);
 
 /** \brief Enqueue an asynchronous 2D write copy (rectangle area) to the
@@ -364,7 +364,7 @@ static inline void ram_read_2d_async(struct pi_device *device,
  *
  * \param device      The device descriptor of the RAM chip on which to do
  *   the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param data        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  * \param stride      2D stride, which is the number of bytes which are added
@@ -374,8 +374,8 @@ static inline void ram_read_2d_async(struct pi_device *device,
  * \param task        The task used to notify the end of transfer. See the
  *   documentation of pi_task_t for more details.
  */
-static inline void ram_write_2d_async(struct pi_device *device,
-  uint32_t ram_addr, void *data, uint32_t size, uint32_t stride,
+static inline void pi_ram_write_2d_async(struct pi_device *device,
+  uint32_t pi_ram_addr, void *data, uint32_t size, uint32_t stride,
   uint32_t length, pi_task_t *task);
 
 /** \brief Enqueue an asynchronous 2D copy (rectangle area) with the RAM.
@@ -389,7 +389,7 @@ static inline void ram_write_2d_async(struct pi_device *device,
  *
  * \param device      The device descriptor of the RAM chip on which to do
  * the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param data        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  * \param stride      2D stride, which is the number of bytes which are added
@@ -401,8 +401,8 @@ static inline void ram_write_2d_async(struct pi_device *device,
  * \param task        The task used to notify the end of transfer. See the
  *   documentation of pi_task_t for more details.
  */
-static inline void ram_copy_2d_async(struct pi_device *device,
-  uint32_t ram_addr, void *data, uint32_t size, uint32_t stride,
+static inline void pi_ram_copy_2d_async(struct pi_device *device,
+  uint32_t pi_ram_addr, void *data, uint32_t size, uint32_t stride,
   uint32_t length, int ext2loc, pi_task_t *task);
 
 /** \brief Allocate RAM memory from cluster side.
@@ -418,8 +418,8 @@ static inline void ram_copy_2d_async(struct pi_device *device,
  * \param size   The size in bytes of the memory to allocate.
  * \param req    The request structure used for termination.
  */
-void cl_ram_alloc(struct pi_device *device, uint32_t size,
-  cl_ram_alloc_req_t *req);
+void cl_pi_ram_alloc(struct pi_device *device, uint32_t size,
+  cl_pi_ram_alloc_req_t *req);
 
 /** \brief Free RAM memory from cluster side.
  *
@@ -435,8 +435,8 @@ void cl_ram_alloc(struct pi_device *device, uint32_t size,
  * \param size   The size in bytes of the memory chunk which was allocated.
  * \param req    The request structure used for termination.
  */
-void cl_ram_free(struct pi_device *device, uint32_t chunk, uint32_t size,
-  cl_ram_free_req_t *req);
+void cl_pi_ram_free(struct pi_device *device, uint32_t chunk, uint32_t size,
+  cl_pi_ram_free_req_t *req);
 
 /** \brief Wait until the specified RAM alloc request has finished.
  *
@@ -449,7 +449,7 @@ void cl_ram_free(struct pi_device *device, uint32_t chunk, uint32_t size,
  * \return          0 if the allocation succeeded, -1 if not enough memory was
  *   available.
  */
-static inline int32_t cl_ram_alloc_wait(cl_ram_alloc_req_t *req,
+static inline int32_t cl_pi_ram_alloc_wait(cl_pi_ram_alloc_req_t *req,
   uint32_t *addr);
 
 /** \brief Wait until the specified RAM free request has finished.
@@ -460,7 +460,7 @@ static inline int32_t cl_ram_alloc_wait(cl_ram_alloc_req_t *req,
  * \param req       The request structure used for termination.
  * \return 0        if the operation was successful, -1 otherwise
  */
-static inline int32_t cl_ram_free_wait(cl_ram_free_req_t *req);
+static inline int32_t cl_pi_ram_free_wait(cl_pi_ram_free_req_t *req);
 
 /** \brief Enqueue a read copy to the RAM from cluster side (from RAM
  * to processor).
@@ -476,14 +476,14 @@ static inline int32_t cl_ram_free_wait(cl_ram_free_req_t *req);
  *
  * \param device      The device descriptor of the RAM chip on which to do
  *   the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param addr        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  * \param req         A pointer to the RAM request structure. It must be
  *   allocated by the caller and kept alive until the copy is finished.
  */
-static inline void cl_ram_read(struct pi_device *device,
-  uint32_t ram_addr, void *addr, uint32_t size, cl_ram_req_t *req);
+static inline void cl_pi_ram_read(struct pi_device *device,
+  uint32_t pi_ram_addr, void *addr, uint32_t size, cl_pi_ram_req_t *req);
 
 /** \brief Enqueue a write copy to the RAM from cluster side (from
  * RAM to processor).
@@ -499,14 +499,14 @@ static inline void cl_ram_read(struct pi_device *device,
  *
  * \param device      The device descriptor of the RAM chip on which to do
  *   the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param addr        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  * \param req         A pointer to the RAM request structure. It must be
  *   allocated by the caller and kept alive until the copy is finished.
  */
-static inline void cl_ram_write(struct pi_device *device,
-  uint32_t ram_addr, void *addr, uint32_t size, cl_ram_req_t *req);
+static inline void cl_pi_ram_write(struct pi_device *device,
+  uint32_t pi_ram_addr, void *addr, uint32_t size, cl_pi_ram_req_t *req);
 
 /** \brief Enqueue a copy with the RAM from cluster side.
  *
@@ -521,7 +521,7 @@ static inline void cl_ram_write(struct pi_device *device,
  *
  * \param device      The device descriptor of the RAM chip on which to do
  *   the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param addr        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  * \param ext2loc     1 if the copy is from RAM to the chip or 0 for the
@@ -529,8 +529,8 @@ static inline void cl_ram_write(struct pi_device *device,
  * \param req         A pointer to the RAM request structure. It must be
  *   allocated by the caller and kept alive until the copy is finished.
  */
-void cl_ram_copy(struct pi_device *device,
-  uint32_t ram_addr, void *addr, uint32_t size, int ext2loc, cl_ram_req_t *req);
+void cl_pi_ram_copy(struct pi_device *device,
+  uint32_t pi_ram_addr, void *addr, uint32_t size, int ext2loc, cl_pi_ram_req_t *req);
 
 /** \brief Enqueue a 2D read copy (rectangle area) to the RAM from cluste
  * side (from RAM to processor).
@@ -546,7 +546,7 @@ void cl_ram_copy(struct pi_device *device,
  *
  * \param device      The device descriptor of the RAM chip on which to do
  *   the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param addr        The address of the copy in the processor.
  * \param size        The size in bytes of the copy.
  * \param stride      2D stride, which is the number of bytes which are added
@@ -556,9 +556,9 @@ void cl_ram_copy(struct pi_device *device,
  * \param req         A pointer to the RAM request structure. It must be
  *   allocated by the caller and kept alive until the copy is finished.
  */
-static inline void cl_ram_read_2d(struct pi_device *device,
-  uint32_t ram_addr, void *addr, uint32_t size, uint32_t stride,
-  uint32_t length, cl_ram_req_t *req);
+static inline void cl_pi_ram_read_2d(struct pi_device *device,
+  uint32_t pi_ram_addr, void *addr, uint32_t size, uint32_t stride,
+  uint32_t length, cl_pi_ram_req_t *req);
 
 /** \brief Enqueue a 2D write copy (rectangle area) to the RAM from
  * cluster side (from RAM to processor).
@@ -574,7 +574,7 @@ static inline void cl_ram_read_2d(struct pi_device *device,
  *
  * \param device      The device descriptor of the RAM chip on which to do
  *   the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param addr        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  * \param stride      2D stride, which is the number of bytes which are added
@@ -584,9 +584,9 @@ static inline void cl_ram_read_2d(struct pi_device *device,
  * \param req         A pointer to the RAM request structure. It must be
  *   allocated by the caller and kept alive until the copy is finished.
  */
-static inline void cl_ram_write_2d(struct pi_device *device,
-  uint32_t ram_addr, void *addr, uint32_t size, uint32_t stride,
-  uint32_t length, cl_ram_req_t *req);
+static inline void cl_pi_ram_write_2d(struct pi_device *device,
+  uint32_t pi_ram_addr, void *addr, uint32_t size, uint32_t stride,
+  uint32_t length, cl_pi_ram_req_t *req);
 
 /** \brief Enqueue a 2D copy (rectangle area) with the RAM from cluster
  * side.
@@ -602,7 +602,7 @@ static inline void cl_ram_write_2d(struct pi_device *device,
  *
  * \param device      The device descriptor of the RAM chip on which to do
  *   the copy.
- * \param ram_addr  The address of the copy in the RAM.
+ * \param pi_ram_addr  The address of the copy in the RAM.
  * \param addr        The address of the copy in the processor.
  * \param size        The size in bytes of the copy
  * \param stride      2D stride, which is the number of bytes which are added
@@ -614,9 +614,9 @@ static inline void cl_ram_write_2d(struct pi_device *device,
  * \param req         A pointer to the RAM request structure. It must be
  *   allocated by the caller and kept alive until the copy is finished.
  */
-void cl_ram_copy_2d(struct pi_device *device,
-  uint32_t ram_addr, void *addr, uint32_t size, uint32_t stride,
-  uint32_t length, int ext2loc, cl_ram_req_t *req);
+void cl_pi_ram_copy_2d(struct pi_device *device,
+  uint32_t pi_ram_addr, void *addr, uint32_t size, uint32_t stride,
+  uint32_t length, int ext2loc, cl_pi_ram_req_t *req);
 
 /** \brief Wait until the specified RAM request has finished.
  *
@@ -625,7 +625,7 @@ void cl_ram_copy_2d(struct pi_device *device,
  *
  * \param req       The request structure used for termination.
  */
-static inline void cl_ram_read_wait(cl_ram_req_t *req);
+static inline void cl_pi_ram_read_wait(cl_pi_ram_req_t *req);
 
 /** \brief Wait until the specified RAM request has finished.
  *
@@ -634,7 +634,7 @@ static inline void cl_ram_read_wait(cl_ram_req_t *req);
  *
  * \param req       The request structure used for termination.
  */
-static inline void cl_ram_write_wait(cl_ram_req_t *req);
+static inline void cl_pi_ram_write_wait(cl_pi_ram_req_t *req);
 
 /** \brief Wait until the specified RAM request has finished.
  *
@@ -643,7 +643,7 @@ static inline void cl_ram_write_wait(cl_ram_req_t *req);
  *
  * \param req       The request structure used for termination.
  */
-static inline void cl_ram_copy_wait(cl_ram_req_t *req);
+static inline void cl_pi_ram_copy_wait(cl_pi_ram_req_t *req);
 
 //!@}
 
@@ -654,23 +654,23 @@ static inline void cl_ram_copy_wait(cl_ram_req_t *req);
 
 /// @cond IMPLEM
 
-struct cl_ram_req_s
+struct cl_pi_ram_req_s
 {
     struct pi_device *device;
     void *addr;
-    uint32_t ram_addr;
+    uint32_t pi_ram_addr;
     uint32_t size;
     int32_t stride;
     uint32_t length;
     pi_task_t event;
-    struct cl_ram_req_s *next;
+    struct cl_pi_ram_req_s *next;
     uint8_t done;
     unsigned char cid;
     unsigned char ext2loc;
     unsigned char is_2d;
 };
 
-struct cl_ram_alloc_req_s
+struct cl_pi_ram_alloc_req_s
 {
     struct pi_device *device;
     uint32_t result;
@@ -681,7 +681,7 @@ struct cl_ram_alloc_req_s
     char error;
 };
 
-struct cl_ram_free_req_s
+struct cl_pi_ram_free_req_s
 {
     struct pi_device *device;
     uint32_t result;
@@ -693,150 +693,150 @@ struct cl_ram_free_req_s
     char error;
 };
 
-typedef struct __ram_api_t
+typedef struct __pi_ram_api_t
 {
     int (*open)(struct pi_device *device);
     void (*close)(struct pi_device *device);
-    void (*copy_async)(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size, int ext2loc, pi_task_t *task);
-    void (*copy_2d_async)(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_task_t *task);
+    void (*copy_async)(struct pi_device *device, uint32_t pi_ram_addr, void *data, uint32_t size, int ext2loc, pi_task_t *task);
+    void (*copy_2d_async)(struct pi_device *device, uint32_t pi_ram_addr, void *data, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_task_t *task);
     int (*alloc)(struct pi_device *device, uint32_t *addr, uint32_t size);
     int (*free)(struct pi_device *device, uint32_t addr, uint32_t size);
-} ram_api_t;
+} pi_ram_api_t;
 
 
-static inline void ram_close(struct pi_device *device)
+static inline void pi_ram_close(struct pi_device *device)
 {
-    ram_api_t *api = (ram_api_t *)device->api;
+    pi_ram_api_t *api = (pi_ram_api_t *)device->api;
     api->close(device);
 }
 
-static inline void ram_read_async(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size, pi_task_t *task)
+static inline void pi_ram_read_async(struct pi_device *device, uint32_t pi_ram_addr, void *data, uint32_t size, pi_task_t *task)
 {
-    ram_api_t *api = (ram_api_t *)device->api;
-    api->copy_async(device, ram_addr, data, size, 1, task);
+    pi_ram_api_t *api = (pi_ram_api_t *)device->api;
+    api->copy_async(device, pi_ram_addr, data, size, 1, task);
 }
 
-static inline void ram_read_2d_async(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size, uint32_t stride, uint32_t length, pi_task_t *task)
+static inline void pi_ram_read_2d_async(struct pi_device *device, uint32_t pi_ram_addr, void *data, uint32_t size, uint32_t stride, uint32_t length, pi_task_t *task)
 {
-    ram_api_t *api = (ram_api_t *)device->api;
-    api->copy_2d_async(device, ram_addr, data, size, stride, length, 1, task);
+    pi_ram_api_t *api = (pi_ram_api_t *)device->api;
+    api->copy_2d_async(device, pi_ram_addr, data, size, stride, length, 1, task);
 }
 
-static inline void ram_write_async(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size, pi_task_t *task)
+static inline void pi_ram_write_async(struct pi_device *device, uint32_t pi_ram_addr, void *data, uint32_t size, pi_task_t *task)
 {
-    ram_api_t *api = (ram_api_t *)device->api;
-    api->copy_async(device, ram_addr, data, size, 0, task);
+    pi_ram_api_t *api = (pi_ram_api_t *)device->api;
+    api->copy_async(device, pi_ram_addr, data, size, 0, task);
 }
 
-static inline void ram_write_2d_async(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size, uint32_t stride, uint32_t length, pi_task_t *task)
+static inline void pi_ram_write_2d_async(struct pi_device *device, uint32_t pi_ram_addr, void *data, uint32_t size, uint32_t stride, uint32_t length, pi_task_t *task)
 {
-    ram_api_t *api = (ram_api_t *)device->api;
-    api->copy_2d_async(device, ram_addr, data, size, stride, length, 0, task);
+    pi_ram_api_t *api = (pi_ram_api_t *)device->api;
+    api->copy_2d_async(device, pi_ram_addr, data, size, stride, length, 0, task);
 }
 
-static inline void ram_copy_async(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size, int ext2loc, pi_task_t *task)
+static inline void pi_ram_copy_async(struct pi_device *device, uint32_t pi_ram_addr, void *data, uint32_t size, int ext2loc, pi_task_t *task)
 {
-    ram_api_t *api = (ram_api_t *)device->api;
-    api->copy_async(device, ram_addr, data, size, ext2loc, task);
+    pi_ram_api_t *api = (pi_ram_api_t *)device->api;
+    api->copy_async(device, pi_ram_addr, data, size, ext2loc, task);
 }
 
-static inline void ram_copy_2d_async(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_task_t *task)
+static inline void pi_ram_copy_2d_async(struct pi_device *device, uint32_t pi_ram_addr, void *data, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_task_t *task)
 {
-    ram_api_t *api = (ram_api_t *)device->api;
-    api->copy_2d_async(device, ram_addr, data, size, stride, length, ext2loc, task);
+    pi_ram_api_t *api = (pi_ram_api_t *)device->api;
+    api->copy_2d_async(device, pi_ram_addr, data, size, stride, length, ext2loc, task);
 }
 
-static inline void ram_read(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size)
+static inline void pi_ram_read(struct pi_device *device, uint32_t pi_ram_addr, void *data, uint32_t size)
 {
     pi_task_t task;
-    ram_read_async(device, ram_addr, data, size, pi_task_block(&task));
+    pi_ram_read_async(device, pi_ram_addr, data, size, pi_task_block(&task));
     pi_task_wait_on(&task);
 }
 
-static inline void ram_read_2d(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size, uint32_t stride, uint32_t length)
+static inline void pi_ram_read_2d(struct pi_device *device, uint32_t pi_ram_addr, void *data, uint32_t size, uint32_t stride, uint32_t length)
 {
     pi_task_t task;
-    ram_read_2d_async(device, ram_addr, data, size, stride, length, pi_task_block(&task));
+    pi_ram_read_2d_async(device, pi_ram_addr, data, size, stride, length, pi_task_block(&task));
     pi_task_wait_on(&task);
 }
 
-static inline void ram_copy(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size, int ext2loc)
+static inline void pi_ram_copy(struct pi_device *device, uint32_t pi_ram_addr, void *data, uint32_t size, int ext2loc)
 {
     pi_task_t task;
-    ram_copy_async(device, ram_addr, data, size, ext2loc, pi_task_block(&task));
+    pi_ram_copy_async(device, pi_ram_addr, data, size, ext2loc, pi_task_block(&task));
     pi_task_wait_on(&task);
 }
 
-static inline void ram_copy_2d(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size, uint32_t stride, uint32_t length, int ext2loc)
+static inline void pi_ram_copy_2d(struct pi_device *device, uint32_t pi_ram_addr, void *data, uint32_t size, uint32_t stride, uint32_t length, int ext2loc)
 {
     pi_task_t task;
-    ram_copy_2d_async(device, ram_addr, data, size, stride, length, ext2loc, pi_task_block(&task));
+    pi_ram_copy_2d_async(device, pi_ram_addr, data, size, stride, length, ext2loc, pi_task_block(&task));
     pi_task_wait_on(&task);
 }
 
-static inline void ram_write(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size)
+static inline void pi_ram_write(struct pi_device *device, uint32_t pi_ram_addr, void *data, uint32_t size)
 {
     pi_task_t task;
-    ram_write_async(device, ram_addr, data, size, pi_task_block(&task));
+    pi_ram_write_async(device, pi_ram_addr, data, size, pi_task_block(&task));
     pi_task_wait_on(&task);
 }
 
-static inline void ram_write_2d(struct pi_device *device, uint32_t ram_addr, void *data, uint32_t size, uint32_t stride, uint32_t length)
+static inline void pi_ram_write_2d(struct pi_device *device, uint32_t pi_ram_addr, void *data, uint32_t size, uint32_t stride, uint32_t length)
 {
     pi_task_t task;
-    ram_write_2d_async(device, ram_addr, data, size, stride, length, pi_task_block(&task));
+    pi_ram_write_2d_async(device, pi_ram_addr, data, size, stride, length, pi_task_block(&task));
     pi_task_wait_on(&task);
 }
 
-static inline int ram_alloc(struct pi_device *device, uint32_t *addr, uint32_t size)
+static inline int pi_ram_alloc(struct pi_device *device, uint32_t *addr, uint32_t size)
 {
-    ram_api_t *api = (ram_api_t *)device->api;
+    pi_ram_api_t *api = (pi_ram_api_t *)device->api;
     return api->alloc(device, addr, size);
 }
 
-static inline int ram_free(struct pi_device *device, uint32_t addr, uint32_t size)
+static inline int pi_ram_free(struct pi_device *device, uint32_t addr, uint32_t size)
 {
-    ram_api_t *api = (ram_api_t *)device->api;
+    pi_ram_api_t *api = (pi_ram_api_t *)device->api;
     return api->free(device, addr, size);
 }
 
-void __ram_conf_init(struct ram_conf *conf);
+void __pi_ram_conf_init(struct pi_ram_conf *conf);
 
-static inline void cl_ram_read(struct pi_device *device,
-                               uint32_t ram_addr, void *addr, uint32_t size, cl_ram_req_t *req)
+static inline void cl_pi_ram_read(struct pi_device *device,
+                               uint32_t pi_ram_addr, void *addr, uint32_t size, cl_pi_ram_req_t *req)
 {
-    cl_ram_copy(device, ram_addr, addr, size, 1, req);
+    cl_pi_ram_copy(device, pi_ram_addr, addr, size, 1, req);
 }
 
-static inline void cl_ram_read_2d(struct pi_device *device,
-                                  uint32_t ram_addr, void *addr, uint32_t size, uint32_t stride, uint32_t length, cl_ram_req_t *req)
+static inline void cl_pi_ram_read_2d(struct pi_device *device,
+                                  uint32_t pi_ram_addr, void *addr, uint32_t size, uint32_t stride, uint32_t length, cl_pi_ram_req_t *req)
 {
-    cl_ram_copy_2d(device, ram_addr, addr, size, stride, length, 1, req);
+    cl_pi_ram_copy_2d(device, pi_ram_addr, addr, size, stride, length, 1, req);
 }
 
-static inline void cl_ram_read_wait(cl_ram_req_t *req)
+static inline void cl_pi_ram_read_wait(cl_pi_ram_req_t *req)
 {
-    cl_ram_copy_wait(req);
+    cl_pi_ram_copy_wait(req);
 }
 
-static inline void cl_ram_write(struct pi_device *device,
-                                uint32_t ram_addr, void *addr, uint32_t size, cl_ram_req_t *req)
+static inline void cl_pi_ram_write(struct pi_device *device,
+                                uint32_t pi_ram_addr, void *addr, uint32_t size, cl_pi_ram_req_t *req)
 {
-    cl_ram_copy(device, ram_addr, addr, size, 0, req);
+    cl_pi_ram_copy(device, pi_ram_addr, addr, size, 0, req);
 }
 
-static inline void cl_ram_write_2d(struct pi_device *device,
-                                   uint32_t ram_addr, void *addr, uint32_t size, uint32_t stride, uint32_t length, cl_ram_req_t *req)
+static inline void cl_pi_ram_write_2d(struct pi_device *device,
+                                   uint32_t pi_ram_addr, void *addr, uint32_t size, uint32_t stride, uint32_t length, cl_pi_ram_req_t *req)
 {
-    cl_ram_copy_2d(device, ram_addr, addr, size, stride, length, 0, req);
+    cl_pi_ram_copy_2d(device, pi_ram_addr, addr, size, stride, length, 0, req);
 }
 
-static inline void cl_ram_write_wait(cl_ram_req_t *req)
+static inline void cl_pi_ram_write_wait(cl_pi_ram_req_t *req)
 {
-    cl_ram_copy_wait(req);
+    cl_pi_ram_copy_wait(req);
 }
 
-static inline void cl_ram_copy_wait(cl_ram_req_t *req)
+static inline void cl_pi_ram_copy_wait(cl_pi_ram_req_t *req)
 {
     #if defined(PMSIS_DRIVERS)
     cl_wait_task(&(req->done));
@@ -848,7 +848,7 @@ static inline void cl_ram_copy_wait(cl_ram_req_t *req)
     #endif  /* PMSIS_DRIVERS */
 }
 
-static inline int32_t cl_ram_alloc_wait(cl_ram_alloc_req_t *req, uint32_t *chunk)
+static inline int32_t cl_pi_ram_alloc_wait(cl_pi_ram_alloc_req_t *req, uint32_t *chunk)
 {
     #if defined(PMSIS_DRIVERS)
     cl_wait_task(&(req->done));
@@ -864,7 +864,7 @@ static inline int32_t cl_ram_alloc_wait(cl_ram_alloc_req_t *req, uint32_t *chunk
     return req->error;
 }
 
-static inline int32_t cl_ram_free_wait(cl_ram_free_req_t *req)
+static inline int32_t cl_pi_ram_free_wait(cl_pi_ram_free_req_t *req)
 {
     #if defined(PMSIS_DRIVERS)
     cl_wait_task(&(req->done));

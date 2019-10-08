@@ -23,8 +23,8 @@
 
 typedef enum
 {
-  DISPLAY_IOCTL_CUSTOM = 0
-} display_ioctl_cmd_e;
+  PI_DISPLAY_IOCTL_CUSTOM = 0
+} pi_display_ioctl_cmd_e;
 
 
 /** \brief Open an image sensor device.
@@ -39,13 +39,13 @@ typedef enum
  * \param event     The event used for managing termination.
  * \return          NULL if the device is not found, or a handle identifying the device which can be used with other Camera functions.
  */
-int display_open(struct pi_device *device);
+int pi_display_open(struct pi_device *device);
 
-void display_write(struct pi_device *device, pi_buffer_t *buffer, uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+void pi_display_write(struct pi_device *device, pi_buffer_t *buffer, uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
-static inline int32_t display_ioctl(struct pi_device *device, uint32_t cmd, void *arg);
+static inline int32_t pi_display_ioctl(struct pi_device *device, uint32_t cmd, void *arg);
 
-static inline void display_write_async(struct pi_device *device, pi_buffer_t *buffer, uint16_t x, uint16_t y,uint16_t w, uint16_t h, pi_task_t *task);
+static inline void pi_display_write_async(struct pi_device *device, pi_buffer_t *buffer, uint16_t x, uint16_t y,uint16_t w, uint16_t h, pi_task_t *task);
 
 
 //!@}
@@ -61,23 +61,23 @@ typedef struct {
   int (*open)(struct pi_device *device);
   void (*write_async)(struct pi_device *device, pi_buffer_t *buffer, uint16_t x, uint16_t y,uint16_t w, uint16_t h, pi_task_t *task);
   int32_t (*ioctl)(struct pi_device *device, uint32_t cmd, void *arg);
-} display_api_t;
+} pi_display_api_t;
 
-struct display_conf {
-  display_api_t *api;
+struct pi_display_conf {
+  pi_display_api_t *api;
 };
 
-static inline void display_write_async(struct pi_device *device, pi_buffer_t *buffer, uint16_t x, uint16_t y,uint16_t w, uint16_t h, pi_task_t *task)
+static inline void pi_display_write_async(struct pi_device *device, pi_buffer_t *buffer, uint16_t x, uint16_t y,uint16_t w, uint16_t h, pi_task_t *task)
 {
-  display_api_t *api = (display_api_t *)device->api;
+  pi_display_api_t *api = (pi_display_api_t *)device->api;
   api->write_async(device, buffer, x, y, w, h, task);
 }
 
-void __display_conf_init(struct display_conf *conf);
+void __display_conf_init(struct pi_display_conf *conf);
 
-static inline int32_t display_ioctl(struct pi_device *device, uint32_t cmd, void *arg)
+static inline int32_t pi_display_ioctl(struct pi_device *device, uint32_t cmd, void *arg)
 {
-  display_api_t *api = (display_api_t *)device->api;
+  pi_display_api_t *api = (pi_display_api_t *)device->api;
   return api->ioctl(device, cmd, arg);
 }
 

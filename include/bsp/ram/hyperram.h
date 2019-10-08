@@ -31,9 +31,9 @@
  * This structure is used to pass the desired Hyperram configuration to the
  * runtime when opening the device.
  */
-struct hyperram_conf
+struct pi_hyperram_conf
 {
-    struct ram_conf ram;   /*!< Generic RAM configuration. */
+    struct pi_ram_conf ram;   /*!< Generic RAM configuration. */
     int hyper_itf;         /*!< Hyperbus interface where the RAM is
       connected. */
     int hyper_cs;          /*!< Chip select where the RAM is connected. */
@@ -50,7 +50,7 @@ struct hyperram_conf
  *
  * \param conf A pointer to the hyperram configuration.
  */
-void hyperram_conf_init(struct hyperram_conf *conf);
+void pi_hyperram_conf_init(struct pi_hyperram_conf *conf);
 
 //!@}
 

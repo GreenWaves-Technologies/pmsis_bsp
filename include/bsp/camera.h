@@ -36,30 +36,30 @@
 
 /**@{*/
 
-/** \enum camera_cmd_e
- * \brief Command ID for camera_control.
+/** \enum pi_camera_cmd_e
+ * \brief Command ID for pi_camera_control.
  *
  */
 typedef enum {
-  CAMERA_CMD_ON,    /*!< Power-up the camera. */
-  CAMERA_CMD_OFF,   /*!< Power-down the camera. */
-  CAMERA_CMD_START, /*!< Start the camera, i.e. it will start sending data on
+  PI_CAMERA_CMD_ON,    /*!< Power-up the camera. */
+  PI_CAMERA_CMD_OFF,   /*!< Power-down the camera. */
+  PI_CAMERA_CMD_START, /*!< Start the camera, i.e. it will start sending data on
     the interface. */
-  CAMERA_CMD_STOP   /*!< Stop the camera, i.e. it will stop sending data on
+  PI_CAMERA_CMD_STOP   /*!< Stop the camera, i.e. it will stop sending data on
     the interface. */
-} camera_cmd_e;     /*!< */
+} pi_camera_cmd_e;     /*!< */
 
 
-/** \enum camera_format_e
+/** \enum pi_camera_format_e
  * \brief Camera format.
  *
  * This can be given within the camera configuration when it is opened.
  */
 typedef enum {
-  CAMERA_VGA,  /*!< VGA format (640 x 480). */
-  CAMERA_QVGA, /*!< QVGA format (320 x 240). */
-  CAMERA_QQVGA /*!< QQVGA format (160 x 120). */
-} camera_format_e;
+  PI_CAMERA_VGA,  /*!< VGA format (640 x 480). */
+  PI_CAMERA_QVGA, /*!< QVGA format (320 x 240). */
+  PI_CAMERA_QQVGA /*!< QQVGA format (160 x 120). */
+} pi_camera_format_e;
 
 /** \brief Open an image sensor device.
  *
@@ -70,7 +70,7 @@ typedef enum {
  * \param device    A pointer to the device structure of the device to open.
  * \return          0 if the operation is successfull, -1 if there was an error.
  */
-int32_t camera_open(struct pi_device *device);
+int32_t pi_camera_open(struct pi_device *device);
 
 
 /** \brief Control the Camera device.
@@ -86,12 +86,12 @@ int32_t camera_open(struct pi_device *device);
  *
  * \param device    The device structure of the device to control.
  * \param cmd       The command for controlling or configuring the camera.
- *   Check the description of camera_cmd_e for further information.
+ *   Check the description of pi_camera_cmd_e for further information.
  * \param *arg      A pointer to the arguments of the command.
  * \return          0 if the operation is successfull, -1 if there was an error.
  */
-static inline int32_t camera_control(struct pi_device *device,
-  camera_cmd_e cmd, void *arg);
+static inline int32_t pi_camera_control(struct pi_device *device,
+  pi_camera_cmd_e cmd, void *arg);
 
 /** \brief Capture a sequence of samples.
  *
@@ -108,7 +108,7 @@ static inline int32_t camera_control(struct pi_device *device,
  *   transfered.
  * \param size      The size in bytes of the memory buffer.
  */
-void camera_capture(struct pi_device *device, void *buffer, uint32_t size);
+void pi_camera_capture(struct pi_device *device, void *buffer, uint32_t size);
 
 /** \brief Capture a sequence of samples.
  *
@@ -135,7 +135,7 @@ void camera_capture(struct pi_device *device, void *buffer, uint32_t size);
  * \param task        The task used to notify the end of transfer.
    See the documentation of pi_task_t for more details.
  */
-static inline void camera_capture_async(struct pi_device *device, void *buffer,
+static inline void pi_camera_capture_async(struct pi_device *device, void *buffer,
   uint32_t size, pi_task_t *task);
 
 /** \brief Close an opened Camera device.
@@ -147,7 +147,7 @@ static inline void camera_capture_async(struct pi_device *device, void *buffer,
  *
  * \param device    The device structure of the device to close.
  */
-static inline void camera_close(struct pi_device *device);
+static inline void pi_camera_close(struct pi_device *device);
 
 /** \brief Set camera register.
  *
@@ -161,7 +161,7 @@ static inline void camera_close(struct pi_device *device);
  * \param value     A pointer to the value to be set. The size of this variable
  *   depends on the register being accessed.
  */
-static inline int32_t camera_reg_set(struct pi_device *device,
+static inline int32_t pi_camera_reg_set(struct pi_device *device,
   uint32_t reg_addr, uint8_t *value);
 
 /** \brief Get camera register.
@@ -175,7 +175,7 @@ static inline int32_t camera_reg_set(struct pi_device *device,
  * \param value     A pointer to the value where the read value will be stored.
  *   The size of this variable depends on the register being accessed.
  */
-static inline int32_t camera_reg_get(struct pi_device *device,
+static inline int32_t pi_camera_reg_get(struct pi_device *device,
   uint32_t reg_addr, uint8_t *value);
 
 
@@ -194,48 +194,48 @@ static inline int32_t camera_reg_get(struct pi_device *device,
 typedef struct {
   int32_t (*open)(struct pi_device *device);
   void (*close)(struct pi_device *device);
-  int32_t (*control)(struct pi_device *device, camera_cmd_e cmd, void *arg);
+  int32_t (*control)(struct pi_device *device, pi_camera_cmd_e cmd, void *arg);
   void (*capture_async)(struct pi_device *device, void *buffer, uint32_t bufferlen, pi_task_t *task);
   int32_t (*reg_get)(struct pi_device *device, uint32_t addr, uint8_t *value);
   int32_t (*reg_set)(struct pi_device *device, uint32_t addr, uint8_t *value);
-} camera_api_t;
+} pi_camera_api_t;
 
-struct camera_conf {
+struct pi_camera_conf {
   int itf;
-  camera_api_t *api;
+  pi_camera_api_t *api;
 };
 
-static inline int32_t camera_control(struct pi_device *device, camera_cmd_e cmd, void *arg)
+static inline int32_t pi_camera_control(struct pi_device *device, pi_camera_cmd_e cmd, void *arg)
 {
-  camera_api_t *api = (camera_api_t *)device->api;
+  pi_camera_api_t *api = (pi_camera_api_t *)device->api;
   return api->control(device, cmd, arg);
 }
 
-static inline void camera_capture_async(struct pi_device *device, void *buffer, uint32_t bufferlen, pi_task_t *task)
+static inline void pi_camera_capture_async(struct pi_device *device, void *buffer, uint32_t bufferlen, pi_task_t *task)
 {
-  camera_api_t *api = (camera_api_t *)device->api;
+  pi_camera_api_t *api = (pi_camera_api_t *)device->api;
   api->capture_async(device, buffer, bufferlen, task);
 }
 
-static inline void camera_close(struct pi_device *device)
+static inline void pi_camera_close(struct pi_device *device)
 {
-  camera_api_t *api = (camera_api_t *)device->api;
+  pi_camera_api_t *api = (pi_camera_api_t *)device->api;
   api->close(device);
 }
 
-static inline int32_t camera_reg_set(struct pi_device *device, uint32_t addr, uint8_t *value)
+static inline int32_t pi_camera_reg_set(struct pi_device *device, uint32_t addr, uint8_t *value)
 {
-  camera_api_t *api = (camera_api_t *)device->api;
+  pi_camera_api_t *api = (pi_camera_api_t *)device->api;
   return api->reg_set(device, addr, value);
 }
 
-static inline int32_t camera_reg_get(struct pi_device *device, uint32_t addr, uint8_t *value)
+static inline int32_t pi_camera_reg_get(struct pi_device *device, uint32_t addr, uint8_t *value)
 {
-  camera_api_t *api = (camera_api_t *)device->api;
+  pi_camera_api_t *api = (pi_camera_api_t *)device->api;
   return api->reg_get(device, addr, value);
 }
 
-void __camera_conf_init(struct camera_conf *conf);
+void __camera_conf_init(struct pi_camera_conf *conf);
 
 /// @endcond
 

@@ -21,9 +21,9 @@
 
 #include "bsp/display.h"
 
-struct ili9341_conf
+struct pi_ili9341_conf
 {
-  struct display_conf display;
+  struct pi_display_conf display;
   int spi_itf;
   int spi_cs;
   int gpio;
@@ -34,17 +34,17 @@ struct ili9341_conf
 
 typedef enum
 {
-  ILI_ORIENTATION_0 = 0,
-  ILI_ORIENTATION_90 = 1,
-  ILI_ORIENTATION_180 = 2,
-  ILI_ORIENTATION_270 = 3,
-} ili_orientation_e;
+  PI_ILI_ORIENTATION_0 = 0,
+  PI_ILI_ORIENTATION_90 = 1,
+  PI_ILI_ORIENTATION_180 = 2,
+  PI_ILI_ORIENTATION_270 = 3,
+} pi_ili_orientation_e;
 
 
 typedef enum
 {
-  ILI_IOCTL_ORIENTATION = DISPLAY_IOCTL_CUSTOM
-} ili_ioctl_cmd_e;
+  PI_ILI_IOCTL_ORIENTATION = PI_DISPLAY_IOCTL_CUSTOM
+} pi_ili_ioctl_cmd_e;
 
 
 
@@ -55,7 +55,7 @@ typedef enum
  *
  * \param conf A pointer to the camera configuration.
  */
-void ili9341_conf_init(struct ili9341_conf *conf);
+void pi_ili9341_conf_init(struct pi_ili9341_conf *conf);
 
 
 

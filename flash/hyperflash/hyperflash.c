@@ -122,7 +122,7 @@ static unsigned int hyperflash_get_status_reg(hyperflash_t *hyperflash)
 
 static int hyperflash_open(struct pi_device *device)
 {
-  struct hyperflash_conf *conf = (struct hyperflash_conf *)device->config;
+  struct pi_hyperflash_conf *conf = (struct pi_hyperflash_conf *)device->config;
 
   hyperflash_t *hyperflash = (hyperflash_t *)pmsis_l2_malloc(sizeof(hyperflash_t));
   if (hyperflash == NULL)
@@ -180,9 +180,9 @@ static int32_t hyperflash_ioctl(struct pi_device *device, uint32_t cmd, void *ar
 {
   switch (cmd)
   {
-    case FLASH_IOCTL_INFO:
+    case PI_FLASH_IOCTL_INFO:
     {
-      struct flash_info *flash_info = (struct flash_info *)arg;
+      struct pi_flash_info *flash_info = (struct pi_flash_info *)arg;
       flash_info->sector_size = 1<<18;
       // TODO find a way to know what is on the flash, as they may be a boot binary
       flash_info->flash_start = flash_info->sector_size;
@@ -674,7 +674,7 @@ static int hyperflash_copy_2d_async(struct pi_device *device, uint32_t flash_add
 }
 
 
-static flash_api_t hyperflash_api = {
+static pi_flash_api_t hyperflash_api = {
   .open                 = &hyperflash_open,
   .close                = &hyperflash_close,
   .ioctl                = &hyperflash_ioctl,
@@ -691,7 +691,7 @@ static flash_api_t hyperflash_api = {
 
 
 
-void hyperflash_conf_init(struct hyperflash_conf *conf)
+void pi_hyperflash_conf_init(struct pi_hyperflash_conf *conf)
 {
   conf->flash.api = &hyperflash_api;
   bsp_hyperflash_conf_init(conf);

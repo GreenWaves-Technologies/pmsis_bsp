@@ -19,9 +19,9 @@
 
 #include "bsp/transport.h"
 
-struct nina_w10_conf
+struct pi_nina_w10_conf
 {
-  struct transport_conf transport;
+  struct pi_transport_conf transport;
   int spi_itf;
   int spi_cs;
   const char *ssid;
@@ -30,6 +30,6 @@ struct nina_w10_conf
   uint32_t port;
 };
 
-void nina_w10_conf_init(struct nina_w10_conf *conf);
+void pi_nina_w10_conf_init(struct pi_nina_w10_conf *conf);
 
 #endif

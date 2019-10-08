@@ -29,7 +29,7 @@ typedef struct {
 
 
 typedef struct {
-  struct mt9v034_conf conf;
+  struct pi_mt9v034_conf conf;
   struct pi_device cpi_device;
   struct pi_device i2c_device;
   struct pi_device gpio_port;
@@ -223,7 +223,7 @@ static void __mt9v034_trigger_snapshot(mt9v034_t *mt9v034)
 
 static int32_t __mt9v034_open(struct pi_device *device)
 {
-  struct mt9v034_conf *conf = (struct mt9v034_conf *)device->config;
+  struct pi_mt9v034_conf *conf = (struct pi_mt9v034_conf *)device->config;
 
   mt9v034_t *mt9v034 = (mt9v034_t *)pmsis_l2_malloc(sizeof(mt9v034_t));
   if (mt9v034 == NULL) return -1;
@@ -348,7 +348,7 @@ static int32_t __mt9v034_reg_get(struct pi_device *device, uint32_t addr, uint8_
   return 0;
 }
 
-static camera_api_t MT9V034_api =
+static pi_camera_api_t MT9V034_api =
 {
   .open           = &__mt9v034_open,
   .close          = &__mt9v034_close,
@@ -360,7 +360,7 @@ static camera_api_t MT9V034_api =
 
 
 
-void mt9v034_conf_init(struct mt9v034_conf *conf)
+void pi_mt9v034_conf_init(struct pi_mt9v034_conf *conf)
 {
   conf->camera.api = &MT9V034_api;
   bsp_mt9v034_conf_init(conf);
