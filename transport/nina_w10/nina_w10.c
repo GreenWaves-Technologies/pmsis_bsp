@@ -145,7 +145,7 @@ static void __nina_w10_setup_resume(void *arg)
 
 
 
-static int __nina_w10_setup(nina_t *nina, struct nina_w10_conf *conf, pi_task_t *task)
+static int __nina_w10_setup(nina_t *nina, struct pi_nina_w10_conf *conf, pi_task_t *task)
 {
   int setup_size = sizeof(nina_req_t) + strlen(conf->ip_addr) + 1 + strlen(conf->ssid) + 1 + strlen(conf->passwd) + 1;
   uint8_t *setup_command = pmsis_l2_malloc(setup_size);
@@ -241,7 +241,7 @@ static int __nina_w10_send_packet(nina_t *nina, uint8_t *packet, int size, pi_ta
 
 int __nina_w10_open(struct pi_device *device)
 {
-  struct nina_w10_conf *conf = (struct nina_w10_conf *)device->config;
+  struct pi_nina_w10_conf *conf = (struct pi_nina_w10_conf *)device->config;
 
   nina_t *nina = (nina_t *)pmsis_l2_malloc(sizeof(nina_t));
   if (nina == NULL) return -1;
@@ -302,7 +302,7 @@ error:
 
 
 
-int __nina_w10_connect(struct pi_device *device, int channel, void (*rcv_callback(void *arg, struct transport_header)), void *arg)
+int __nina_w10_connect(struct pi_device *device, int channel, void (*rcv_callback(void *arg, struct pi_transport_header)), void *arg)
 {
   return 0;
 }
@@ -354,7 +354,7 @@ int __nina_w10_receive_async(struct pi_device *device, void *buffer, size_t size
 
 
 
-static transport_api_t nina_w10_api =
+static pi_transport_api_t nina_w10_api =
 {
   .open              = &__nina_w10_open,
   .connect           = &__nina_w10_connect,
@@ -364,7 +364,7 @@ static transport_api_t nina_w10_api =
 };
 
 
-void nina_w10_conf_init(struct nina_w10_conf *conf)
+void nina_w10_conf_init(struct pi_nina_w10_conf *conf)
 {
   conf->transport.api = &nina_w10_api;
   bsp_nina_w10_conf_init(conf);

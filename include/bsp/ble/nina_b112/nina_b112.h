@@ -40,10 +40,10 @@
 #define S3str  "\r"
 #define S4str  "\n"
 
-#define AT_CMD_ARRAY_LENGTH   32 /* arbitrary limit */
-#define AT_RESP_ARRAY_LENGTH  64 /* arbitrary limit */
+#define PI_AT_CMD_ARRAY_LENGTH   32 /* arbitrary limit */
+#define PI_AT_RESP_ARRAY_LENGTH  64 /* arbitrary limit */
 
-#define NINA_UART_AT_BAUDRATE_bps   115200 /* Baudrate. */
+#define PI_NINA_UART_AT_BAUDRATE_bps   115200 /* Baudrate. */
 
 struct pi_nina_b112_conf
 {

@@ -40,7 +40,7 @@ typedef enum
 
 typedef struct
 {
-    nina_ble_t *ble;
+    pi_nina_ble_t *ble;
     struct pi_task *task;
 } cb_args;
 
@@ -52,11 +52,11 @@ static volatile at_resp_state_t at_resp_state;
  * API implementation
  ******************************************************************************/
 
-void nina_b112_init_conf(nina_ble_t *ble)
+void nina_b112_init_conf(pi_nina_ble_t *ble)
 {
 }
 
-int32_t nina_b112_open(nina_ble_t *ble)
+int32_t nina_b112_open(pi_nina_ble_t *ble)
 {
     struct pi_uart_conf *uart_conf = pmsis_l2_malloc(sizeof(struct pi_uart_conf));
     if (uart_conf == NULL)
@@ -65,7 +65,7 @@ int32_t nina_b112_open(nina_ble_t *ble)
         return -1;
     }
     pi_uart_conf_init(uart_conf);
-    uart_conf->baudrate_bps = (uint32_t) NINA_UART_AT_BAUDRATE_bps;
+    uart_conf->baudrate_bps = (uint32_t) PI_NINA_UART_AT_BAUDRATE_bps;
     /* Format 8N-0-1. */
     //uart_conf->bit_length = UART_8_BITS;
     //uart_conf->parity_mode = UART_PARITY_DISABLED;
@@ -76,7 +76,7 @@ int32_t nina_b112_open(nina_ble_t *ble)
     uart_conf->src_clock_Hz = SystemCoreClock;
 #endif
 
-    struct nina_b112_conf *_conf = pmsis_l2_malloc(sizeof(struct nina_b112_conf));
+    struct pi_nina_b112_conf *_conf = pmsis_l2_malloc(sizeof(struct pi_nina_b112_conf));
     _conf->skip_pads_config = 0;
     bsp_nina_b112_open(_conf);
 
@@ -86,7 +86,7 @@ int32_t nina_b112_open(nina_ble_t *ble)
         DEBUG_PRINTF("Char null\n");
         return -2;
     }
-    ble->rx_buffer = (uint8_t *) pmsis_l2_malloc(sizeof(uint8_t) * (uint32_t) AT_RESP_ARRAY_LENGTH);
+    ble->rx_buffer = (uint8_t *) pmsis_l2_malloc(sizeof(uint8_t) * (uint32_t) PI_AT_RESP_ARRAY_LENGTH);
     if (ble->rx_buffer == NULL)
     {
         DEBUG_PRINTF("Buffer null\n");
@@ -94,7 +94,7 @@ int32_t nina_b112_open(nina_ble_t *ble)
     }
     else
     {
-        for (uint32_t i=0; i<(uint32_t) AT_RESP_ARRAY_LENGTH; i++)
+        for (uint32_t i=0; i<(uint32_t) PI_AT_RESP_ARRAY_LENGTH; i++)
         {
             ble->rx_buffer[i] = 0x0;
         }
@@ -107,15 +107,15 @@ int32_t nina_b112_open(nina_ble_t *ble)
     return 0;
 }
 
-void nina_b112_close(nina_ble_t *ble)
+void nina_b112_close(pi_nina_ble_t *ble)
 {
     pi_uart_close(&(ble->uart_device));
     pmsis_l2_malloc_free(ble->rx_char, sizeof(uint8_t));
-    pmsis_l2_malloc_free(ble->rx_buffer, sizeof(uint8_t) * (uint32_t) AT_RESP_ARRAY_LENGTH);
+    pmsis_l2_malloc_free(ble->rx_buffer, sizeof(uint8_t) * (uint32_t) PI_AT_RESP_ARRAY_LENGTH);
     pmsis_l2_malloc_free(ble->uart_device.config, sizeof(struct pi_uart_conf));
 }
 
-void nina_b112_AT_cmd_send(nina_ble_t *ble, const char* cmd)
+void nina_b112_PI_AT_cmd_send(pi_nina_ble_t *ble, const char* cmd)
 {
     uint32_t cmd_length = strlen(cmd);
     uint32_t length = cmd_length + 2 + 1; /* cmd length + "AT" + '\r'. */
@@ -137,23 +137,23 @@ static void __nina_b112_data_received(void *arg)
     cb_args *param = (cb_args *) arg;
     static uint32_t index = 0;
     static unsigned char prev_byte = 0;
-    if ((at_resp_state == AT_RESP_IN_PROGRESS) &&
+    if ((at_resp_state == PI_AT_RESP_IN_PROGRESS) &&
         (prev_byte == S3char) && (*(param->ble->rx_char) == S4char))
     {
         param->ble->rx_buffer[--index] = '\0';
-        at_resp_state = AT_RESP_DONE;
+        at_resp_state = PI_AT_RESP_DONE;
     }
     else
     {
         pi_task_callback(param->task, __nina_b112_data_received, param);
         pi_uart_read_async(&(param->ble->uart_device), (void *) param->ble->rx_char, sizeof(uint8_t), param->task);
-        if ((at_resp_state == AT_RESP_NOT_STARTED) &&
+        if ((at_resp_state == PI_AT_RESP_NOT_STARTED) &&
             (prev_byte == S3char) && (*(param->ble->rx_char) == S4char))
         {
             index = 0;
-            at_resp_state = AT_RESP_IN_PROGRESS;
+            at_resp_state = PI_AT_RESP_IN_PROGRESS;
         }
-        else if (at_resp_state == AT_RESP_IN_PROGRESS)
+        else if (at_resp_state == PI_AT_RESP_IN_PROGRESS)
         {
             param->ble->rx_buffer[index++] = *(param->ble->rx_char);
         }
@@ -161,18 +161,18 @@ static void __nina_b112_data_received(void *arg)
     prev_byte = *(param->ble->rx_char);
 }
 
-uint32_t nina_b112_AT_send(nina_ble_t *ble, const char* cmd)
+uint32_t nina_b112_PI_AT_send(pi_nina_ble_t *ble, const char* cmd)
 {
-    at_resp_state = AT_RESP_NOT_STARTED;
+    at_resp_state = PI_AT_RESP_NOT_STARTED;
     pi_task_t rx_cb = {0};
     param.ble = ble;
     param.task = &rx_cb;
     pi_task_callback(&rx_cb, __nina_b112_data_received, &param);
     pi_uart_read_async(&(ble->uart_device), (void *) ble->rx_char, sizeof(uint8_t), &rx_cb);
-    nina_b112_AT_cmd_send(ble, cmd);
+    nina_b112_PI_AT_cmd_send(ble, cmd);
 
     write_res_t write_result = WR_RES_NA;
-    while (at_resp_state != AT_RESP_DONE)
+    while (at_resp_state != PI_AT_RESP_DONE)
     {
         pi_yield();
     }
@@ -203,17 +203,17 @@ uint32_t nina_b112_AT_send(nina_ble_t *ble, const char* cmd)
     return write_result;
 }
 
-void nina_b112_AT_query(nina_ble_t *ble, const char* cmd, char* resp)
+void nina_b112_PI_AT_query(pi_nina_ble_t *ble, const char* cmd, char* resp)
 {
-    at_resp_state = AT_RESP_NOT_STARTED;
+    at_resp_state = PI_AT_RESP_NOT_STARTED;
     pi_task_t rx_cb = {0};
     param.ble = ble;
     param.task = &rx_cb;
     pi_task_callback(&rx_cb, __nina_b112_data_received, &param);
     pi_uart_read_async(&(ble->uart_device), (void *) ble->rx_char, sizeof(uint8_t), &rx_cb);
-    nina_b112_AT_cmd_send(ble, cmd);
+    nina_b112_PI_AT_cmd_send(ble, cmd);
 
-    while(at_resp_state != AT_RESP_DONE)
+    while(at_resp_state != PI_AT_RESP_DONE)
     {
         pi_yield();
     }
@@ -221,16 +221,16 @@ void nina_b112_AT_query(nina_ble_t *ble, const char* cmd, char* resp)
     DBG_PRINT("Got query resp : %s\n", resp);
 }
 
-void nina_b112_wait_for_event(nina_ble_t *ble, char* resp)
+void nina_b112_wait_for_event(pi_nina_ble_t *ble, char* resp)
 {
-    at_resp_state = AT_RESP_NOT_STARTED;
+    at_resp_state = PI_AT_RESP_NOT_STARTED;
     pi_task_t rx_cb = {0};
     param.ble = ble;
     param.task = &rx_cb;
     pi_task_callback(&rx_cb, __nina_b112_data_received, &param);
     pi_uart_read_async(&(ble->uart_device), (void *) ble->rx_char, sizeof(uint8_t), &rx_cb);
 
-    while (at_resp_state != AT_RESP_DONE)
+    while (at_resp_state != PI_AT_RESP_DONE)
     {
         pi_yield();
     }
@@ -238,27 +238,27 @@ void nina_b112_wait_for_event(nina_ble_t *ble, char* resp)
     DBG_PRINT("Got unsollicited resp : %s\n", resp);
 }
 
-void nina_b112_get_data_blocking(nina_ble_t *ble, uint8_t* buffer, uint32_t size)
+void nina_b112_get_data_blocking(pi_nina_ble_t *ble, uint8_t* buffer, uint32_t size)
 {
     pi_uart_read(&(ble->uart_device), buffer, size);
 }
 
-void nina_b112_get_data(nina_ble_t *ble, uint8_t* buffer, uint32_t size, struct pi_task *task)
+void nina_b112_get_data(pi_nina_ble_t *ble, uint8_t* buffer, uint32_t size, struct pi_task *task)
 {
     pi_uart_read_async(&(ble->uart_device), buffer, size, task);
 }
 
-void nina_b112_send_data_blocking(nina_ble_t *ble, const uint8_t* buffer, uint32_t size)
+void nina_b112_send_data_blocking(pi_nina_ble_t *ble, const uint8_t* buffer, uint32_t size)
 {
     pi_uart_write(&(ble->uart_device), (void *) buffer, size);
 }
 
-void nina_b112_send_data(nina_ble_t *ble, const uint8_t* buffer, uint32_t size, struct pi_task *task)
+void nina_b112_send_data(pi_nina_ble_t *ble, const uint8_t* buffer, uint32_t size, struct pi_task *task)
 {
     pi_uart_write_async(&(ble->uart_device), (void *) buffer, size, task);
 }
 
-void nina_b112_get_data_async(nina_ble_t *ble, uint8_t* buffer, uint32_t size,
+void nina_b112_get_data_async(pi_nina_ble_t *ble, uint8_t* buffer, uint32_t size,
                               ble_callback_f callback, void *arg)
 {
     pi_task_t rx_cb = {0};
@@ -266,7 +266,7 @@ void nina_b112_get_data_async(nina_ble_t *ble, uint8_t* buffer, uint32_t size,
     pi_uart_read_async(&(ble->uart_device), buffer, size, &rx_cb);
 }
 
-void nina_b112_send_data_async(nina_ble_t *ble, const uint8_t* buffer, uint32_t size,
+void nina_b112_send_data_async(pi_nina_ble_t *ble, const uint8_t* buffer, uint32_t size,
                                ble_callback_f callback, void *arg)
 {
     pi_task_t rx_cb = {0};
@@ -278,7 +278,7 @@ void nina_b112_send_data_async(nina_ble_t *ble, const uint8_t* buffer, uint32_t 
  * Escape data mode.
  * Note : a delay of 1s is needed before and after sending this cmd.
  */
-void nina_b112_exit_data_mode(nina_ble_t *ble)
+void nina_b112_exit_data_mode(pi_nina_ble_t *ble)
 {
     pi_uart_write(&(ble->uart_device), (void *) '+', 1);
     pi_uart_write(&(ble->uart_device), (void *) '+', 1);

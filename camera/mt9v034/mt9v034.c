@@ -133,12 +133,12 @@ static int __mt9v034_start(mt9v034_t *mt9v034)
   int binning = 0;
   int width = 640;
 
-  if (mt9v034->conf.format == CAMERA_QVGA)
+  if (mt9v034->conf.format == PI_CAMERA_QVGA)
   {
     binning = 1;
     width = 320;
   }
-  if (mt9v034->conf.format == CAMERA_QQVGA)
+  if (mt9v034->conf.format == PI_CAMERA_QQVGA)
   {
     binning = 2;
     width = 160;
@@ -293,26 +293,26 @@ static void __mt9v034_close(struct pi_device *device)
 
 
 
-static int32_t __mt9v034_control(struct pi_device *device, camera_cmd_e cmd, void *arg)
+static int32_t __mt9v034_control(struct pi_device *device, pi_camera_cmd_e cmd, void *arg)
 {
   mt9v034_t *mt9v034 = (mt9v034_t *)device->data;
 
   switch (cmd)
   {
-    case CAMERA_CMD_ON:
+    case PI_CAMERA_CMD_ON:
       __mt9v034_on(mt9v034);
       break;
 
-    case CAMERA_CMD_OFF:
+    case PI_CAMERA_CMD_OFF:
       __mt9v034_off(mt9v034);
       break;
 
-    case CAMERA_CMD_START:
+    case PI_CAMERA_CMD_START:
       pi_cpi_control_start(&mt9v034->cpi_device);
       __mt9v034_trigger_snapshot(mt9v034);
       break;
 
-    case CAMERA_CMD_STOP:
+    case PI_CAMERA_CMD_STOP:
       pi_cpi_control_stop(&mt9v034->cpi_device);
       break;
 
@@ -364,7 +364,7 @@ void pi_mt9v034_conf_init(struct pi_mt9v034_conf *conf)
 {
   conf->camera.api = &MT9V034_api;
   bsp_mt9v034_conf_init(conf);
-  conf->format = CAMERA_QVGA;
+  conf->format = PI_CAMERA_QVGA;
   conf->column_flip = 1;
   conf->row_flip = 0;
   conf->skip_pads_config = 0;
