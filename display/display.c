@@ -31,7 +31,7 @@ int pi_display_open(struct pi_device *device)
 
 
 
-void display_write(struct pi_device *device, pi_buffer_t *buffer, uint16_t x, uint16_t y, uint16_t w, uint16_t h)
+void pi_display_write(struct pi_device *device, pi_buffer_t *buffer, uint16_t x, uint16_t y, uint16_t w, uint16_t h)
 {
   pi_task_t task;
   pi_task_block(&task);
