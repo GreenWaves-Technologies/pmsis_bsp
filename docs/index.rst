@@ -1,9 +1,11 @@
-PMSIS documentation
-===================
+PMSIS BSP documentation
+=======================
+
+.. include:: mainpage.md
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Drivers:
 
    ram
    flash

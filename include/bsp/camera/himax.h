@@ -19,23 +19,56 @@
 
 #include "bsp/camera.h"
 
+/**
+ * @addtogroup Camera
+ * @{
+ */
+
+/**
+ * @defgroup Himax Himax
+ */
+
+/**
+ * @addtogroup Himax
+ * @{
+ */
+
+/** \struct pi_himax_conf
+ * \brief Himax configuration structure.
+ *
+ * This structure is used to pass the desired Himax configuration to the
+ * runtime when opening the device.
+ */
 struct pi_himax_conf
 {
-  struct pi_camera_conf camera;
-  int cpi_itf;
-  int i2c_itf;
-  char skip_pads_config;
-  pi_camera_format_e format;
+  struct pi_camera_conf camera; /*!< Generic camera configuration. */
+  int cpi_itf;                  /*!< CPI interface where the camera is
+    connected. */
+  int i2c_itf;                  /*!< I2C interface where the camera control
+    interface is connected. */
+  char skip_pads_config;        /*!< Skip pads configuration if set to 1. */
+  pi_camera_format_e format;    /*!< Camera image resolution. */
 };
 
 /** \brief Initialize a camera configuration with default values.
  *
- * The structure containing the configuration must be kept alive until the camera device is opened.
+ * The structure containing the configuration must be kept alive until the
+ * camera device is opened.
  * Can only be called from fabric-controller side.
  *
  * \param conf A pointer to the camera configuration.
  */
 void pi_himax_conf_init(struct pi_himax_conf *conf);
+
+//!@}
+
+/**
+ * @} end of Himax
+ */
+
+/**
+ * @} end of Camera
+ */
 
 
 

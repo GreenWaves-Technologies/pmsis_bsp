@@ -25,7 +25,16 @@
  * @{
  */
 
-/** \struct hyperram_conf
+/**
+ * @defgroup Hyperram Hyperram
+ */
+
+/**
+ * @addtogroup Hyperram
+ * @{
+ */
+
+/** \struct pi_hyperram_conf
  * \brief Hyperram configuration structure.
  *
  * This structure is used to pass the desired Hyperram configuration to the
@@ -53,5 +62,13 @@ struct pi_hyperram_conf
 void pi_hyperram_conf_init(struct pi_hyperram_conf *conf);
 
 //!@}
+
+/**
+ * @} end of Hyperram
+ */
+
+/**
+ * @} end of Ram
+ */
 
 #endif 

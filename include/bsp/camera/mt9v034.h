@@ -19,27 +19,62 @@
 
 #include "bsp/camera.h"
 
+/**
+ * @addtogroup Camera
+ * @{
+ */
+
+/**
+ * @defgroup Mt9v Mt9v
+ */
+
+/**
+ * @addtogroup Mt9v
+ * @{
+ */
+
+/** \struct pi_mt9v034_conf
+ * \brief Mt9v034 configuration structure.
+ *
+ * This structure is used to pass the desired mt9v034 configuration to the
+ * runtime when opening the device.
+ */
 struct pi_mt9v034_conf
 {
-  struct pi_camera_conf camera;
-  char cpi_itf;
-  char i2c_itf;
-  char power_gpio;
-  char trigger_gpio;
-  char column_flip;
-  char row_flip;
-  char skip_pads_config;
-  pi_camera_format_e format;
+  struct pi_camera_conf camera; /*!< Generic camera configuration. */
+  char cpi_itf;/*!< CPI interface where the camera is
+    connected. */
+  char i2c_itf; /*!< I2C interface where the camera control
+    interface is connected. */
+  char power_gpio; /*!< GPIO number where the power pad of the camera is
+    connected. */
+  char trigger_gpio; /*!< GPIO number where the trigger pad of the camera is
+    connected. */
+  char column_flip; /*!< Flip columns if set to 1. */
+  char row_flip; /*!< Flip rows if set to 1. */
+  char skip_pads_config;/*!< Skip pads configuration if set to 1. */
+  pi_camera_format_e format;/*!< Camera image resolution. */
 };
 
 /** \brief Initialize a camera configuration with default values.
  *
- * The structure containing the configuration must be kept alive until the camera device is opened.
+ * The structure containing the configuration must be kept alive until the
+ * camera device is opened.
  * Can only be called from fabric-controller side.
  *
  * \param conf A pointer to the camera configuration.
  */
 void pi_mt9v034_conf_init(struct pi_mt9v034_conf *conf);
+
+//!@}
+
+/**
+ * @} end of Mt9v034
+ */
+
+/**
+ * @} end of Camera
+ */
 
 
 

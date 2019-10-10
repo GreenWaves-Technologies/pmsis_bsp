@@ -25,6 +25,18 @@
  * @{
  */
 
+/**
+ * @defgroup Hyperflash Hyperflash
+ *
+ */
+
+/**
+ * @addtogroup Hyperflash
+ * @{
+ */
+
+/**@{*/
+
 /** \struct hyperflash_conf
  * \brief Hyperflash configuration structure.
  *
@@ -50,5 +62,13 @@ struct pi_hyperflash_conf
 void pi_hyperflash_conf_init(struct pi_hyperflash_conf *conf);
 
 //!@}
+
+/**
+ * @} end of Hyperflash
+ */
+
+/**
+ * @} end of Flash
+ */
 
 #endif 
