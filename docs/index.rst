@@ -11,6 +11,7 @@ PMSIS BSP documentation
    flash
    camera
    fs
+   ble
 
 Indices and tables
 ==================
