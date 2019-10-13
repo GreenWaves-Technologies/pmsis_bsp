@@ -77,7 +77,7 @@ typedef struct pi_fs_file_s pi_fs_file_t;
  * variable, for example as a global variable, a local one on the stack,
  * or through a memory allocator.
  */
-typedef struct cl_pi_fs_req_s cl_pi_fs_req_t;
+typedef struct pi_cl_fs_req_s pi_cl_fs_req_t;
 
 /** \brief Initialize a file-system configuration with default values.
  *
@@ -344,7 +344,7 @@ int32_t pi_fs_copy_2d_async(pi_fs_file_t *file, uint32_t index, void *buffer,
  * to optimize small transfers.
  * Depending on the chip, there may be some restrictions on the memory which
  * can be used. Check the chip-specific documentation for more details.
- * The only difference compared to cl_pi_fs_read is that the file position is
+ * The only difference compared to pi_cl_fs_read is that the file position is
  * automatically set to 0 for the next transfer if the current transfer reaches
  * the end of the file.
  *
@@ -353,8 +353,8 @@ int32_t pi_fs_copy_2d_async(pi_fs_file_t *file, uint32_t index, void *buffer,
  * \param size      The size in bytes to read from the file.
  * \param req       The request structure used for termination.
  */
-void cl_pi_fs_read(pi_fs_file_t *file, void *buffer, uint32_t size,
-  cl_pi_fs_req_t *req);
+void pi_cl_fs_read(pi_fs_file_t *file, void *buffer, uint32_t size,
+  pi_cl_fs_req_t *req);
 
 /** \brief Read data from a file with no intermediate cache from cluster side.
  *
@@ -366,7 +366,7 @@ void cl_pi_fs_read(pi_fs_file_t *file, void *buffer, uint32_t size,
  * bytes read by the call to this function.
  * This operation is asynchronous and its termination is managed through the
  * request structure.
- * Compared to cl_pi_fs_read, this function does direct read transfers from the
+ * Compared to pi_cl_fs_read, this function does direct read transfers from the
  * flash without any cache.
  * Depending on the chip, there may be some restrictions on the memory which
  * can be used. Check the chip-specific documentation for more details.
@@ -376,8 +376,8 @@ void cl_pi_fs_read(pi_fs_file_t *file, void *buffer, uint32_t size,
  * \param size      The size in bytes to read from the file.
  * \param req       The request structure used for termination.
  */
-void cl_pi_fs_direct_read(pi_fs_file_t *file, void *buffer, uint32_t size,
-  cl_pi_fs_req_t *req);
+void pi_cl_fs_direct_read(pi_fs_file_t *file, void *buffer, uint32_t size,
+  pi_cl_fs_req_t *req);
 
 /** \brief Reposition the current file position from cluster side.
  *
@@ -394,8 +394,8 @@ void cl_pi_fs_direct_read(pi_fs_file_t *file, void *buffer, uint32_t size,
  *   can be between 0 for the beginning of the file and the file size.
  * \param req       The request structure used for termination.
  */
-void cl_pi_fs_seek(pi_fs_file_t *file, uint32_t offset,
-  cl_pi_fs_req_t *req);
+void pi_cl_fs_seek(pi_fs_file_t *file, uint32_t offset,
+  pi_cl_fs_req_t *req);
 
 /** \brief Copy data between a FS file and a chip memory from cluster side.
  *
@@ -416,8 +416,8 @@ void cl_pi_fs_seek(pi_fs_file_t *file, uint32_t offset,
  *   contrary.
  * \param req       The request structure used for termination.
  */
-void cl_pi_fs_copy(pi_fs_file_t *file, uint32_t index, void *buffer,
-  uint32_t size, int32_t ext2loc, cl_pi_fs_req_t *req);
+void pi_cl_fs_copy(pi_fs_file_t *file, uint32_t index, void *buffer,
+  uint32_t size, int32_t ext2loc, pi_cl_fs_req_t *req);
 
 /** \brief Enqueue a 2D copy (rectangle area) between a FS file and a chip
  * memory from cluster side.
@@ -443,9 +443,9 @@ void cl_pi_fs_copy(pi_fs_file_t *file, uint32_t index, void *buffer,
  *   contrary.
  * \param req       The request structure used for termination.
  */
-void cl_pi_fs_copy_2d(pi_fs_file_t *file, uint32_t index, void *buffer,
+void pi_cl_fs_copy_2d(pi_fs_file_t *file, uint32_t index, void *buffer,
   uint32_t size, uint32_t stride, uint32_t length, int32_t ext2loc,
-  cl_pi_fs_req_t *req);
+  pi_cl_fs_req_t *req);
 
 /** \brief Wait until the specified fs request has finished.
  *
@@ -458,7 +458,7 @@ void cl_pi_fs_copy_2d(pi_fs_file_t *file, uint32_t index, void *buffer,
  * \return          The number of bytes actually read from the file. This can
  *   be smaller than the requested size if the end of file is reached.
  */
-static inline int32_t cl_pi_fs_wait(cl_pi_fs_req_t *req);
+static inline int32_t pi_cl_fs_wait(pi_cl_fs_req_t *req);
 
 //!@}
 
@@ -512,7 +512,7 @@ typedef struct pi_fs_s
 } pi_fs_t;
 
 
-typedef struct cl_pi_fs_req_s
+typedef struct pi_cl_fs_req_s
 {
   pi_fs_file_t *file;
   uint32_t index;
@@ -527,9 +527,9 @@ typedef struct cl_pi_fs_req_s
   unsigned char cid;
   unsigned char direct;
   unsigned int offset;
-} cl_pi_fs_req_t;
+} pi_cl_fs_req_t;
 
-static inline __attribute__((always_inline)) int32_t cl_pi_fs_wait(cl_pi_fs_req_t *req)
+static inline __attribute__((always_inline)) int32_t pi_cl_fs_wait(pi_cl_fs_req_t *req)
 {
     #if defined(PMSIS_DRIVERS)
     cl_wait_task(&(req->done));
