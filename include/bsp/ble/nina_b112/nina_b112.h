@@ -131,7 +131,7 @@ void pi_nina_b112_close(pi_nina_ble_t *ble);
  * @param ble            Structure holding IO device.
  * @param cmd            Command to send.
  *
- * @note This function is used by pi_nina_b112_AT_send().pi_nina_b112_AT_send()
+ * @note This function is used by pi_nina_b112_AT_send(). pi_nina_b112_AT_send()
  * should be used to send AT commands since this function does not handle
  * responses sent by ble module.
  */
