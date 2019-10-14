@@ -12,6 +12,7 @@ PMSIS BSP documentation
    camera
    fs
    ble
+   display
 
 Indices and tables
 ==================

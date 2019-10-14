@@ -759,6 +759,8 @@ INPUT                  = mainpage.md \
                          ../include/bsp/flash/hyperflash.h \
                          ../include/bsp/flash.h \
                          ../include/bsp/ble/nina_b112/nina_b112.h \
+                         ../include/bsp/display.h \
+                         ../include/bsp/display/ili9341.h \
                          headers
 
 # This tag can be used to specify the character encoding of the source files
