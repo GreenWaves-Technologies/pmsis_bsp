@@ -526,7 +526,7 @@ void pi_cl_fs_read(pi_fs_file_t *file, void *buffer, uint32_t size, pi_cl_fs_req
     #endif  /* __PULP_OS__ */
     pi_task_callback(&req->task, __pi_cl_fs_req, (void *) req);
     #if defined(PMSIS_DRIVERS)
-    cl_send_task_to_fc(&(req->task));
+    pi_cl_send_task_to_fc(&(req->task));
     #else
     __rt_cluster_push_fc_event(&req->task);
     #endif  /* PMSIS_DRIVERS */
@@ -546,7 +546,7 @@ void pi_cl_fs_direct_read(pi_fs_file_t *file, void *buffer, uint32_t size, pi_cl
     #endif  /* __PULP_OS__ */
     pi_task_callback(&req->task, __pi_cl_fs_req, (void *) req);
     #if defined(PMSIS_DRIVERS)
-    cl_send_task_to_fc(&(req->task));
+    pi_cl_send_task_to_fc(&(req->task));
     #else
     __rt_cluster_push_fc_event(&req->task);
     #endif  /* PMSIS_DRIVERS */
@@ -576,7 +576,7 @@ void pi_cl_fs_seek(pi_fs_file_t *file, uint32_t offset, pi_cl_fs_req_t *req)
     #endif  /* __PULP_OS__ */
     pi_task_callback(&req->task, __pi_cl_fs_seek_req, (void *) req);
     #if defined(PMSIS_DRIVERS)
-    cl_send_task_to_fc(&(req->task));
+    pi_cl_send_task_to_fc(&(req->task));
     #else
     __rt_cluster_push_fc_event(&req->task);
     #endif  /* PMSIS_DRIVERS */
@@ -618,7 +618,7 @@ void pi_cl_fs_copy(pi_fs_file_t *file, uint32_t index, void *buffer, uint32_t si
   #endif  /* __PULP_OS__ */
   pi_task_callback(&req->task, __pi_cl_fs_copy_req, (void *) req);
   #if defined(PMSIS_DRIVERS)
-  cl_send_task_to_fc(&(req->task));
+  pi_cl_send_task_to_fc(&(req->task));
   #else
   __rt_cluster_push_fc_event(&req->task);
   #endif  /* PMSIS_DRIVERS */
@@ -638,7 +638,7 @@ void pi_cl_fs_copy_2d(pi_fs_file_t *file, uint32_t index, void *buffer, uint32_t
   #endif  /* __PULP_OS__ */
   pi_task_callback(&req->task, __pi_cl_fs_copy_req, (void *) req);
   #if defined(PMSIS_DRIVERS)
-  cl_send_task_to_fc(&(req->task));
+  pi_cl_send_task_to_fc(&(req->task));
   #else
   __rt_cluster_push_fc_event(&req->task);
   #endif  /* PMSIS_DRIVERS */
