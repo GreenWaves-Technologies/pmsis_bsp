@@ -62,12 +62,19 @@
 #define GPIO_SCLK 12
 #define GPIO_CS 13
 #else
-#define GPIO_HANDSHAKE 3
+#define GPIO_HANDSHAKE 2
 #define GPIO_MOSI 19
 #define GPIO_MISO 23
 #define GPIO_SCLK 18
 #define GPIO_CS 5
 #endif
+
+
+//#define GPIO_HANDSHAKE 32
+//#define GPIO_MOSI 19
+//#define GPIO_MISO 23
+//#define GPIO_SCLK 18
+//#define GPIO_CS 5
 
 
 #define NINA_W10_CMD_SETUP        0x80

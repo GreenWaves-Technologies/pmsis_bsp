@@ -364,8 +364,9 @@ static pi_transport_api_t nina_w10_api =
 };
 
 
-void nina_w10_conf_init(struct pi_nina_w10_conf *conf)
+void pi_nina_w10_conf_init(struct pi_nina_w10_conf *conf)
 {
   conf->transport.api = &nina_w10_api;
   bsp_nina_w10_conf_init(conf);
 }
+
