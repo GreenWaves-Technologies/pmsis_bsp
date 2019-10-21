@@ -85,6 +85,7 @@ static int __nina_w10_send_command(nina_t *nina, uint8_t *command, int size, pi_
 
 
 
+
 static int __nina_w10_get_response(nina_t *nina, uint8_t *response, int size, pi_task_t *task)
 {
   if (nina->access_done)
