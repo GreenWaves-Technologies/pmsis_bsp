@@ -91,7 +91,7 @@ typedef void (*ble_callback_f)(void *arg);
  *
  * This function initializes a BLE module, opening IO interface(UART here).
  *
- * @param BLE            Structure holding IO device.
+ * @param ble            Structure holding IO device.
  *
  * @note This function is not implemented.
  */
@@ -201,7 +201,7 @@ void pi_nina_b112_get_data_blocking(pi_nina_ble_t *ble, uint8_t* buffer,
  * into given buffer.
  * Given struct pi_task can be used to wait end of transfer if needed.
  *
- * @param BLE            Structure holding IO device.
+ * @param ble            Structure holding IO device.
  * @param buffer         Buffer to store response.
  * @param size           Size of response data.
  * @param task           Task to use to check end of transfer.
