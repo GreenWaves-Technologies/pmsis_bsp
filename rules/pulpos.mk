@@ -4,8 +4,6 @@ include $(TARGET_INSTALL_DIR)/rules/pulp_properties.mk
 
 INSTALL_FILES += $(shell find include -name *.h)
 
-$(info BOARD $(board/name))
-
 ifneq '$(board/name)' ''
 build_dir_ext=_$(board/name)
 ifeq '$(board/name)' 'gapoc_a'

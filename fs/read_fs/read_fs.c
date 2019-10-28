@@ -409,6 +409,14 @@ static void __pi_fs_try_read(void *arg)
   }
 }
 
+int32_t pi_fs_read(pi_fs_file_t *file, void *buffer, uint32_t size)
+{
+  pi_task_t task;
+  pi_fs_read_async(file, buffer, size, pi_task_block(&task));
+  pi_task_wait_on(&task);
+  return size;
+}
+
 int32_t pi_fs_read_async(pi_fs_file_t *file, void *buffer, uint32_t size, pi_task_t *event)
 {
   // Lock the file-system instead of masking interrupts as we can return
