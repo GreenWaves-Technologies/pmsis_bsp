@@ -25,6 +25,10 @@
 #include <bsp/gapoc_a.h>
 #endif
 
+#if defined(CONFIG_GAPOC_B)
+#include <bsp/gapoc_b.h>
+#endif
+
 #if defined(CONFIG_AI_DECK)
 #include <bsp/ai_deck.h>
 #endif
