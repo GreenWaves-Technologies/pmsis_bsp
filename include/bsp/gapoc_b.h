@@ -46,6 +46,7 @@
 #define CONFIG_PWM3CH3_FUNC             ( PI_PAD_29_B34_TIMER3_CH3_FUNC2 )
 
 #define GPIOA0_LED                     ( PI_GPIO_A1_PAD_13_B2 )
+#define GPIO_USER_LED                  ( PI_GPIO_A1_PAD_13_B2 )
 #define GPIOA1                         ( 1 )
 #define GPIOA2_NINA_RST                ( PI_GPIO_A2_PAD_14_A2 )
 #define GPIOA3_CIS_EXP                 ( PI_GPIO_A3_PAD_15_B1 )
