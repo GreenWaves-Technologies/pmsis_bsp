@@ -32,4 +32,3 @@ sdk: gap_sdk_checkout module gap_sdk_build bridge
 
 test:
 	cd gap_sdk && . configs/$(JENKINS_CONFIG).sh && plptest $(TESTSET) $(PLPTEST_OPT)
-
