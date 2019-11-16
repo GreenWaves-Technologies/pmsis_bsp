@@ -237,8 +237,10 @@ static void hyperflash_read_2d_async(struct pi_device *device, uint32_t addr, vo
 {
   hyperflash_t *hyperflash = (hyperflash_t *)device->data;
 
-  if (hyperflash_stall_task(hyperflash, task, STALL_TASK_READ, addr, (uint32_t)data, size, stride, length))
+  if (hyperflash_stall_task(hyperflash, task, STALL_TASK_READ_2D, addr, (uint32_t)data, size, stride, length))
+  {
     return;
+  }
 
   pi_hyper_read_2d_async(&hyperflash->hyper_device, addr, data, size, stride, length, pi_task_callback(&hyperflash->task, hyperflash_handle_pending_task, device));
 }
@@ -258,6 +260,7 @@ static void hyperflash_handle_pending_task(void *arg)
   hyperflash->pending_task = NULL;
 
   pi_task_t *task = hyperflash->waiting_first;
+
   if (task)
   {
 #if defined(PMSIS_DRIVERS)
@@ -380,8 +383,8 @@ static int hyperflash_stall_task(hyperflash_t *hyperflash, pi_task_t *task, uint
     task->data[1] = arg0;
     task->data[2] = arg1;
     task->data[3] = arg2;
-    task->data[4] = arg2;
-    task->data[5] = arg2;
+    task->data[4] = arg3;
+    task->data[5] = arg4;
     task->next = NULL;
 
     if (hyperflash->waiting_first)
@@ -405,8 +408,8 @@ static int hyperflash_stall_task(hyperflash_t *hyperflash, pi_task_t *task, uint
     task->implem.data[1] = arg0;
     task->implem.data[2] = arg1;
     task->implem.data[3] = arg2;
-    task->implem.data[4] = arg2;
-    task->implem.data[5] = arg2;
+    task->implem.data[4] = arg3;
+    task->implem.data[5] = arg4;
 
     if (hyperflash->waiting_first)
       hyperflash->waiting_last->implem.next = task;
