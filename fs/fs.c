@@ -137,3 +137,9 @@ int32_t pi_fs_copy_2d(pi_fs_file_t *file, uint32_t index, void *buffer, uint32_t
   pi_task_wait_on(&task);
   return result;
 }
+
+int32_t pi_fs_seek(pi_fs_file_t *file, unsigned int offset)
+{
+  pi_fs_api_t *api = (pi_fs_api_t *)(file->fs->api);
+  return api->seek(file, offset);
+}
