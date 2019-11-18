@@ -63,7 +63,7 @@ static void __pi_host_fs_close(pi_fs_file_t *arg)
 static int32_t __pi_host_fs_read_async(pi_fs_file_t *arg, void *buffer, uint32_t size, pi_task_t *task)
 {
   pi_host_fs_file_t *file = (pi_host_fs_file_t *)arg;
-  int result = semihost_read(file->fd, buffer, size);
+  int result = size - semihost_read(file->fd, buffer, size);
   pi_task_push(task);
   return result;
 }
@@ -71,7 +71,7 @@ static int32_t __pi_host_fs_read_async(pi_fs_file_t *arg, void *buffer, uint32_t
 static int32_t __pi_host_fs_direct_read_async(pi_fs_file_t *arg, void *buffer, uint32_t size, pi_task_t *task)
 {
   pi_host_fs_file_t *file = (pi_host_fs_file_t *)arg;
-  int result = semihost_read(file->fd, buffer, size);
+  int result = size - semihost_read(file->fd, buffer, size);
   pi_task_push(task);
   return result;
 }
@@ -79,7 +79,7 @@ static int32_t __pi_host_fs_direct_read_async(pi_fs_file_t *arg, void *buffer, u
 static int32_t __pi_host_fs_write_async(pi_fs_file_t *arg, void *buffer, uint32_t size, pi_task_t *task)
 {
   pi_host_fs_file_t *file = (pi_host_fs_file_t *)arg;
-  int result = semihost_write(file->fd, buffer, size);
+  int result = size - semihost_write(file->fd, buffer, size);
   pi_task_push(task);
   return result;
 }
@@ -87,7 +87,7 @@ static int32_t __pi_host_fs_write_async(pi_fs_file_t *arg, void *buffer, uint32_
 static int32_t __pi_host_fs_seek(pi_fs_file_t *arg, unsigned int offset)
 {
   pi_host_fs_file_t *file = (pi_host_fs_file_t *)arg;
-  return semihost_seek(file->fd, offset) != (int)offset;
+  return semihost_seek(file->fd, offset);
 }
 
 static int32_t __pi_host_fs_copy_async(pi_fs_file_t *arg, uint32_t index, void *buffer, uint32_t size, int32_t ext2loc, pi_task_t *task)
@@ -108,7 +108,7 @@ static int32_t __pi_host_fs_copy_2d_async(pi_fs_file_t *file, uint32_t index, vo
   {
     if (length > size)
       length = size;
-
+    
     if (__pi_host_fs_seek(file, index))
       goto error;
 
