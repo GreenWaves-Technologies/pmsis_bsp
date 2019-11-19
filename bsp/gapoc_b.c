@@ -23,6 +23,7 @@
 #include "bsp/display/ili9341.h"
 #include "bsp/ram/hyperram.h"
 #include "bsp/ble/nina_b112/nina_b112.h"
+#include "bsp/camera/thermeye.h"
 
 
 static int __bsp_init_pads_done = 0;
@@ -31,11 +32,11 @@ static int __bsp_init_pads_done = 0;
 static void __gpio_init()
 {
     pi_gpio_pin_configure(0, GPIO_USER_LED, PI_GPIO_OUTPUT);
-    /* pi_gpio_pin_configure(0, GPIO_1V8_EN  , PI_GPIO_OUTPUT); */
+    pi_gpio_pin_configure(0, GPIO_1V8_EN  , PI_GPIO_OUTPUT | PI_GPIO_PULL_DISABLE);
     /* pi_gpio_pin_configure(0, GPIO_NINA17  , PI_GPIO_OUTPUT); */
 
     pi_gpio_pin_write(0, GPIO_USER_LED, 0);
-    /* pi_gpio_pin_write(0, GPIO_1V8_EN, 1); */
+    pi_gpio_pin_write(0, GPIO_1V8_EN, 1);
     /* pi_gpio_pin_write(0, GPIO_NINA17, 1); */
 }
 
@@ -116,6 +117,28 @@ int bsp_nina_b112_open(struct pi_nina_b112_conf *conf)
   }
 
   return 0;
+}
+
+void bsp_thermeye_conf_init(struct pi_thermeye_conf *conf)
+{
+    conf->cpi_id = (uint8_t) CONFIG_THERMEYE_CPI_ID;
+    conf->i2c_id = (uint8_t) CONFIG_THERMEYE_I2C_ID;
+    conf->pwm_id = (uint8_t) CONFIG_THERMEYE_PWM_ID;
+    conf->pwm_channel = (uint8_t) CONFIG_THERMEYE_PWM_CH;
+    conf->gpio_power = (pi_gpio_e) CONFIG_THERMEYE_GPIO_POWER;
+    conf->gpio_reset = (pi_gpio_e) CONFIG_THERMEYE_GPIO_RESET;
+}
+
+int bsp_thermeye_open(struct pi_thermeye_conf *conf)
+{
+    __gpio_init();
+
+    if (!conf->skip_pads_config)
+    {
+        pi_pad_set_function(CONFIG_HYPERBUS_DATA6_PAD, CONFIG_UART_RX_PAD_FUNC);
+    }
+
+    return 0;
 }
 
 void board_init()
