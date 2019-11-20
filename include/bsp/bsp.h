@@ -88,6 +88,12 @@ void bsp_nina_b112_conf_init(struct pi_nina_b112_conf *conf);
 int bsp_nina_b112_open(struct pi_nina_b112_conf *conf);
 #endif
 
+#if defined(CONFIG_THERMEYE)
+#include "bsp/camera/thermeye.h"
+void bsp_thermeye_conf_init(struct pi_thermeye_conf *conf);
+int bsp_thermeye_open(struct pi_thermeye_conf *conf);
+#endif  /* CONFIG_THERMEYE */
+
 void bsp_init();
 
 
