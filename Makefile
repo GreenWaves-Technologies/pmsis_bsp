@@ -5,6 +5,7 @@ VEGA_SRC = \
   flash/flash.c \
   fs/read_fs/read_fs.c \
   fs/host_fs/host_fs.c \
+  fs/host_fs/semihost.c \
   fs/fs.c \
   flash/hyperflash/hyperflash.c \
   ram/hyperram/hyperram.c \
@@ -18,6 +19,7 @@ GAP9_SRC = \
   flash/flash.c \
   fs/read_fs/read_fs.c \
   fs/host_fs/host_fs.c \
+  fs/host_fs/semihost.c \
   fs/fs.c \
   flash/hyperflash/hyperflash.c \
   ram/hyperram/hyperram.c \
@@ -31,6 +33,7 @@ WOLFE_SRC = \
   flash/flash.c \
   fs/read_fs/read_fs.c \
   fs/host_fs/host_fs.c \
+  fs/host_fs/semihost.c \
   fs/fs.c \
   flash/hyperflash/hyperflash.c \
   ram/hyperram/hyperram.c \
@@ -46,6 +49,7 @@ GAPUINO_SRC = \
   flash/flash.c \
   fs/read_fs/read_fs.c \
   fs/host_fs/host_fs.c \
+  fs/host_fs/semihost.c \
   fs/fs.c \
   flash/hyperflash/hyperflash.c \
   ram/hyperram/hyperram.c \
@@ -60,6 +64,7 @@ AI_DECK_SRC = \
   flash/hyperflash/hyperflash.c \
   fs/read_fs/read_fs.c \
   fs/host_fs/host_fs.c \
+  fs/host_fs/semihost.c \
   fs/fs.c \
   transport/transport.c \
   transport/nina_w10/nina_w10.c \
@@ -74,6 +79,7 @@ GAPOC_A_SRC = \
   flash/flash.c \
   fs/read_fs/read_fs.c \
   fs/host_fs/host_fs.c \
+  fs/host_fs/semihost.c \
   fs/fs.c \
   flash/hyperflash/hyperflash.c \
   transport/transport.c \
@@ -89,6 +95,8 @@ GAPOC_B_SRC = \
   bsp/gapoc_a.c \
   flash/flash.c \
   fs/read_fs/read_fs.c \
+  fs/host_fs/host_fs.c \
+  fs/host_fs/semihost.c \
   flash/hyperflash/hyperflash.c \
   transport/transport.c \
   display/display.c \
