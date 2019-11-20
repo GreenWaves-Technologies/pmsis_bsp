@@ -202,7 +202,7 @@ static void hyperflash_reg_set_async(struct pi_device *device, uint32_t addr, ui
 
   hyperflash_set_reg_exec(hyperflash, addr, *(uint16_t *)value);
 
-  pi_task_enqueue(task);
+  hyperflash_handle_pending_task(device);
 }
 
 
@@ -216,7 +216,7 @@ static void hyperflash_reg_get_async(struct pi_device *device, uint32_t addr, ui
 
   *(uint16_t *)value = hyperflash_get_reg_exec(hyperflash, addr);
 
-  pi_task_enqueue(task);
+  hyperflash_handle_pending_task(device);
 }
 
 
@@ -569,7 +569,7 @@ static void hyperflash_erase_chip_async(struct pi_device *device, pi_task_t *tas
   hyperflash_set_reg_exec(hyperflash, 0x2AA<<1, 0x55);
   hyperflash_set_reg_exec(hyperflash, 0x555<<1, 0x10);
 
-  pi_task_enqueue(task);
+  hyperflash_handle_pending_task(device);
 }
 
 
