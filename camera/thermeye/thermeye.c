@@ -187,6 +187,7 @@ static int32_t __pi_thermeye_open(struct pi_device *device)
     struct pi_pwm_conf pwm_conf;
     pi_pwm_conf_init(&pwm_conf);
     pwm_conf.pwm_id = conf->pwm_id;
+    pwm_conf.ch_id = conf->pwm_channel;
     pwm_conf.timer_conf &= ~PI_PWM_CLKSEL_REFCLK_32K;
     pwm_conf.timer_conf |= PI_PWM_CLKSEL_FLL;
     pi_open_from_conf(&(thermeye->pwm_device), &pwm_conf);
@@ -196,19 +197,7 @@ static int32_t __pi_thermeye_open(struct pi_device *device)
         pi_l2_free(thermeye, sizeof(struct pi_thermeye_conf));
         return -2;
     }
-    /* Setup Timer threshold. */
-    uint16_t th_hi = pi_freq_get(PI_FREQ_DOMAIN_FC) / (PWM_FQCY_KHz * 1000);
-    uint16_t th_lo = 1;
-    uint32_t threshold = (th_hi << 16) | th_lo;
-    //uint32_t threshold = 0x470001;
-    pi_pwm_ioctl(&(thermeye->pwm_device), PI_PWM_TIMER_THRESH, (void *) threshold);
-
-    /* Setup channel : channel, threshold, mode. */
-    struct pi_pwm_ioctl_ch_config ch_conf = {0};
-    ch_conf.ch_threshold = th_hi;
-    ch_conf.channel = conf->pwm_channel;
-    ch_conf.config = PI_PWM_TOGGLE_CLEAR;
-    pi_pwm_ioctl(&(thermeye->pwm_device), PI_PWM_CH_CONFIG, (void *) &ch_conf);
+    pi_pwm_duty_cycle_set(&(thermeye->pwm_device), PWM_FQCY_KHz * 1000, 50);
 
     pi_pwm_timer_start(&(thermeye->pwm_device));
 
