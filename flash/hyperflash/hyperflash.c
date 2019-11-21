@@ -628,7 +628,8 @@ static void hyperflash_erase_resume(void *arg)
     if (iter_size > hyperflash->pending_erase_size)
       iter_size = hyperflash->pending_erase_size;
 
-    hyperflash_erase_sector_async(device, hyperflash->pending_erase_hyper_addr, pi_task_callback(&hyperflash->task2, hyperflash_erase_resume, device));
+    uint32_t hyper_addr = hyperflash->pending_erase_hyper_addr;
+    hyperflash_erase_sector_async(device, hyper_addr, pi_task_callback(&hyperflash->task2, hyperflash_erase_resume, device));
 
     hyperflash->pending_erase_hyper_addr += iter_size;
     hyperflash->pending_erase_size -= iter_size;
