@@ -104,9 +104,6 @@ int pi_partition_write_async(struct pi_device *device, const uint32_t partition_
 int pi_partition_erase_partition_async(struct pi_device *device, pi_task_t *task);
 int pi_partition_erase_partition(struct pi_device *device);
 
-int pi_partition_erase_sector_async(struct pi_device *device, uint32_t partition_addr, pi_task_t *task);
-int pi_partition_erase_sector(struct pi_device *device, uint32_t partition_addr);
-
 int pi_partition_erase_async(struct pi_device *device, uint32_t partition_addr, int size, pi_task_t *task);
         int pi_partition_erase(struct pi_device *device, uint32_t partition_addr, int size);
 

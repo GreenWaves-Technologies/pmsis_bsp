@@ -151,30 +151,6 @@ int pi_partition_erase_partition(struct pi_device *device)
     return 0;
 }
 
-int pi_partition_erase_sector_async(struct pi_device *device, uint32_t partition_addr, pi_task_t *task)
-{
-    pi_partition_t *partition = (pi_partition_t *) device->data;
-    struct pi_partition_conf *conf = (struct pi_partition_conf *) device->config;
-
-    if (partition_addr >= partition->size)
-        return -1;
-    pi_flash_erase_sector_async(conf->flash, partition_addr + partition->offset, task);
-    return 0;
-}
-
-int pi_partition_erase_sector(struct pi_device *device, uint32_t partition_addr)
-{
-    int rc;
-    pi_task_t task;
-
-    pi_task_block(&task);
-    rc = pi_partition_erase_sector_async(device, partition_addr, &task);
-    if (rc < 0)
-        return rc;
-    pi_task_wait_on(&task);
-    return 0;
-}
-
 int pi_partition_erase_async(struct pi_device *device, uint32_t partition_addr, int size, pi_task_t *task)
 {
     pi_partition_t *partition = (pi_partition_t *) device->data;
