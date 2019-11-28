@@ -53,7 +53,8 @@ typedef struct __pi_fs_api_t pi_fs_api_t;
  */
 typedef enum {
   PI_FS_READ_ONLY     = 0,    /*!< Read-only file system. */
-  PI_FS_HOST          = 1     /*!< Host file system. */
+  PI_FS_HOST          = 1,     /*!< Host file system. */
+  PI_FS_LFS           = 2,     /*!< LittleFS Filesystem. */
 } pi_fs_type_e;
 
 
