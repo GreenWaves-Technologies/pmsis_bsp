@@ -86,6 +86,7 @@ int pi_partition_open(struct pi_device *device);
 
 static inline int pi_partition_close(struct pi_device *device)
 {
+    pi_l2_free(device->data, sizeof(pi_partition_t));
     return 0;
 }
 
