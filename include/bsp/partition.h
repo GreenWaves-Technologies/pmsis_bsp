@@ -40,10 +40,10 @@
  *
  */
 typedef enum {
-    PI_PARTITION_TYPE_RAW = 0,
-    PI_PARTITION_TYPE_BIN = 1,
-    PI_PARTITION_TYPE_GWFS = 2,
-    PI_PARTITION_TYPE_LFS = 3,
+    PI_PARTITION_RAW_TYPE = 0,
+    PI_PARTITION_BINARY_TYPE = 1,
+    PI_PARTITION_READFS_TYPE = 2,
+    PI_PARTITION_LFS_TYPE = 3,
 } pi_partition_type_e;
 
 typedef struct partition {

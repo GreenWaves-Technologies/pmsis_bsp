@@ -51,20 +51,22 @@ int pi_partition_open(struct pi_device *device)
 
     table = pi_l2_malloc(sizeof(*table));
     if (table == NULL) return -1;
-    pi_flash_read(conf->flash, 0, table, 8);
+    // Read partition 1 offset
+    pi_flash_read(conf->flash, 0, table, 4);
 
     device->data = pi_l2_malloc(sizeof(pi_partition_t));
     if (device->data == NULL) goto table_error;
     partition = (pi_partition_t *) device->data;
 
+    partition->flash = conf->flash;
     if (conf->id == 0)
     {
-        partition->type = PI_PARTITION_TYPE_BIN;
+        partition->type = PI_PARTITION_BINARY_TYPE;
         partition->offset = 4;
         partition->size = table->fs_offset - partition->offset;
     } else
     {
-        partition->type = PI_PARTITION_TYPE_GWFS;
+        partition->type = PI_PARTITION_READFS_TYPE;
         partition->offset = table->fs_offset;
         partition->size = (1 << 26) - partition->offset;
         // todo fetch flash size from flash ioctl.
