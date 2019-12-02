@@ -50,9 +50,7 @@ typedef struct partition {
     struct pi_device *flash;
     pi_partition_type_e type;
     uint32_t offset;
-    uint32_t reserved0;
     uint32_t size;
-    uint32_t reserved1;
 } pi_partition_t;
 
 
