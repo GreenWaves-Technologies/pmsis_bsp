@@ -90,30 +90,105 @@ static inline int pi_partition_close(struct pi_device *device)
     return 0;
 }
 
-int pi_partition_read(struct pi_device *device, const uint32_t partition_addr,
-                      void *data, const size_t size);
+#define CHECK_ADDR() if (partition_addr + size > partition->size) return -1
 
-int pi_partition_read_async(struct pi_device *device, const uint32_t partition_addr,
-                            void *data, const size_t size, pi_task_t *task);
+static inline int pi_partition_read_async(struct pi_device *device, const uint32_t partition_addr,
+                                          void *data, const size_t size, pi_task_t *task)
+{
+    pi_partition_t *partition = (pi_partition_t *) device->data;
+    struct pi_partition_conf *conf = (struct pi_partition_conf *) device->config;
 
-int pi_partition_write(struct pi_device *device, const uint32_t partition_addr, const void *data, const size_t size);
+    CHECK_ADDR();
+    pi_flash_read_async(conf->flash, partition_addr + partition->offset, data, size, task);
+    return 0;
+}
 
-int pi_partition_write_async(struct pi_device *device, const uint32_t partition_addr, const void *data,
-                             const size_t size, pi_task_t *task);
+static inline int pi_partition_read(struct pi_device *device, const uint32_t partition_addr,
+                                    void *data, const size_t size)
+{
+    int rc;
+    pi_task_t task;
 
-int pi_partition_erase_partition_async(struct pi_device *device, pi_task_t *task);
-int pi_partition_erase_partition(struct pi_device *device);
+    pi_task_block(&task);
+    rc = pi_partition_read_async(device, partition_addr, data, size, &task);
+    if (rc < 0)
+        return rc;
+    pi_task_wait_on(&task);
+    return 0;
+}
 
-int pi_partition_erase_async(struct pi_device *device, uint32_t partition_addr, int size, pi_task_t *task);
-        int pi_partition_erase(struct pi_device *device, uint32_t partition_addr, int size);
+static inline int pi_partition_write_async(struct pi_device *device, const uint32_t partition_addr, const void *data,
+                                           const size_t size, pi_task_t *task)
+{
+    pi_partition_t *partition = (pi_partition_t *) device->data;
+    struct pi_partition_conf *conf = (struct pi_partition_conf *) device->config;
 
-        size_t pi_partition_get_size(pi_device_t *device);
+    CHECK_ADDR();
+    pi_flash_program_async(conf->flash, partition_addr + partition->offset, data, size, task);
+    return 0;
+}
+
+static inline int
+pi_partition_write(struct pi_device *device, const uint32_t partition_addr, const void *data, const size_t size)
+{
+    int rc;
+    pi_task_t task;
+
+    pi_task_block(&task);
+    rc = pi_partition_write_async(device, partition_addr, data, size, &task);
+    if (rc < 0)
+        return rc;
+    pi_task_wait_on(&task);
+    return 0;
+}
+
+static inline int pi_partition_erase_async(struct pi_device *device, uint32_t partition_addr, int size, pi_task_t *task)
+{
+    pi_partition_t *partition = (pi_partition_t *) device->data;
+    struct pi_partition_conf *conf = (struct pi_partition_conf *) device->config;
+
+    CHECK_ADDR();
+    pi_flash_erase_async(conf->flash, partition_addr + partition->offset, size, task);
+    return 0;
+}
+
+static inline int pi_partition_erase(struct pi_device *device, uint32_t partition_addr, int size)
+{
+    int rc;
+    pi_task_t task;
+
+    pi_task_block(&task);
+    rc = pi_partition_erase_async(device, partition_addr, size, &task);
+    if (rc < 0)
+        return rc;
+    pi_task_wait_on(&task);
+    return 0;
+}
+
+static inline int pi_partition_erase_partition_async(struct pi_device *device, pi_task_t *task)
+{
+    pi_partition_t *partition = (pi_partition_t *) device->data;
+
+    return pi_partition_erase_async(device, 0, partition->size, task);
+}
+
+static inline int pi_partition_erase_partition(struct pi_device *device)
+{
+    int rc;
+    pi_task_t task;
+
+    pi_task_block(&task);
+    rc = pi_partition_erase_partition_async(device, &task);
+    if (rc < 0)
+        return 0;
+    pi_task_wait_on(&task);
+    return 0;
+}
+
+size_t pi_partition_get_size(pi_device_t *device);
 
 uint32_t pi_partition_get_flash_offset(pi_device_t *device);
 
 /// @endcond
-
-
-
 
 #endif
