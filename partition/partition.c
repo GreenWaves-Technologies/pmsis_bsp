@@ -61,12 +61,10 @@ int pi_partition_open(struct pi_device *device)
     partition->flash = conf->flash;
     if (conf->id == 0)
     {
-        partition->type = PI_PARTITION_BINARY_TYPE;
         partition->offset = 4;
         partition->size = table->fs_offset - partition->offset;
     } else
     {
-        partition->type = PI_PARTITION_READFS_TYPE;
         partition->offset = table->fs_offset;
         partition->size = (1 << 26) - partition->offset;
         // todo fetch flash size from flash ioctl.
