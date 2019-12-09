@@ -73,7 +73,9 @@ GAPOC_A_SRC = \
   ram/hyperram/hyperram.c \
   ram/ram.c \
   ram/alloc_extern.c \
-  ble/nina_b112/nina_b112.c
+  ble/ble.c \
+  ble/nina_b112/nina_b112.c \
+  ble/nina_b112/nina_b112_old.c
 
 GAPOC_B_SRC = \
   $(COMMON_SRC) \
@@ -86,9 +88,10 @@ GAPOC_B_SRC = \
   ram/hyperram/hyperram.c \
   ram/ram.c \
   ram/alloc_extern.c \
+  ble/ble.c \
   ble/nina_b112/nina_b112.c \
+  ble/nina_b112/nina_b112_old.c \
   camera/thermeye/thermeye.c
-#transport/nina_w10/nina_w10.c \
 
 ifdef GAP_SDK_HOME
 include $(CURDIR)/rules/gap_sdk.mk

@@ -49,6 +49,8 @@
 #define CONFIG_THERMEYE_GPIO_POWER     ( GPIO_IR_PWRON )
 #define CONFIG_THERMEYE_GPIO_RESET     ( GPIO_IR_NRST )
 
+#define CONFIG_NINA_B112_UART_ID       ( 0 )
+
 #define GPIOA0_LED                     ( PI_GPIO_A0_PAD_12_A3 )
 #define GPIO_USER_LED                  ( PI_GPIO_A0_PAD_12_A3 )
 #define GPIO_BUTTON                    ( PI_GPIO_A18_PAD_32_A13 )

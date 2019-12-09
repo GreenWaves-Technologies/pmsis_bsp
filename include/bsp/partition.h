@@ -245,7 +245,7 @@ static inline int pi_partition_format_async(struct pi_device *device, pi_task_t 
  * @return 0 if the operation is successfull, -1 if there was an error.
  */
 static inline int pi_partition_format(struct pi_device *device);
-b
+
 /** @brief Get the size in byte of the partition
  *
  * @param device
