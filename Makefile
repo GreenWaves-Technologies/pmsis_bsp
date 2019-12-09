@@ -4,6 +4,7 @@ COMMON_SRC = \
   fs/read_fs/read_fs.c \
   fs/host_fs/semihost.c \
   fs/host_fs/host_fs.c \
+  partition/partition.c \
 
 VEGA_SRC = \
   $(COMMON_SRC) \
