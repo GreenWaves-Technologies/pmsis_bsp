@@ -232,7 +232,7 @@ static inline int pi_partition_erase(struct pi_device *device, uint32_t partitio
  * See the documentation of pi_task_t for more details.
  * @return 0 if the operation is successfull, -1 if there was an error.
  */
-static inline int pi_partition_erase_partition_async(struct pi_device *device, pi_task_t *task);
+static inline int pi_partition_format_async(struct pi_device *device, pi_task_t *task);
 
 /** @brief Erase the whole flash partition.
  *
@@ -244,8 +244,7 @@ static inline int pi_partition_erase_partition_async(struct pi_device *device, p
  * The device descriptor of the flash partition on which to do the operation.
  * @return 0 if the operation is successfull, -1 if there was an error.
  */
-static inline int pi_partition_erase_partition(struct pi_device *device);
-
+static inline int pi_partition_format(struct pi_device *device);
 /** @brief Get the size in byte of the partition
  *
  * @param device
