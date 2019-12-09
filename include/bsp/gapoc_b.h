@@ -64,7 +64,4 @@
 #define GPIO_IR_NRST                   ( PI_GPIO_A16_PAD_30_D1 )
 #define GPIO_PIR_OUT                   ( PI_GPIO_A2_PAD_14_A2 )
 
-
-void board_init();
-
 #endif  /* __BSP_GAPOC_B_H__ */

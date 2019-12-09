@@ -141,11 +141,6 @@ int bsp_thermeye_open(struct pi_thermeye_conf *conf)
     return 0;
 }
 
-void board_init()
-{
-    __bsp_init_pads();
-}
-
 
 void bsp_init()
 {

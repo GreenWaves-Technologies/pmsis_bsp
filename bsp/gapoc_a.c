@@ -165,11 +165,6 @@ int bsp_nina_b112_open(struct pi_nina_b112_conf *conf)
   return 0;
 }
 
-void board_init()
-{
-    __bsp_init_pads();
-}
-
 
 void bsp_init()
 {

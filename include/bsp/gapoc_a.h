@@ -68,7 +68,4 @@
 #define GPIOA19                   19
 #define GPIOA21_NINA17            PI_GPIO_A21_PAD_35_B13
 
-
-void board_init();
-
 #endif
