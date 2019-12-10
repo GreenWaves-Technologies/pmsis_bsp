@@ -35,24 +35,6 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-/* Factory default S3(CR) & S4(LF) response format character.  */
-#define S3char  '\r'            /*!< CR char, ASCII 0x0D. */
-#define S4char  '\n'            /*!< LF char, ASCII 0x0A. */
-/* Same, but to use in string functions (strcmp, etc...). */
-#define S3str  "\r"             /*!< CR string.  */
-#define S4str  "\n"             /*!< LF string. */
-
-#define PI_AT_CMD_ARRAY_LENGTH  ( 32 ) /*!< CMD array length. */
-#define PI_AT_RESP_ARRAY_LENGTH ( 64 ) /*!< RESP array length. */
-
-#define PI_NINA_UART_AT_BAUDRATE_bps ( 115200 ) /*!< Baudrate used by NINA_B112 module(default value). */
-
-struct pi_nina_b112_conf
-{
-//    struct ble_conf ble;
-//    uint32_t uart_itf;          /* uart ID. */
-    char skip_pads_config;
-};
 
 /* @brief NINA Ble module struct.  */
 typedef struct
@@ -61,23 +43,6 @@ typedef struct
     uint8_t *rx_char;             /*!< Byte used to receive response. */
     uint8_t *rx_buffer;           /*!< Buffer used to receive response. */
 } pi_nina_ble_t;
-
-/* @brief AT command's response state. */
-typedef enum _at_resp_state
-{
-    PI_AT_RESP_NOT_STARTED,     /*!< Response not received yet from BLE module.  */
-    PI_AT_RESP_IN_PROGRESS,     /*!< Response transmission has started. */
-    PI_AT_RESP_DONE             /*!< Response transmission received, with end of resp. */
-} at_resp_state_t;
-
-/*! @brief Response type received for an AT command. */
-typedef enum
-{
-    WR_RES_OK    = 0,          /*!< OK reponse. */
-    WR_RES_ERR   = -1,         /*!< ERROR response. */
-    WR_RES_UNSOL = -2,         /*!< UNSOLICITED_RESPONSE response. */
-    WR_RES_NA    = -3          /*!< Non authorized response. */
-} write_res_t;
 
 /* @brief BLE callback function used for asynchronous transfers. */
 typedef void (*ble_callback_f)(void *arg);
