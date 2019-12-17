@@ -16,6 +16,7 @@
 
 #include "pmsis.h"
 
+#include "bsp/bsp.h"
 #include "pmsis/drivers/gpio.h"
 #include "pmsis/drivers/pad.h"
 #include "bsp/gapoc_b.h"

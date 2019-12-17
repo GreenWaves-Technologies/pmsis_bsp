@@ -16,6 +16,7 @@
 
 #include "pmsis.h"
 
+#include "bsp/bsp.h"
 #include "bsp/gap9.h"
 #include "bsp/camera/himax.h"
 #include "bsp/flash/hyperflash.h"
