@@ -173,3 +173,14 @@ void bsp_init()
   __bsp_init_pads();
 }
 
+
+void pi_bsp_init_profile(int profile)
+{
+}
+
+
+
+void pi_bsp_init()
+{
+  pi_bsp_init_profile(PI_BSP_PROFILE_DEFAULT);
+}
