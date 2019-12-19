@@ -130,7 +130,7 @@ static void __ili_write_async(struct pi_device *device, pi_buffer_t *buffer, uin
 
 static int __ili_open(struct pi_device *device)
 {
-  struct ili9341_conf *conf = (struct ili9341_conf *)device->config;
+  struct pi_ili9341_conf *conf = (struct pi_ili9341_conf *)device->config;
 
   ili_t *ili = (ili_t *)pmsis_l2_malloc(sizeof(ili_t));
   if (ili == NULL) return -1;
@@ -167,10 +167,10 @@ static int __ili_open(struct pi_device *device)
     goto error;
 
   __ili_init(ili);
-  __ili_set_rotation(ili, CONFIG_ILI9341_ORIENTATION);
-
   ili->_width = ILI9341_TFTWIDTH;
   ili->_height = ILI9341_TFTHEIGHT;
+  __ili_set_rotation(ili,0);
+
   ili->cursor_x = 0;
   ili->cursor_y = 0;
   ili->wrap = 0;
@@ -193,7 +193,7 @@ static int32_t __ili_ioctl(struct pi_device *device, uint32_t cmd, void *arg)
 
   switch (cmd)
   {
-    case ILI_IOCTL_ORIENTATION:
+    case PI_ILI_IOCTL_ORIENTATION:
     __ili_set_rotation(ili, (uint8_t)(long)arg);
     return 0;
   }
@@ -202,7 +202,7 @@ static int32_t __ili_ioctl(struct pi_device *device, uint32_t cmd, void *arg)
 
 
 
-static display_api_t ili_api =
+static pi_display_api_t ili_api =
 {
   .open           = &__ili_open,
   .write_async    = &__ili_write_async,
@@ -211,7 +211,7 @@ static display_api_t ili_api =
 
 
 
-void ili9341_conf_init(struct ili9341_conf *conf)
+void pi_ili9341_conf_init(struct pi_ili9341_conf *conf)
 {
   conf->display.api = &ili_api;
   conf->spi_itf = 0;

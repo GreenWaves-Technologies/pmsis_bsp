@@ -25,6 +25,10 @@
 #include <bsp/gapoc_a.h>
 #endif
 
+#if defined(CONFIG_GAPOC_B)
+#include <bsp/gapoc_b.h>
+#endif
+
 #if defined(CONFIG_AI_DECK)
 #include <bsp/ai_deck.h>
 #endif
@@ -37,35 +41,39 @@
 #include <bsp/vega.h>
 #endif
 
+#if defined(CONFIG_GAP9)
+#include <bsp/gap9.h>
+#endif
+
 #if defined(CONFIG_HIMAX)
 #include "bsp/camera/himax.h"
-void bsp_himax_conf_init(struct himax_conf *conf);
-int bsp_himax_open(struct himax_conf *conf);
+void bsp_himax_conf_init(struct pi_himax_conf *conf);
+int bsp_himax_open(struct pi_himax_conf *conf);
 #endif
 
 #if defined(CONFIG_MT9V034)
 #include "bsp/camera/mt9v034.h"
-void bsp_mt9v034_conf_init(struct mt9v034_conf *conf);
-int bsp_mt9v034_open(struct mt9v034_conf *conf);
+void bsp_mt9v034_conf_init(struct pi_mt9v034_conf *conf);
+int bsp_mt9v034_open(struct pi_mt9v034_conf *conf);
 #endif
 
 #if defined(CONFIG_ILI9341)
 #include "bsp/display/ili9341.h"
-void bsp_ili9341_conf_init(struct ili9341_conf *conf);
-int bsp_ili9341_open(struct ili9341_conf *conf);
+void bsp_ili9341_conf_init(struct pi_ili9341_conf *conf);
+int bsp_ili9341_open(struct pi_ili9341_conf *conf);
 
 #endif
 
 #if defined(CONFIG_HYPERFLASH)
 #include "bsp/flash/hyperflash.h"
-void bsp_hyperflash_conf_init(struct hyperflash_conf *conf);
-int bsp_hyperflash_open(struct hyperflash_conf *conf);
+void bsp_hyperflash_conf_init(struct pi_hyperflash_conf *conf);
+int bsp_hyperflash_open(struct pi_hyperflash_conf *conf);
 #endif
 
 #if defined(CONFIG_HYPERRAM)
 #include "bsp/ram/hyperram.h"
-void bsp_hyperram_conf_init(struct hyperram_conf *conf);
-int bsp_hyperram_open(struct hyperram_conf *conf);
+void bsp_hyperram_conf_init(struct pi_hyperram_conf *conf);
+int bsp_hyperram_open(struct pi_hyperram_conf *conf);
 #endif
 
 #if defined(CONFIG_SPIRAM)
@@ -76,17 +84,31 @@ int bsp_spiram_open(struct spiram_conf *conf);
 
 #if defined(CONFIG_NINA_W10)
 #include "bsp/transport/nina_w10.h"
-void bsp_nina_w10_conf_init(struct nina_w10_conf *conf);
-int bsp_nina_w10_open(struct nina_w10_conf *conf);
+void bsp_nina_w10_conf_init(struct pi_nina_w10_conf *conf);
+int bsp_nina_w10_open(struct pi_nina_w10_conf *conf);
 #endif
 
 #if defined(CONFIG_NINA_B112)
-#include "bsp/ble/nina_b112/nina_b112.h"
-void bsp_nina_b112_conf_init(struct nina_b112_conf *conf);
-int bsp_nina_b112_open(struct nina_b112_conf *conf);
+#include "bsp/ble/nina_b112/nina_b112_old.h"
+int bsp_nina_b112_open_old();
+#include "bsp/ble/nina_b112.h"
+void bsp_nina_b112_conf_init(struct pi_nina_b112_conf *conf);
+int bsp_nina_b112_open(struct pi_nina_b112_conf *conf);
 #endif
 
+#if defined(CONFIG_THERMEYE)
+#include "bsp/camera/thermeye.h"
+void bsp_thermeye_conf_init(struct pi_thermeye_conf *conf);
+int bsp_thermeye_open(struct pi_thermeye_conf *conf);
+#endif  /* CONFIG_THERMEYE */
+
 void bsp_init();
+
+void pi_bsp_init();
+
+#define PI_BSP_PROFILE_DEFAULT 0
+
+void pi_bsp_init_profile(int profile);
 
 
 #endif

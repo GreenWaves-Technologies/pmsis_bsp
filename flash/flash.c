@@ -21,15 +21,15 @@
 #include "bsp/flash.h"
 
 
-int flash_open(struct pi_device *device)
+int pi_flash_open(struct pi_device *device)
 {
-  struct flash_conf *conf = (struct flash_conf *)device->config;
-  flash_api_t *api = (flash_api_t *)conf->api;
+  struct pi_flash_conf *conf = (struct pi_flash_conf *)device->config;
+  pi_flash_api_t *api = (pi_flash_api_t *)conf->api;
   device->api = (struct pi_device_api *)api;
   return api->open(device);
 }
 
 
-void __flash_conf_init(struct flash_conf *conf)
+void __flash_conf_init(struct pi_flash_conf *conf)
 {
 }

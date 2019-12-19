@@ -20,32 +20,32 @@
 #include "stddef.h"
 #include "pmsis.h"
 
-#define TRANSPORT_USER_FIRST_CHANNEL 1024
+#define PI_TRANSPORT_USER_FIRST_CHANNEL 1024
 
-struct transport_header
+struct pi_transport_header
 {
   uint32_t channel;
   uint32_t packet_size;
   uint32_t info;
 };
 
-int transport_open(struct pi_device *device);
+int pi_transport_open(struct pi_device *device);
 
-int transport_connect(struct pi_device *device, void (*rcv_callback(void *arg, struct transport_header)), void *arg);
+int pi_transport_connect(struct pi_device *device, void (*rcv_callback(void *arg, struct pi_transport_header)), void *arg);
 
-int transport_send_header_async(struct pi_device *device, struct transport_header *header, int channel, size_t size, pi_task_t *task);
+int pi_transport_send_header_async(struct pi_device *device, struct pi_transport_header *header, int channel, size_t size, pi_task_t *task);
 
-int transport_send_header(struct pi_device *device, struct transport_header *header, int channel, size_t size);
+int pi_transport_send_header(struct pi_device *device, struct pi_transport_header *header, int channel, size_t size);
 
-static inline int transport_send_async(struct pi_device *device, void *buffer, size_t size, pi_task_t *task);
+static inline int pi_transport_send_async(struct pi_device *device, void *buffer, size_t size, pi_task_t *task);
 
-int transport_send(struct pi_device *device, void *buffer, size_t size);
+int pi_transport_send(struct pi_device *device, void *buffer, size_t size);
 
-static inline int transport_receive_async(struct pi_device *device, void *buffer, size_t size, pi_task_t *task);
+static inline int pi_transport_receive_async(struct pi_device *device, void *buffer, size_t size, pi_task_t *task);
 
-int transport_receive(struct pi_device *device, void *buffer, size_t size);
+int pi_transport_receive(struct pi_device *device, void *buffer, size_t size);
 
-static inline void transport_close(struct pi_device *device);
+static inline void pi_transport_close(struct pi_device *device);
 
 
 
@@ -61,31 +61,31 @@ static inline void transport_close(struct pi_device *device);
 
 typedef struct {
   int (*open)(struct pi_device *device);
-  int (*connect)(struct pi_device *device, int channel, void (*rcv_callback(void *arg, struct transport_header)), void *arg);
+  int (*connect)(struct pi_device *device, int channel, void (*rcv_callback(void *arg, struct pi_transport_header)), void *arg);
   int (*send_async)(struct pi_device *device, void *buffer, size_t size, pi_task_t *task);
   int (*receive_async)(struct pi_device *device, void *buffer, size_t size, pi_task_t *task);
   void (*close)(struct pi_device *device);
-} transport_api_t;
+} pi_transport_api_t;
 
-struct transport_conf {
-  transport_api_t *api;
+struct pi_transport_conf {
+  pi_transport_api_t *api;
 };
 
-static inline int transport_send_async(struct pi_device *device, void *buffer, size_t size, pi_task_t *task)
+static inline int pi_transport_send_async(struct pi_device *device, void *buffer, size_t size, pi_task_t *task)
 {
-  transport_api_t *api = (transport_api_t *)device->api;
+  pi_transport_api_t *api = (pi_transport_api_t *)device->api;
   return api->send_async(device, buffer, size, task);
 }
 
-static inline int transport_receive_async(struct pi_device *device, void *buffer, size_t size, pi_task_t *task)
+static inline int pi_transport_receive_async(struct pi_device *device, void *buffer, size_t size, pi_task_t *task)
 {
-  transport_api_t *api = (transport_api_t *)device->api;
+  pi_transport_api_t *api = (pi_transport_api_t *)device->api;
   return api->receive_async(device, buffer, size, task);
 }
 
-static inline void transport_close(struct pi_device *device)
+static inline void pi_transport_close(struct pi_device *device)
 {
-  transport_api_t *api = (transport_api_t *)device->api;
+  pi_transport_api_t *api = (pi_transport_api_t *)device->api;
   api->close(device);
 }
 

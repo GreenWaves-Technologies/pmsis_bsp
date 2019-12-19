@@ -16,6 +16,7 @@
 
 #include "pmsis.h"
 
+#include "bsp/bsp.h"
 #include "pmsis/drivers/gpio.h"
 #include "pmsis/drivers/pad.h"
 #include "bsp/gapoc_a.h"
@@ -25,7 +26,8 @@
 #include "bsp/display/ili9341.h"
 #include "bsp/ram/hyperram.h"
 #include "bsp/ram/spiram.h"
-#include "bsp/ble/nina_b112/nina_b112.h"
+#include "bsp/ble/nina_b112.h"
+#include "bsp/ble/nina_b112/nina_b112_old.h"
 
 
 static int __bsp_init_pads_done = 0;
@@ -33,20 +35,18 @@ static int __bsp_init_pads_done = 0;
 
 static void __gpio_init()
 {
-#if 0
     pi_gpio_pin_configure(0, GPIOA0_LED      , PI_GPIO_OUTPUT);
     pi_gpio_pin_configure(0, GPIOA1          , PI_GPIO_INPUT);
-    pi_gpio_pin_configure(0, GPIOA2_NINA_RST , PI_GPIO_OUTPUT);
     pi_gpio_pin_configure(0, GPIOA4_1V8_EN   , PI_GPIO_OUTPUT);
     pi_gpio_pin_configure(0, GPIOA18         , PI_GPIO_INPUT);
     pi_gpio_pin_configure(0, GPIOA19         , PI_GPIO_INPUT);
-    pi_gpio_pin_configure(0, GPIOA21_NINA17  , PI_GPIO_OUTPUT);
+    /* pi_gpio_pin_configure(0, GPIOA2_NINA_RST , PI_GPIO_OUTPUT); */
+    /* pi_gpio_pin_configure(0, GPIOA21_NINA17  , PI_GPIO_OUTPUT); */
 
     pi_gpio_pin_write(0, GPIOA0_LED, 0);
-    pi_gpio_pin_write(0, GPIOA2_NINA_RST, 0);
     pi_gpio_pin_write(0, GPIOA4_1V8_EN, 1);
-    pi_gpio_pin_write(0, GPIOA21_NINA17, 1);
-#endif
+    /* pi_gpio_pin_write(0, GPIOA2_NINA_RST, 0); */
+    /* pi_gpio_pin_write(0, GPIOA21_NINA17, 1); */
 }
 
 static void __bsp_init_pads()
@@ -60,7 +60,7 @@ static void __bsp_init_pads()
   }
 }
 
-void bsp_hyperram_conf_init(struct hyperram_conf *conf)
+void bsp_hyperram_conf_init(struct pi_hyperram_conf *conf)
 {
   conf->ram_start = CONFIG_HYPERRAM_START;
   conf->ram_size = CONFIG_HYPERRAM_SIZE;
@@ -69,7 +69,7 @@ void bsp_hyperram_conf_init(struct hyperram_conf *conf)
   conf->hyper_cs = CONFIG_HYPERRAM_HYPER_CS;
 }
 
-int bsp_hyperram_open(struct hyperram_conf *conf)
+int bsp_hyperram_open(struct pi_hyperram_conf *conf)
 {
   __bsp_init_pads();
   pi_pad_set_function(CONFIG_HYPERBUS_DATA6_PAD, CONFIG_HYPERRAM_DATA6_PAD_FUNC);
@@ -95,13 +95,13 @@ int bsp_spiram_open(struct spiram_conf *conf)
 
 
 
-void bsp_hyperflash_conf_init(struct hyperflash_conf *conf)
+void bsp_hyperflash_conf_init(struct pi_hyperflash_conf *conf)
 {
   conf->hyper_itf = CONFIG_HYPERFLASH_HYPER_ITF;
   conf->hyper_cs = CONFIG_HYPERFLASH_HYPER_CS;
 }
 
-int bsp_hyperflash_open(struct hyperflash_conf *conf)
+int bsp_hyperflash_open(struct pi_hyperflash_conf *conf)
 {
   __bsp_init_pads();
   pi_pad_set_function(CONFIG_HYPERBUS_DATA6_PAD, CONFIG_HYPERRAM_DATA6_PAD_FUNC);
@@ -110,7 +110,7 @@ int bsp_hyperflash_open(struct hyperflash_conf *conf)
 
 
 
-void bsp_mt9v034_conf_init(struct mt9v034_conf *conf)
+void bsp_mt9v034_conf_init(struct pi_mt9v034_conf *conf)
 {
   __bsp_init_pads();
   conf->i2c_itf = CONFIG_MT9V034_I2C_ITF;
@@ -119,7 +119,7 @@ void bsp_mt9v034_conf_init(struct mt9v034_conf *conf)
   conf->trigger_gpio = CONFIG_MT9V034_TRIGGER_GPIO;
 }
 
-int bsp_mt9v034_open(struct mt9v034_conf *conf)
+int bsp_mt9v034_open(struct pi_mt9v034_conf *conf)
 {
   __bsp_init_pads();
 
@@ -135,20 +135,20 @@ int bsp_mt9v034_open(struct mt9v034_conf *conf)
 
 
 
-void bsp_nina_w10_conf_init(struct nina_w10_conf *conf)
+void bsp_nina_w10_conf_init(struct pi_nina_w10_conf *conf)
 {
   conf->spi_itf = CONFIG_NINA_W10_SPI_ITF;
   conf->spi_cs = CONFIG_NINA_W10_SPI_CS;
 }
 
-int bsp_nina_w10_open(struct nina_w10_conf *conf)
+int bsp_nina_w10_open(struct pi_nina_w10_conf *conf)
 {
   __bsp_init_pads();
   return 0;
 }
 
 
-void bsp_ili9341_conf_init(struct ili9341_conf *conf)
+void bsp_ili9341_conf_init(struct pi_ili9341_conf *conf)
 {
   conf->gpio = CONFIG_ILI9341_GPIO;
   conf->spi_itf = CONFIG_ILI9341_SPI_ITF;
@@ -156,7 +156,7 @@ void bsp_ili9341_conf_init(struct ili9341_conf *conf)
 
 }
 
-int bsp_ili9341_open(struct ili9341_conf *conf)
+int bsp_ili9341_open(struct pi_ili9341_conf *conf)
 {
   __bsp_init_pads();
 
@@ -168,26 +168,22 @@ int bsp_ili9341_open(struct ili9341_conf *conf)
   return 0;
 }
 
-void bsp_nina_b112_conf_init(struct nina_b112_conf *conf)
+void bsp_nina_b112_conf_init(struct pi_nina_b112_conf *conf)
 {
-
+    conf->uart_itf = (uint8_t) CONFIG_NINA_B112_UART_ID;
 }
 
-int bsp_nina_b112_open(struct nina_b112_conf *conf)
+int bsp_nina_b112_open(struct pi_nina_b112_conf *conf)
 {
-  __bsp_init_pads();
-
-  if (!conf->skip_pads_config)
-  {
-    pi_pad_set_function(CONFIG_HYPERBUS_DATA6_PAD, CONFIG_UART_RX_PAD_FUNC);
-  }
-
-  return 0;
+    return 0;
 }
 
-void board_init()
+int bsp_nina_b112_open_old()
 {
     __bsp_init_pads();
+
+    pi_pad_set_function(CONFIG_HYPERBUS_DATA6_PAD, CONFIG_UART_RX_PAD_FUNC);
+    return 0;
 }
 
 
@@ -196,3 +192,14 @@ void bsp_init()
   __bsp_init_pads();
 }
 
+
+void pi_bsp_init_profile(int profile)
+{
+}
+
+
+
+void pi_bsp_init()
+{
+  pi_bsp_init_profile(PI_BSP_PROFILE_DEFAULT);
+}

@@ -39,13 +39,14 @@
 #define CONFIG_HYPERRAM_HYPER_ITF 0
 #define CONFIG_HYPERRAM_HYPER_CS  0
 #define CONFIG_HYPERRAM_START     0
-#define CONFIG_HYPERRAM_SIZE     (1<<20)
+#define CONFIG_HYPERRAM_SIZE     (8<<20)
 
 #define CONFIG_SPIRAM_SPI_ITF   0
 #define CONFIG_SPIRAM_SPI_CS    1
 #define CONFIG_SPIRAM_START     0
 #define CONFIG_SPIRAM_SIZE     (1<<20)
 
-void board_init();
+#define PI_BSP_PROFILE_GAPUINO_0 0   // Default profile
+#define PI_BSP_PROFILE_GAPUINO_1 1   // I2S0 and I2S1 with different clock
 
 #endif

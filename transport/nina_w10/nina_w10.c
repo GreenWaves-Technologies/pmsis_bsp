@@ -85,6 +85,7 @@ static int __nina_w10_send_command(nina_t *nina, uint8_t *command, int size, pi_
 
 
 
+
 static int __nina_w10_get_response(nina_t *nina, uint8_t *response, int size, pi_task_t *task)
 {
   if (nina->access_done)
@@ -145,7 +146,7 @@ static void __nina_w10_setup_resume(void *arg)
 
 
 
-static int __nina_w10_setup(nina_t *nina, struct nina_w10_conf *conf, pi_task_t *task)
+static int __nina_w10_setup(nina_t *nina, struct pi_nina_w10_conf *conf, pi_task_t *task)
 {
   int setup_size = sizeof(nina_req_t) + strlen(conf->ip_addr) + 1 + strlen(conf->ssid) + 1 + strlen(conf->passwd) + 1;
   uint8_t *setup_command = pmsis_l2_malloc(setup_size);
@@ -170,7 +171,10 @@ static int __nina_w10_setup(nina_t *nina, struct nina_w10_conf *conf, pi_task_t 
   nina->setup_size = setup_size;
   nina->setup_command = setup_command;
 
-  __nina_w10_send_command(nina, setup_command, current - setup_command, pi_task_callback(&nina->task, __nina_w10_setup_resume, (void *)nina));
+  // TODO workaround until SPI driver non-multiple of 4 for the size
+  int size = ((current - setup_command) + 3) & ~3;
+
+  __nina_w10_send_command(nina, setup_command, size, pi_task_callback(&nina->task, __nina_w10_setup_resume, (void *)nina));
 
   return 0;
 }
@@ -241,7 +245,7 @@ static int __nina_w10_send_packet(nina_t *nina, uint8_t *packet, int size, pi_ta
 
 int __nina_w10_open(struct pi_device *device)
 {
-  struct nina_w10_conf *conf = (struct nina_w10_conf *)device->config;
+  struct pi_nina_w10_conf *conf = (struct pi_nina_w10_conf *)device->config;
 
   nina_t *nina = (nina_t *)pmsis_l2_malloc(sizeof(nina_t));
   if (nina == NULL) return -1;
@@ -265,7 +269,7 @@ int __nina_w10_open(struct pi_device *device)
 
   spi_conf.wordsize = PI_SPI_WORDSIZE_8;
   spi_conf.big_endian = 1;
-  spi_conf.max_baudrate = 20000000;
+  spi_conf.max_baudrate = 30000000;
   spi_conf.polarity = 0;
   spi_conf.phase = 0;
 
@@ -302,7 +306,7 @@ error:
 
 
 
-int __nina_w10_connect(struct pi_device *device, int channel, void (*rcv_callback(void *arg, struct transport_header)), void *arg)
+int __nina_w10_connect(struct pi_device *device, int channel, void (*rcv_callback(void *arg, struct pi_transport_header)), void *arg)
 {
   return 0;
 }
@@ -354,7 +358,7 @@ int __nina_w10_receive_async(struct pi_device *device, void *buffer, size_t size
 
 
 
-static transport_api_t nina_w10_api =
+static pi_transport_api_t nina_w10_api =
 {
   .open              = &__nina_w10_open,
   .connect           = &__nina_w10_connect,
@@ -364,8 +368,9 @@ static transport_api_t nina_w10_api =
 };
 
 
-void nina_w10_conf_init(struct nina_w10_conf *conf)
+void pi_nina_w10_conf_init(struct pi_nina_w10_conf *conf)
 {
   conf->transport.api = &nina_w10_api;
   bsp_nina_w10_conf_init(conf);
 }
+

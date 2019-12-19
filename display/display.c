@@ -21,27 +21,27 @@
 #include "bsp/display.h"
 
 
-int display_open(struct pi_device *device)
+int pi_display_open(struct pi_device *device)
 {
-  struct display_conf *conf = (struct display_conf *)device->config;
-  display_api_t *api = (display_api_t *)conf->api;
+  struct pi_display_conf *conf = (struct pi_display_conf *)device->config;
+  pi_display_api_t *api = (pi_display_api_t *)conf->api;
   device->api = (struct pi_device_api *)api;
   return api->open(device);
 }
 
 
 
-void display_write(struct pi_device *device, pi_buffer_t *buffer, uint16_t x, uint16_t y, uint16_t w, uint16_t h)
+void pi_display_write(struct pi_device *device, pi_buffer_t *buffer, uint16_t x, uint16_t y, uint16_t w, uint16_t h)
 {
   pi_task_t task;
   pi_task_block(&task);
-  display_write_async(device, buffer, x, y, w, h, &task);
+  pi_display_write_async(device, buffer, x, y, w, h, &task);
   pi_task_wait_on(&task);
   pi_task_destroy(&task);
 }
 
 
 
-void __display_conf_init(struct display_conf *conf)
+void __display_conf_init(struct pi_display_conf *conf)
 {
 }

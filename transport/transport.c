@@ -21,39 +21,39 @@
 #include "bsp/transport.h"
 
 
-int transport_open(struct pi_device *device)
+int pi_transport_open(struct pi_device *device)
 {
-  struct transport_conf *conf = (struct transport_conf *)device->config;
-  transport_api_t *api = (transport_api_t *)conf->api;
+  struct pi_transport_conf *conf = (struct pi_transport_conf *)device->config;
+  pi_transport_api_t *api = (pi_transport_api_t *)conf->api;
   device->api = (struct pi_device_api *)api;
   return api->open(device);
 }
 
 
 
-int transport_connect(struct pi_device *device, void (*rcv_callback(void *arg, struct transport_header)), void *arg)
+int pi_transport_connect(struct pi_device *device, void (*rcv_callback(void *arg, struct pi_transport_header)), void *arg)
 {
   // TODO
-  static int connection = TRANSPORT_USER_FIRST_CHANNEL;
+  static int connection = PI_TRANSPORT_USER_FIRST_CHANNEL;
 
   return connection++;
 }
 
 
 
-int transport_send_header_async(struct pi_device *device, struct transport_header *header, int channel, size_t size, pi_task_t *task)
+int pi_transport_send_header_async(struct pi_device *device, struct pi_transport_header *header, int channel, size_t size, pi_task_t *task)
 {
   header->channel = channel;
   header->packet_size = size;
-  return transport_send_async(device, header, sizeof(*header), task);
+  return pi_transport_send_async(device, header, sizeof(*header), task);
 }
 
 
 
-int transport_send_header(struct pi_device *device, struct transport_header *header, int channel, size_t size)
+int pi_transport_send_header(struct pi_device *device, struct pi_transport_header *header, int channel, size_t size)
 {
   pi_task_t task;
-  if (transport_send_header_async(device, header, channel, size, pi_task_block(&task)))
+  if (pi_transport_send_header_async(device, header, channel, size, pi_task_block(&task)))
   	return -1;
   pi_task_wait_on(&task);
   return 0;
@@ -61,10 +61,10 @@ int transport_send_header(struct pi_device *device, struct transport_header *hea
 
 
 
-int transport_send(struct pi_device *device, void *buffer, size_t size)
+int pi_transport_send(struct pi_device *device, void *buffer, size_t size)
 {
   pi_task_t task;
-  if (transport_send_async(device, buffer, size, pi_task_block(&task)))
+  if (pi_transport_send_async(device, buffer, size, pi_task_block(&task)))
   	return -1;
   pi_task_wait_on(&task);
   return 0;
@@ -72,10 +72,10 @@ int transport_send(struct pi_device *device, void *buffer, size_t size)
 
 
 
-int transport_receive(struct pi_device *device, void *buffer, size_t size)
+int pi_transport_receive(struct pi_device *device, void *buffer, size_t size)
 {
   pi_task_t task;
-  if (transport_receive_async(device, buffer, size, pi_task_block(&task)))
+  if (pi_transport_receive_async(device, buffer, size, pi_task_block(&task)))
   	return -1;
   pi_task_wait_on(&task);
   return 0;

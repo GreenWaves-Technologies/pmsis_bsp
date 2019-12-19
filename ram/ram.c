@@ -20,23 +20,23 @@
 
 #include "bsp/ram.h"
 
-int ram_open(struct pi_device *device)
+int32_t pi_ram_open(struct pi_device *device)
 {
-    struct ram_conf *conf = (struct ram_conf *)device->config;
-    ram_api_t *api = (ram_api_t *)conf->api;
+    struct pi_ram_conf *conf = (struct pi_ram_conf *)device->config;
+    pi_ram_api_t *api = (pi_ram_api_t *)conf->api;
     device->api = (struct pi_device_api *)api;
     return api->open(device);
 }
 
 
-void __ram_conf_init(struct ram_conf *conf)
+void __pi_ram_conf_init(struct pi_ram_conf *conf)
 {
 }
 
 
-static void __ram_cluster_req_done(void *_req)
+static void __pi_ram_cluster_req_done(void *_req)
 {
-    cl_ram_req_t *req = (cl_ram_req_t *)_req;
+    pi_cl_ram_req_t *req = (pi_cl_ram_req_t *)_req;
     #if defined(PMSIS_DRIVERS)
     cl_notify_task_done(&(req->done), req->cid);
     #else
@@ -45,23 +45,23 @@ static void __ram_cluster_req_done(void *_req)
     #endif  /* PMSIS_DRIVERS */
 }
 
-static void __ram_cluster_req(void *_req)
+static void __pi_ram_cluster_req(void *_req)
 {
-    cl_ram_req_t *req = (cl_ram_req_t* )_req;
+    pi_cl_ram_req_t *req = (pi_cl_ram_req_t* )_req;
 
     if (req->is_2d)
-  	ram_copy_2d_async(req->device, req->hyper_addr, req->addr, req->size, req->stride, req->length, req->ext2loc, pi_task_callback(&req->event, __ram_cluster_req_done, (void *)req));
+  	pi_ram_copy_2d_async(req->device, req->pi_ram_addr, req->addr, req->size, req->stride, req->length, req->ext2loc, pi_task_callback(&req->event, __pi_ram_cluster_req_done, (void *)req));
     else
-  	ram_copy_async(req->device, req->hyper_addr, req->addr, req->size, req->ext2loc, pi_task_callback(&req->event, __ram_cluster_req_done, (void *)req));
+  	pi_ram_copy_async(req->device, req->pi_ram_addr, req->addr, req->size, req->ext2loc, pi_task_callback(&req->event, __pi_ram_cluster_req_done, (void *)req));
 }
 
 
-void cl_ram_copy(struct pi_device *device,
-                 uint32_t hyper_addr, void *addr, uint32_t size, int ext2loc, cl_ram_req_t *req)
+void pi_cl_ram_copy(struct pi_device *device,
+                 uint32_t pi_ram_addr, void *addr, uint32_t size, int ext2loc, pi_cl_ram_req_t *req)
 {
     req->device = device;
     req->addr = addr;
-    req->hyper_addr = hyper_addr;
+    req->pi_ram_addr = pi_ram_addr;
     req->size = size;
     req->cid = pi_cluster_id();
     req->done = 0;
@@ -70,9 +70,9 @@ void cl_ram_copy(struct pi_device *device,
     #if defined(__PULP_OS__)
     __rt_task_init_from_cluster(&req->event);
     #endif  /* __PULP_OS__ */
-    pi_task_callback(&req->event, __ram_cluster_req, (void *) req);
+    pi_task_callback(&req->event, __pi_ram_cluster_req, (void *) req);
     #if defined(PMSIS_DRIVERS)
-    cl_send_task_to_fc(&(req->event));
+    pi_cl_send_task_to_fc(&(req->event));
     #else
     __rt_cluster_push_fc_event(&req->event);
     #endif  /* PMSIS_DRIVERS */
@@ -80,12 +80,12 @@ void cl_ram_copy(struct pi_device *device,
 
 
 
-void cl_ram_copy_2d(struct pi_device *device,
-                    uint32_t hyper_addr, void *addr, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, cl_ram_req_t *req)
+void pi_cl_ram_copy_2d(struct pi_device *device,
+                    uint32_t pi_ram_addr, void *addr, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_cl_ram_req_t *req)
 {
     req->device = device;
     req->addr = addr;
-    req->hyper_addr = hyper_addr;
+    req->pi_ram_addr = pi_ram_addr;
     req->size = size;
     req->stride = stride;
     req->length = length;
@@ -96,19 +96,19 @@ void cl_ram_copy_2d(struct pi_device *device,
     #if defined(__PULP_OS__)
     __rt_task_init_from_cluster(&req->event);
     #endif  /* __PULP_OS__ */
-    pi_task_callback(&req->event, __ram_cluster_req, (void *) req);
+    pi_task_callback(&req->event, __pi_ram_cluster_req, (void *) req);
     #if defined(PMSIS_DRIVERS)
-    cl_send_task_to_fc(&(req->event));
+    pi_cl_send_task_to_fc(&(req->event));
     #else
     __rt_cluster_push_fc_event(&req->event);
     #endif  /* PMSIS_DRIVERS */
 }
 
 
-void __ram_alloc_cluster_req(void *_req)
+void __pi_ram_alloc_cluster_req(void *_req)
 {
-    cl_ram_alloc_req_t *req = (cl_ram_alloc_req_t *)_req;
-    req->error = ram_alloc(req->device, &req->result, req->size);
+    pi_cl_ram_alloc_req_t *req = (pi_cl_ram_alloc_req_t *)_req;
+    req->error = pi_ram_alloc(req->device, &req->result, req->size);
     #if defined(PMSIS_DRIVERS)
     cl_notify_task_done(&(req->done), req->cid);
     #else
@@ -119,10 +119,10 @@ void __ram_alloc_cluster_req(void *_req)
 
 
 
-void __ram_free_cluster_req(void *_req)
+void __pi_ram_free_cluster_req(void *_req)
 {
-    cl_ram_free_req_t *req = (cl_ram_free_req_t *)_req;
-    ram_free(req->device, req->chunk, req->size);
+    pi_cl_ram_free_req_t *req = (pi_cl_ram_free_req_t *)_req;
+    req->error = pi_ram_free(req->device, req->chunk, req->size);
     #if defined(PMSIS_DRIVERS)
     cl_notify_task_done(&(req->done), req->cid);
     #else
@@ -132,7 +132,7 @@ void __ram_free_cluster_req(void *_req)
 }
 
 
-void cl_ram_alloc(struct pi_device *device, uint32_t size, cl_ram_alloc_req_t *req)
+void pi_cl_ram_alloc(struct pi_device *device, uint32_t size, pi_cl_ram_alloc_req_t *req)
 {
     req->device = device;
     req->size = size;
@@ -141,15 +141,15 @@ void cl_ram_alloc(struct pi_device *device, uint32_t size, cl_ram_alloc_req_t *r
     #if defined(__PULP_OS__)
     __rt_task_init_from_cluster(&req->event);
     #endif  /* __PULP_OS__ */
-    pi_task_callback(&req->event, __ram_alloc_cluster_req, (void *) req);
+    pi_task_callback(&req->event, __pi_ram_alloc_cluster_req, (void *) req);
     #if defined(PMSIS_DRIVERS)
-    cl_send_task_to_fc(&(req->event));
+    pi_cl_send_task_to_fc(&(req->event));
     #else
     __rt_cluster_push_fc_event(&req->event);
     #endif
 }
 
-void cl_ram_free(struct pi_device *device, uint32_t chunk, uint32_t size, cl_ram_free_req_t *req)
+void pi_cl_ram_free(struct pi_device *device, uint32_t chunk, uint32_t size, pi_cl_ram_free_req_t *req)
 {
     req->device = device;
     req->size = size;
@@ -159,9 +159,9 @@ void cl_ram_free(struct pi_device *device, uint32_t chunk, uint32_t size, cl_ram
     #if defined(__PULP_OS__)
     __rt_task_init_from_cluster(&req->event);
     #endif  /* __PULP_OS__ */
-    pi_task_callback(&req->event, __ram_free_cluster_req, (void *) req);
+    pi_task_callback(&req->event, __pi_ram_free_cluster_req, (void *) req);
     #if defined(PMSIS_DRIVERS)
-    cl_send_task_to_fc(&(req->event));
+    pi_cl_send_task_to_fc(&(req->event));
     #else
     __rt_cluster_push_fc_event(&req->event);
     #endif

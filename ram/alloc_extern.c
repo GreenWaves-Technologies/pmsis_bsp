@@ -159,6 +159,7 @@ int extern_alloc(extern_alloc_t *a, int size, void **chunk)
     }
   } else {
     //warning("Not enough memory to allocate\n");
+    *chunk = (void *)0xffffffff;
     return -1;
   }
 }

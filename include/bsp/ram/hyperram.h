@@ -14,35 +14,61 @@
  * limitations under the License.
  */
 
-#include "pmsis.h"
-
 #ifndef __BSP__RAM__HYPERRAM_H__
 #define __BSP__RAM__HYPERRAM_H__
 
+#include "pmsis.h"
 #include "bsp/ram.h"
 
-struct hyperram_conf
+/**
+ * @addtogroup Ram
+ * @{
+ */
+
+/**
+ * @defgroup Hyperram Hyperram
+ */
+
+/**
+ * @addtogroup Hyperram
+ * @{
+ */
+
+/** \struct pi_hyperram_conf
+ * \brief Hyperram configuration structure.
+ *
+ * This structure is used to pass the desired Hyperram configuration to the
+ * runtime when opening the device.
+ */
+struct pi_hyperram_conf
 {
-  struct ram_conf ram;
-  int hyper_itf;
-  int hyper_cs;
-  char skip_pads_config;
-  int ram_start;
-  int ram_size;
-  uint32_t baudrate;
+    struct pi_ram_conf ram;   /*!< Generic RAM configuration. */
+    int hyper_itf;         /*!< Hyperbus interface where the RAM is
+      connected. */
+    int hyper_cs;          /*!< Chip select where the RAM is connected. */
+    char skip_pads_config; /*!< Skip pads configuration if set to 1. */
+    int ram_start;         /*!< Hyperram start address. */
+    int ram_size;          /*!< Hyperram size. */
+    uint32_t baudrate;     /*!< Baudrate (in bytes/second). */
 };
 
-
-
-
-/** \brief Initialize an Hyperflash configuration with default values.
+/** \brief Initialize an Hyperram configuration with default values.
  *
- * The structure containing the configuration must be kept alive until the hyperflash device is opened.
+ * The structure containing the configuration must be kept alive until the
+ * hyperram device is opened.
  *
- * \param conf A pointer to the hyperflash configuration.
+ * \param conf A pointer to the hyperram configuration.
  */
-void hyperram_conf_init(struct hyperram_conf *conf);
+void pi_hyperram_conf_init(struct pi_hyperram_conf *conf);
 
+//!@}
 
+/**
+ * @} end of Hyperram
+ */
+
+/**
+ * @} end of Ram
+ */
 
 #endif 

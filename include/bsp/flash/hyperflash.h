@@ -20,26 +20,55 @@
 
 #include "bsp/flash.h"
 
-struct hyperflash_conf
+/**
+ * @addtogroup Flash
+ * @{
+ */
+
+/**
+ * @defgroup Hyperflash Hyperflash
+ *
+ */
+
+/**
+ * @addtogroup Hyperflash
+ * @{
+ */
+
+/**@{*/
+
+/** \struct hyperflash_conf
+ * \brief Hyperflash configuration structure.
+ *
+ * This structure is used to pass the desired Hyperflash configuration to the
+ * runtime when opening the device.
+ */
+struct pi_hyperflash_conf
 {
-  struct flash_conf flash;
-  int hyper_itf;
-  int hyper_cs;
-  char skip_pads_config;
-  flash_type_e type;
+  struct pi_flash_conf flash;  /*!< Generic flash configuration. */
+  int hyper_itf;            /*!< Hyperbus interface where the flash is
+      connected. */
+  int hyper_cs;             /*!< Chip select where the flash is connected. */
+  char skip_pads_config;    /*!< Skip pads configuration if set to 1. */
 };
-
-
-
 
 /** \brief Initialize an Hyperflash configuration with default values.
  *
- * The structure containing the configuration must be kept alive until the hyperflash device is opened.
+ * The structure containing the configuration must be kept alive until the
+ * hyperflash device is opened.
  *
  * \param conf A pointer to the hyperflash configuration.
  */
-void hyperflash_conf_init(struct hyperflash_conf *conf);
+void pi_hyperflash_conf_init(struct pi_hyperflash_conf *conf);
 
+//!@}
 
+/**
+ * @} end of Hyperflash
+ */
+
+/**
+ * @} end of Flash
+ */
 
 #endif 

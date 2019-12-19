@@ -29,7 +29,7 @@ typedef struct {
 
 
 typedef struct {
-  struct mt9v034_conf conf;
+  struct pi_mt9v034_conf conf;
   struct pi_device cpi_device;
   struct pi_device i2c_device;
   struct pi_device gpio_port;
@@ -44,7 +44,7 @@ static inline int is_i2c_active()
 
   // I2C driver is not yet working on some chips, at least this works on gvsoc.
   // Also there is noI2C connection to camera model on RTL
-#if PULP_CHIP == CHIP_VEGA || PULP_CHIP == CHIP_ARNOLD || PULP_CHIP == CHIP_PULPISSIMO || PULP_CHIP == CHIP_PULPISSIMO_V1
+#if PULP_CHIP == CHIP_GAP9 || PULP_CHIP == CHIP_VEGA || PULP_CHIP == CHIP_ARNOLD || PULP_CHIP == CHIP_PULPISSIMO || PULP_CHIP == CHIP_PULPISSIMO_V1
   return 0;
 #else
   return rt_platform() != ARCHI_PLATFORM_RTL;
@@ -133,12 +133,12 @@ static int __mt9v034_start(mt9v034_t *mt9v034)
   int binning = 0;
   int width = 640;
 
-  if (mt9v034->conf.format == CAMERA_QVGA)
+  if (mt9v034->conf.format == PI_CAMERA_QVGA)
   {
     binning = 1;
     width = 320;
   }
-  if (mt9v034->conf.format == CAMERA_QQVGA)
+  if (mt9v034->conf.format == PI_CAMERA_QQVGA)
   {
     binning = 2;
     width = 160;
@@ -221,9 +221,9 @@ static void __mt9v034_trigger_snapshot(mt9v034_t *mt9v034)
 
 
 
-static int __mt9v034_open(struct pi_device *device)
+static int32_t __mt9v034_open(struct pi_device *device)
 {
-  struct mt9v034_conf *conf = (struct mt9v034_conf *)device->config;
+  struct pi_mt9v034_conf *conf = (struct pi_mt9v034_conf *)device->config;
 
   mt9v034_t *mt9v034 = (mt9v034_t *)pmsis_l2_malloc(sizeof(mt9v034_t));
   if (mt9v034 == NULL) return -1;
@@ -293,32 +293,34 @@ static void __mt9v034_close(struct pi_device *device)
 
 
 
-static void __mt9v034_control(struct pi_device *device, camera_cmd_e cmd, void *arg)
+static int32_t __mt9v034_control(struct pi_device *device, pi_camera_cmd_e cmd, void *arg)
 {
   mt9v034_t *mt9v034 = (mt9v034_t *)device->data;
 
   switch (cmd)
   {
-    case CAMERA_CMD_ON:
+    case PI_CAMERA_CMD_ON:
       __mt9v034_on(mt9v034);
       break;
 
-    case CAMERA_CMD_OFF:
+    case PI_CAMERA_CMD_OFF:
       __mt9v034_off(mt9v034);
       break;
 
-    case CAMERA_CMD_START:
+    case PI_CAMERA_CMD_START:
       pi_cpi_control_start(&mt9v034->cpi_device);
       __mt9v034_trigger_snapshot(mt9v034);
       break;
 
-    case CAMERA_CMD_STOP:
+    case PI_CAMERA_CMD_STOP:
       pi_cpi_control_stop(&mt9v034->cpi_device);
       break;
 
     default:
       break;
   }
+
+  return 0;
 }
 
 
@@ -330,7 +332,7 @@ static void __mt9v034_capture_async(struct pi_device *device, void *buffer, uint
   pi_cpi_capture_async(&mt9v034->cpi_device, buffer, bufferlen, task);
 }
 
-static int __mt9v034_reg_set(struct pi_device *device, uint32_t addr, uint8_t *value)
+static int32_t __mt9v034_reg_set(struct pi_device *device, uint32_t addr, uint8_t *value)
 {
   mt9v034_t *mt9v034 = (mt9v034_t *)device->data;
   __mt9v034_reg_write(mt9v034, addr, *(uint16_t *)value);
@@ -339,14 +341,14 @@ static int __mt9v034_reg_set(struct pi_device *device, uint32_t addr, uint8_t *v
 
 
 
-static int __mt9v034_reg_get(struct pi_device *device, uint32_t addr, uint8_t *value)
+static int32_t __mt9v034_reg_get(struct pi_device *device, uint32_t addr, uint8_t *value)
 {
   mt9v034_t *mt9v034 = (mt9v034_t *)device->data;
   *(uint16_t *)value = __mt9v034_reg_read(mt9v034, addr);
   return 0;
 }
 
-static camera_api_t MT9V034_api =
+static pi_camera_api_t MT9V034_api =
 {
   .open           = &__mt9v034_open,
   .close          = &__mt9v034_close,
@@ -358,11 +360,11 @@ static camera_api_t MT9V034_api =
 
 
 
-void mt9v034_conf_init(struct mt9v034_conf *conf)
+void pi_mt9v034_conf_init(struct pi_mt9v034_conf *conf)
 {
   conf->camera.api = &MT9V034_api;
   bsp_mt9v034_conf_init(conf);
-  conf->format = CAMERA_QVGA;
+  conf->format = PI_CAMERA_QVGA;
   conf->column_flip = 1;
   conf->row_flip = 0;
   conf->skip_pads_config = 0;
