@@ -14,22 +14,33 @@
  * limitations under the License.
  */
 
-#include "pmsis.h"
-
 #ifndef __BSP__RAM__SPIRAM_H__
 #define __BSP__RAM__SPIRAM_H__
 
+#include "pmsis.h"
 #include "bsp/ram.h"
 
-struct spiram_conf
+/**
+ * @addtogroup Ram
+ * @{
+ */
+
+/** \struct pi_spiram_conf
+ * \brief SPI ram configuration structure.
+ *
+ * This structure is used to pass the desired SPI ram configuration to the
+ * runtime when opening the device.
+ */
+struct pi_spiram_conf
 {
-  struct ram_conf ram;
-  int spi_itf;
-  int spi_cs;
-  char skip_pads_config;
-  int ram_start;
-  int ram_size;
-  uint32_t baudrate;
+  struct pi_ram_conf ram;   /*!< Generic RAM configuration. */
+  int spi_itf;           /*!< SPI interface where the RAM is
+      connected. */
+  int spi_cs;            /*!< Chip select where the RAM is connected. */
+  char skip_pads_config; /*!< Skip pads configuration if set to 1. */
+  int ram_start;         /*!< SPI ram start address. */
+  int ram_size;          /*!< SPI ram size. */
+  uint32_t baudrate;     /*!< Baudrate (in bytes/second). */
 };
 
 
@@ -37,11 +48,14 @@ struct spiram_conf
 
 /** \brief Initialize an SPI ram configuration with default values.
  *
- * The structure containing the configuration must be kept alive until the SPI ram device is opened.
+ * The structure containing the configuration must be kept alive until the SPI
+ * ram device is opened.
  *
  * \param conf A pointer to the SPI ram configuration.
  */
-void spiram_conf_init(struct spiram_conf *conf);
+void pi_spiram_conf_init(struct pi_spiram_conf *conf);
+
+//!@}
 
 
 

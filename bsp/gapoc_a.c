@@ -54,9 +54,9 @@ static void __bsp_init_pads()
   if (!__bsp_init_pads_done)
   {
     __bsp_init_pads_done = 1;
-    //uint32_t pads_value[] = {0x00055500, 0x0f450000, 0x003fffff, 0x00000000};
-    //pi_pad_init(pads_value);
-    //__gpio_init();
+    uint32_t pads_value[] = {0x00055500, 0x0f450000, 0x003fffff, 0x00000000};
+    pi_pad_init(pads_value);
+    __gpio_init();
   }
 }
 
@@ -78,7 +78,7 @@ int bsp_hyperram_open(struct pi_hyperram_conf *conf)
 
 
 
-void bsp_spiram_conf_init(struct spiram_conf *conf)
+void bsp_spiram_conf_init(struct pi_spiram_conf *conf)
 {
   conf->ram_start = CONFIG_SPIRAM_START;
   conf->ram_size = CONFIG_SPIRAM_SIZE;
@@ -87,7 +87,7 @@ void bsp_spiram_conf_init(struct spiram_conf *conf)
   conf->spi_cs = CONFIG_SPIRAM_SPI_CS;
 }
 
-int bsp_spiram_open(struct spiram_conf *conf)
+int bsp_spiram_open(struct pi_spiram_conf *conf)
 {
   __bsp_init_pads();
   return 0;

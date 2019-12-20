@@ -78,8 +78,8 @@ int bsp_hyperram_open(struct pi_hyperram_conf *conf);
 
 #if defined(CONFIG_SPIRAM)
 #include "bsp/ram/spiram.h"
-void bsp_spiram_conf_init(struct spiram_conf *conf);
-int bsp_spiram_open(struct spiram_conf *conf);
+void bsp_spiram_conf_init(struct pi_spiram_conf *conf);
+int bsp_spiram_open(struct pi_spiram_conf *conf);
 #endif
 
 #if defined(CONFIG_NINA_W10)

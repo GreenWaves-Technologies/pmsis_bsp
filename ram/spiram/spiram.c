@@ -14,11 +14,22 @@
  * limitations under the License.
  */
 
+/* 
+ * Authors: Germain Haugou, GreenWaves Technologies (germain.haugou@greenwaves-technologies.com)
+ */
+
 #include "pmsis.h"
 #include "bsp/bsp.h"
 #include "bsp/ram/spiram.h"
 #include "pmsis/drivers/spi.h"
 #include "../extern_alloc.h"
+
+
+#if !defined(__TRACE_ALL__) && !defined(__TRACE_RAM__)
+#define RAM_TRACE(x...)
+#else
+#define RAM_TRACE(level, x...) POS_TRACE(level, "[RAM] " x)
+#endif
 
 
 typedef struct
@@ -42,8 +53,10 @@ static int __spiram_send_cmd(spiram_t *spiram, uint32_t cmd, uint32_t flags)
 
 
 static int spiram_open(struct pi_device *device)
-{
-  struct spiram_conf *conf = (struct spiram_conf *)device->config;
+{  
+  RAM_TRACE(POS_LOG_INFO, "Opening SPIRAM device (device: %p)\n", device);
+
+  struct pi_spiram_conf *conf = (struct pi_spiram_conf *)device->config;
 
   spiram_t *spiram = (spiram_t *)pmsis_l2_malloc(sizeof(spiram_t));
   if (spiram == NULL)
@@ -90,11 +103,20 @@ static int spiram_open(struct pi_device *device)
     *SAFE_PADCFG9 = 0x02020202;
 
   //rt_time_wait_us(100000);
+
+    printf("%s %d\n", __FILE__, __LINE__);
+
   __spiram_send_cmd(spiram, 0x66, PI_SPI_CS_AUTO | PI_SPI_LINES_QUAD);
+    printf("%s %d\n", __FILE__, __LINE__);
+
   //rt_time_wait_us(100000);
   __spiram_send_cmd(spiram, 0x99, PI_SPI_CS_AUTO | PI_SPI_LINES_QUAD);
+    printf("%s %d\n", __FILE__, __LINE__);
+
   //rt_time_wait_us(100000);
   __spiram_send_cmd(spiram, 0x35, PI_SPI_CS_AUTO);
+    printf("%s %d\n", __FILE__, __LINE__);
+
   //rt_time_wait_us(100000);
 
   uint32_t ucode[4];
@@ -111,6 +133,8 @@ static int spiram_open(struct pi_device *device)
 
   spiram->receive_ucode = pi_spi_receive_ucode_set(&spiram->spi_device, (uint8_t *)ucode, 4*4);
   pi_spi_receive_ucode_set_addr_info(&spiram->spi_device, ((uint8_t *)spiram->receive_ucode) + 2*4 + 1, 3);
+
+  RAM_TRACE(POS_LOG_INFO, "Opened SPIRAM device with success (device: %p)\n", device);
 
   return 0;
 
@@ -232,7 +256,7 @@ void pi_cl_spiram_free(struct pi_device *device, uint32_t chunk, uint32_t size, 
 
 #endif
 
-static ram_api_t spiram_api = {
+static pi_ram_api_t spiram_api = {
   .open                 = &spiram_open,
   .close                = &spiram_close,
   .copy_async           = &spiram_copy_async,
@@ -242,7 +266,7 @@ static ram_api_t spiram_api = {
 };
 
 
-void spiram_conf_init(struct spiram_conf *conf)
+void pi_spiram_conf_init(struct pi_spiram_conf *conf)
 {
   conf->ram.api = &spiram_api;
   conf->baudrate = 0;
