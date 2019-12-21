@@ -119,7 +119,9 @@ void pi_bsp_init_profile(int profile)
         pi_pad_set_function(PI_PAD_35_B13_I2S1_SCK, PI_PAD_35_B13_I2S1_SDI_FUNC3);
         pi_pad_set_function(PI_PAD_37_B14_I2S1_SDI, PI_PAD_37_B14_HYPER_CK_FUNC3);
 
+#ifndef __ZEPHYR__
         pi_i2s_setup(PI_I2S_SETUP_SINGLE_CLOCK);
+#endif
     }
 }
 
