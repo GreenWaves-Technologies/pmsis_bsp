@@ -127,8 +127,29 @@ static void __pi_fs_mount_step(void *arg)
       break;
 
   case 4:
+  {
+      // Get information about the file system from the header
+      unsigned int *pi_fs_info = fs->pi_fs_info;
+      int nb_comps = *pi_fs_info++;
+
+      // Find the file in the file-system
+      pi_fs_desc_t *desc = NULL;
+      int i;
+      for (i=0; i<nb_comps; i++) {
+        desc = (pi_fs_desc_t *)pi_fs_info;
+        pi_fs_info = (unsigned int *)((unsigned int)pi_fs_info + sizeof(pi_fs_desc_t) + desc->path_size);
+      }
+
+      if (desc == NULL)
+        fs->free_flash_area = (uint32_t)pi_fs_info;
+      else
+        fs->free_flash_area = desc->addr + desc->size;
+
+      fs->last_created_file = NULL;
+
       fs->error = 0;
       pi_task_push(fs->pending_event);
+  }
   }
 
   fs->mount_step++;
@@ -208,46 +229,72 @@ static pi_fs_file_t *__pi_read_fs_open(struct pi_device *device, const char *fil
 {
   pi_fs_t *fs = (pi_fs_t *)device->data;
 
-  // No need to mask interrupts, as the file-system is read-only
-  // its structure cannot change
+  if (flags == PI_FS_FLAGS_WRITE)
+  {
+    pi_fs_file_t *file = pmsis_l2_malloc(sizeof(pi_fs_file_t));
+    if (file == NULL) return NULL;
 
-  //pi_trace(pi_trace_FS, "[FS] Opening file (name: %s)\n", file_name);
+    if (fs->last_created_file)
+    {
+      file->addr = fs->last_created_file->addr + fs->last_created_file->size;
+    }
+    else
+    {
+      file->addr = fs->free_flash_area;
+    }
 
-  // Get information about the file system from the header
-  unsigned int *pi_fs_info = fs->pi_fs_info;
-  int nb_comps = *pi_fs_info++;
+    file->size = 0;  
+    file->offset = 0; 
+    file->fs = device;
+    file->cache_addr = -1;
 
-  // Find the file in the file-system
-  pi_fs_desc_t *desc = NULL;
-  int i;
-  for (i=0; i<nb_comps; i++) {
-    desc = (pi_fs_desc_t *)pi_fs_info;
-    if (strcmp(desc->name, file_name) == 0) break;
-    pi_fs_info = (unsigned int *)((unsigned int)pi_fs_info + sizeof(pi_fs_desc_t) + desc->path_size);
+    fs->last_created_file = file;
+
+    return file;
   }
+  else
+  {
+    // No need to mask interrupts, as the file-system is read-only
+    // its structure cannot change
 
-  // Leave if the file is not found
-  if (i == nb_comps) goto error;
+    //pi_trace(pi_trace_FS, "[FS] Opening file (name: %s)\n", file_name);
 
-  // Now allocate the file descriptor and fills it
-  pi_fs_file_t *file = pmsis_l2_malloc(sizeof(pi_fs_file_t));
-  if (file == NULL) goto error;
+    // Get information about the file system from the header
+    unsigned int *pi_fs_info = fs->pi_fs_info;
+    int nb_comps = *pi_fs_info++;
 
-  file->cache = pmsis_l2_malloc(READ_FS_THRESHOLD_BLOCK_FULL);
-  if (file->cache == NULL) goto error1;
+    // Find the file in the file-system
+    pi_fs_desc_t *desc = NULL;
+    int i;
+    for (i=0; i<nb_comps; i++) {
+      desc = (pi_fs_desc_t *)pi_fs_info;
+      if (strcmp(desc->name, file_name) == 0) break;
+      pi_fs_info = (unsigned int *)((unsigned int)pi_fs_info + sizeof(pi_fs_desc_t) + desc->path_size);
+    }
 
-  file->offset = 0;
-  file->size = desc->size;
-  file->addr = desc->addr;
-  file->fs = device;
-  file->cache_addr = -1;
+    // Leave if the file is not found
+    if (i == nb_comps) goto error;
 
-  return file;
+    // Now allocate the file descriptor and fills it
+    pi_fs_file_t *file = pmsis_l2_malloc(sizeof(pi_fs_file_t));
+    if (file == NULL) goto error;
+
+    file->cache = pmsis_l2_malloc(READ_FS_THRESHOLD_BLOCK_FULL);
+    if (file->cache == NULL) goto error1;
+
+    file->offset = 0;
+    file->size = desc->size;
+    file->addr = desc->addr;
+    file->fs = device;
+    file->cache_addr = -1;
+
+    return file;
 
 error1:
-  pmsis_l2_malloc_free(file, sizeof(pi_fs_file_t));
+    pmsis_l2_malloc_free(file, sizeof(pi_fs_file_t));
 error:
-  return NULL;
+    return NULL;
+  }
 }
 
 static void __pi_read_fs_close(pi_fs_file_t *file)
@@ -346,8 +393,19 @@ int __pi_fs_read(pi_fs_file_t *file, unsigned int buffer, unsigned int addr, int
   return block_size;
 }
 
-static int32_t __pi_read_fs_write(pi_fs_file_t *arg, void *buffer, uint32_t size, pi_task_t *task)
+static int32_t __pi_read_fs_write(pi_fs_file_t *file, void *buffer, uint32_t size, pi_task_t *task)
 {
+  pi_fs_t *fs = (pi_fs_t *)file->fs->data;
+
+  int real_size = size;
+  unsigned int addr = file->addr + file->offset;
+  if (file->offset + size > file->size) {
+    real_size = file->size - file->offset;
+  }
+  file->offset += real_size;
+
+  pi_flash_program_async(fs->flash, addr, (void *)buffer, real_size, task);
+
   return 0;
 }
 

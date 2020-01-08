@@ -590,6 +590,8 @@ typedef struct pi_fs_s
   //rt_mutex_t mutex;
   pi_task_t event;
   int error;
+  uint32_t free_flash_area;
+  pi_fs_file_t *last_created_file;
 } pi_fs_t;
 
 
