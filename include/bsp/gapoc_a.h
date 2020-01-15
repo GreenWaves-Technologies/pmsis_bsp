@@ -59,6 +59,12 @@
 #define CONFIG_SPIRAM_START     0
 #define CONFIG_SPIRAM_SIZE     (1<<20)
 
+#define CONFIG_SPIFLASH_SPI_ITF     0
+#define CONFIG_SPIFLASH_SPI_CS      0
+#define CONFIG_SPIFLASH_START       0
+#define CONFIG_SPIFLASH_SIZE        (1<<24)
+#define CONFIG_SPIFLASH_SECTOR_SIZE (1<<12)
+
 #define CONFIG_HYPERBUS_DATA6_PAD           PI_PAD_46_B7_SPIM0_SCK
 // This is due to a HW bug, to be fixed in the future
 #define CONFIG_UART_RX_PAD_FUNC             0
