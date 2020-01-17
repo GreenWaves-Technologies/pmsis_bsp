@@ -658,9 +658,9 @@ static void hyperflash_erase_async(struct pi_device *device, uint32_t addr, int 
 static int hyperflash_copy_async(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, int ext2loc, pi_task_t *task)
 {
   if (!ext2loc)
-    return -1;
-
-  hyperflash_read_async(device, flash_addr, buffer, size, task);
+    hyperflash_program_async(device, flash_addr, buffer, size, task);
+  else
+    hyperflash_read_async(device, flash_addr, buffer, size, task);
 
   return 0;
 }
