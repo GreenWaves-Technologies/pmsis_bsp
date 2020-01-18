@@ -231,17 +231,31 @@ static pi_fs_file_t *__pi_read_fs_open(struct pi_device *device, const char *fil
 
   if (flags == PI_FS_FLAGS_WRITE)
   {
+    if (fs->last_created_file)
+      return NULL;
+
     pi_fs_file_t *file = pmsis_l2_malloc(sizeof(pi_fs_file_t));
     if (file == NULL) return NULL;
 
-    if (fs->last_created_file)
+    // Reserve enough room to store file path, addr and size
+    int str_len = strlen(file_name);
+
+    int header_size = ((str_len + 7) & ~0x7) + 12;
+
+    uint8_t *header = pmsis_l2_malloc(header_size);
+    if (header == NULL)
     {
-      file->addr = fs->last_created_file->addr + fs->last_created_file->size;
+      pi_l2_free(file, sizeof(pi_fs_file_t));
+      return NULL;
     }
-    else
-    {
-      file->addr = fs->free_flash_area;
-    }
+
+    file->header = header;
+    file->header_size = header_size;
+
+    memcpy(&file->header[12], file_name, str_len);
+    *(uint32_t *)&file->header[8] = str_len;
+    
+    file->addr = fs->free_flash_area + header_size;
 
     file->size = 0;  
     file->offset = 0; 
@@ -282,6 +296,7 @@ static pi_fs_file_t *__pi_read_fs_open(struct pi_device *device, const char *fil
     file->cache = pmsis_l2_malloc(READ_FS_THRESHOLD_BLOCK_FULL);
     if (file->cache == NULL) goto error1;
 
+    file->header = NULL;
     file->offset = 0;
     file->size = desc->size;
     file->addr = desc->addr;
@@ -300,8 +315,21 @@ error:
 static void __pi_read_fs_close(pi_fs_file_t *file)
 {
   //printf("[FS] Closing file (file: %p)\n", file);
-  pmsis_l2_malloc_free(file->cache, READ_FS_THRESHOLD_BLOCK_FULL);
-  pmsis_l2_malloc_free((void *)file, sizeof(pi_fs_file_t));
+  if (file->header == NULL)
+  {
+    pmsis_l2_malloc_free(file->cache, READ_FS_THRESHOLD_BLOCK_FULL);
+    pmsis_l2_malloc_free((void *)file, sizeof(pi_fs_file_t));
+  }
+  else
+  {
+    pi_fs_t *fs = (pi_fs_t *)file->fs->data;
+    *(uint32_t *)&file->header[0] = file->addr;
+    *(uint32_t *)&file->header[4] = file->size;
+    pi_flash_program(fs->flash, file->addr - file->header_size, (void *)file->header, file->header_size);
+    pi_l2_free((void *)file->header, file->header_size);
+    pi_l2_free((void *)file, sizeof(pi_fs_file_t));
+  }
+  
 }
 
 

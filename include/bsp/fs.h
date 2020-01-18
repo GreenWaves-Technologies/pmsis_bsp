@@ -562,6 +562,8 @@ typedef struct pi_fs_file_s {
   unsigned int pending_size;
   unsigned char *cache;
   unsigned int  cache_addr;
+  uint8_t *header;
+  int header_size;
 } pi_fs_file_t;
 
 typedef enum {
