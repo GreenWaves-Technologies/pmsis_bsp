@@ -26,7 +26,13 @@
 #endif
 
 #if defined(CONFIG_GAPOC_B)
+#if defined(CHIP_VERSION)
+#if (CHIP_VERSION == 1)
 #include <bsp/gapoc_b.h>
+#elif (CHIP_VERSION == 2)
+#include <bsp/gapoc_b_v2.h>
+#endif  /* GAP8 */
+#endif
 #endif
 
 #if defined(CONFIG_AI_DECK)
