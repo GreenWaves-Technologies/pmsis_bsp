@@ -7,7 +7,6 @@ lfs * lfs utility functions
 #ifndef LFS_UTIL_H
 #define LFS_UTIL_H
 
-
 // GAP configuration
 #define LFS_NO_MALLOC
 
@@ -17,11 +16,14 @@ lfs * lfs utility functions
 #include <string.h>
 #include <inttypes.h>
 
-#include "pmsis.h"
-
 #ifndef LFS_NO_MALLOC
 #include <stdlib.h>
 #endif
+
+#ifndef LFS_NO_ASSERT
+#include "pmsis/rtos/pmsis_assert.h"
+#endif
+
 #if !defined(LFS_NO_DEBUG) || \
         !defined(LFS_NO_WARN) || \
         !defined(LFS_NO_ERROR) || \
