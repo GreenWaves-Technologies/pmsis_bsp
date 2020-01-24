@@ -29,6 +29,7 @@ lfs * lfs utility functions
         !defined(LFS_NO_ERROR) || \
         defined(LFS_YES_TRACE)
 #include <stdio.h>
+#include "pmsis.h"
 #endif
 
 #ifdef __cplusplus
