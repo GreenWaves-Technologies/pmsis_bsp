@@ -93,8 +93,10 @@ GAPOC_B_SRC = \
   ble/nina_b112/nina_b112_old.c \
   camera/thermeye/thermeye.c
 
+ifeq ($(PULPOS_BUILD), true)
 ifdef GAP_SDK_HOME
 include $(CURDIR)/rules/gap_sdk.mk
 else
 include $(CURDIR)/rules/pulp_sdk.mk
-endif
+endif				# GAP_SDK_HOME
+endif				# PULPOS_BUILD
