@@ -58,7 +58,7 @@ static int spiram_open(struct pi_device *device)
 
     struct pi_spiram_conf *conf = (struct pi_spiram_conf *)device->config;
 
-    spiram_t *spiram = (spiram_t *)pi_l1_fc_malloc(sizeof(spiram_t));
+    spiram_t *spiram = (spiram_t *)pi_fc_l1_malloc(sizeof(spiram_t));
     if (spiram == NULL)
     {
         POS_WARNING("[SPIRAM] Error during driver opening: failed to allocate memory for internal structure\n");
@@ -182,7 +182,7 @@ error3:
 error2:
     pi_l2_free(spiram->buffer, sizeof(uint32_t));
 error1:
-    pi_l1_fc_free(spiram, sizeof(spiram_t));
+    pi_fc_l1_free(spiram, sizeof(spiram_t));
 error0:
     return -1;
 }
@@ -195,7 +195,7 @@ static void spiram_close(struct pi_device *device)
     RAM_TRACE(POS_LOG_INFO, "Closing SPIRAM device (device: %p)\n", device);
     pi_spi_close(&spiram->spi_device);
     pi_l2_free(spiram->buffer, sizeof(uint32_t));
-    pi_l1_fc_free(spiram, sizeof(spiram_t));
+    pi_fc_l1_free(spiram, sizeof(spiram_t));
 }
 
 
