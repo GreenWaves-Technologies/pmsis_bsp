@@ -22,6 +22,7 @@
 #include "bsp/gapoc_a.h"
 #include "bsp/camera/mt9v034.h"
 #include "bsp/flash/hyperflash.h"
+#include "bsp/flash/spiflash.h"
 #include "bsp/transport/nina_w10.h"
 #include "bsp/display/ili9341.h"
 #include "bsp/ram/hyperram.h"

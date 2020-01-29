@@ -34,11 +34,9 @@ static void __gpio_init()
 {
     pi_gpio_pin_configure(0, GPIO_USER_LED, PI_GPIO_OUTPUT);
     pi_gpio_pin_configure(0, GPIO_1V8_EN  , PI_GPIO_OUTPUT | PI_GPIO_PULL_DISABLE);
-    /* pi_gpio_pin_configure(0, GPIO_NINA17  , PI_GPIO_OUTPUT); */
 
     pi_gpio_pin_write(0, GPIO_USER_LED, 0);
     pi_gpio_pin_write(0, GPIO_1V8_EN, 1);
-    /* pi_gpio_pin_write(0, GPIO_NINA17, 1); */
 }
 
 static void __bsp_init_pads()

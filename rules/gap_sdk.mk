@@ -25,6 +25,15 @@ ifeq ($(GCC_CHECK),)
 $(error Please make sure that you have installed the toolchain for GAP)
 endif
 
+TARGET_CHIP_VERSION=
+ifeq ($(TARGET_CHIP), GAP8)
+TARGET_CHIP_VERSION=1
+else ifeq ($(TARGET_CHIP), GAP8_V2)
+TARGET_CHIP_VERSION=2
+else
+TARGET_CHIP_VERSION=1
+endif
+
 BSP_PATH = $(CURDIR)
 BSP_INC = $(CURDIR)/include
 TARGET_INSTALL_DIR ?= $(CURDIR)/install
@@ -80,6 +89,7 @@ endif
 CFLAGS += -std=gnu99 -mPE=8 -mFC=1 -D__riscv__ -Os -g -Werror -Wall
 CFLAGS += -Wno-unused-variable -Wno-unused-function
 CFLAGS += -MMD -MP -c
+CFLAGS += -DCHIP_VERSION=$(TARGET_CHIP_VERSION)
 
 ifeq '$(TARGET_CHIP)' 'GAP9'
 all: dir header vega_bsp
