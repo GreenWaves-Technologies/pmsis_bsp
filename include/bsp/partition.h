@@ -114,7 +114,7 @@ typedef struct partition {
 /**
  * @brief partition table object
  */
-typedef void* pi_partition_table_t;
+typedef void *pi_partition_table_t;
 
 pi_err_t pi_partition_table_load(pi_device_t *flash, const pi_partition_table_t *table);
 
@@ -133,7 +133,8 @@ pi_err_t pi_partition_table_load(pi_device_t *flash, const pi_partition_table_t 
  *         This pointer is valid for the lifetime of the application.
  */
 const pi_partition_t *
-pi_partition_find_first(const pi_partition_table_t table, const pi_partition_type_t type, const pi_partition_subtype_t subtype, const char *label);
+pi_partition_find_first(const pi_partition_table_t table, const pi_partition_type_t type,
+                        const pi_partition_subtype_t subtype, const char *label);
 
 /** @brief Close an opened partition device.
  *
@@ -340,14 +341,14 @@ uint32_t pi_partition_get_flash_offset(const pi_partition_t *partition);
 
 static inline pi_err_t pi_partition_close(const pi_partition_t *partition)
 {
-	pi_l2_free((pi_partition_t*) partition, sizeof(pi_partition_t));
+	pi_l2_free((pi_partition_t *) partition, sizeof(pi_partition_t));
 	return PI_OK;
 }
 
 #define CHECK_ADDR() if (partition_addr + size > partition->size) return PI_ERR_INVALID_ARG
 
 static inline pi_err_t pi_partition_read_async(const pi_partition_t *partition, const uint32_t partition_addr,
-                                          void *data, const size_t size, pi_task_t *task)
+                                               void *data, const size_t size, pi_task_t *task)
 {
 	CHECK_ADDR();
 	pi_flash_read_async(partition->flash, partition_addr + partition->offset, data, size, task);
@@ -355,7 +356,7 @@ static inline pi_err_t pi_partition_read_async(const pi_partition_t *partition, 
 }
 
 static inline pi_err_t pi_partition_read(const pi_partition_t *partition, const uint32_t partition_addr,
-                                    void *data, const size_t size)
+                                         void *data, const size_t size)
 {
 	pi_err_t rc;
 	pi_task_t task;
@@ -368,15 +369,17 @@ static inline pi_err_t pi_partition_read(const pi_partition_t *partition, const 
 	return PI_OK;
 }
 
-static inline pi_err_t pi_partition_write_async(const pi_partition_t *partition, const uint32_t partition_addr, const void *data,
-                                           const size_t size, pi_task_t *task)
+static inline pi_err_t
+pi_partition_write_async(const pi_partition_t *partition, const uint32_t partition_addr, const void *data,
+                         const size_t size, pi_task_t *task)
 {
 	CHECK_ADDR();
 	pi_flash_program_async(partition->flash, partition_addr + partition->offset, data, size, task);
 	return PI_OK;
 }
 
-static inline pi_err_t pi_partition_write(const pi_partition_t *partition, const uint32_t partition_addr, const void *data, const size_t size)
+static inline pi_err_t
+pi_partition_write(const pi_partition_t *partition, const uint32_t partition_addr, const void *data, const size_t size)
 {
 	pi_err_t rc;
 	pi_task_t task;
@@ -389,7 +392,8 @@ static inline pi_err_t pi_partition_write(const pi_partition_t *partition, const
 	return PI_OK;
 }
 
-static inline pi_err_t pi_partition_erase_async(const pi_partition_t *partition, uint32_t partition_addr, int size, pi_task_t *task)
+static inline pi_err_t
+pi_partition_erase_async(const pi_partition_t *partition, uint32_t partition_addr, int size, pi_task_t *task)
 {
 	CHECK_ADDR();
 	pi_flash_erase_async(partition->flash, partition_addr + partition->offset, size, task);
