@@ -67,9 +67,9 @@ GAPOC_A_SRC = \
   camera/mt9v034/mt9v034.c \
   flash/hyperflash/hyperflash.c \
   transport/transport.c \
+  transport/nina_w10/nina_w10.c \
   display/display.c \
   display/ili9341/ili9341.c \
-  transport/nina_w10/nina_w10.c \
   ram/hyperram/hyperram.c \
   ram/ram.c \
   ram/alloc_extern.c \
@@ -77,9 +77,23 @@ GAPOC_A_SRC = \
   ble/nina_b112/nina_b112.c \
   ble/nina_b112/nina_b112_old.c
 
+ifeq ($(TARGET_CHIP), GAP8)
 GAPOC_B_SRC = \
   $(COMMON_SRC) \
   bsp/gapoc_b.c \
+  flash/hyperflash/hyperflash.c \
+  display/display.c \
+  display/ili9341/ili9341.c \
+  ram/hyperram/hyperram.c \
+  ram/ram.c \
+  ram/alloc_extern.c \
+  ble/ble.c \
+  ble/nina_b112/nina_b112.c \
+  ble/nina_b112/nina_b112_old.c
+else
+GAPOC_B_SRC = \
+  $(COMMON_SRC) \
+  bsp/gapoc_b_v2.c \
   camera/camera.c \
   flash/hyperflash/hyperflash.c \
   transport/transport.c \
@@ -92,11 +106,4 @@ GAPOC_B_SRC = \
   ble/nina_b112/nina_b112.c \
   ble/nina_b112/nina_b112_old.c \
   camera/thermeye/thermeye.c
-
-ifeq ($(PULPOS_BUILD), true)
-ifdef GAP_SDK_HOME
-include $(CURDIR)/rules/gap_sdk.mk
-else
-include $(CURDIR)/rules/pulp_sdk.mk
-endif				# GAP_SDK_HOME
-endif				# PULPOS_BUILD
+endif				# TARGET_CHIP

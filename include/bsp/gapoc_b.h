@@ -16,12 +16,10 @@
 #ifndef __BSP_GAPOC_B_H__
 #define __BSP_GAPOC_B_H__
 
-#define CONFIG_THERMAL_EYE
 #define CONFIG_HYPERFLASH
 #define CONFIG_ILI9341
 #define CONFIG_HYPERRAM
 #define CONFIG_NINA_B112
-#define CONFIG_THERMEYE
 
 #define CONFIG_ILI9341_SPI_ITF         ( 1 )
 #define CONFIG_ILI9341_SPI_CS          ( 0 )
