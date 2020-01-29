@@ -53,7 +53,10 @@ pi_err_t pi_partition_table_load(pi_device_t *flash, const pi_partition_table_t 
     pi_err_t rc;
     
     rc = flash_partition_table_load(flash, (const flash_partition_table_t **) table, NULL);
-    flash_partition_print_partition_table((flash_partition_table_t *) *table);
+//    if (rc == PI_OK)
+//    {
+//    flash_partition_print_partition_table((flash_partition_table_t *) *table);
+//    }
     
     return rc;
 }
@@ -65,8 +68,6 @@ pi_partition_find_first(const pi_partition_table_t table, const pi_partition_typ
 {
     pi_partition_t *partition;
     const flash_partition_info_t *info;
-    
-    puts("In find partition");
     
     info = flash_partition_find_first((const flash_partition_table_t *) table, type, subtype, label);
     if(info == NULL)

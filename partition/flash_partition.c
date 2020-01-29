@@ -145,20 +145,20 @@ pi_err_t flash_partition_table_load(pi_device_t *flash, const flash_partition_ta
 	// Load table header
 	pi_flash_read(flash, *table_offset, table, sizeof(flash_partition_table_header_t));
 	
-	print_partition_header(&table->header);
+//	print_partition_header(&table->header);
 	
 	if(table->header.magic_bytes != PI_PARTITION_TABLE_HEADER_MAGIC)
 	{
-		printf("Partition table header magic number error\n");
+//		printf("Partition table header magic number error\n");
 		rc = PI_ERR_NOT_FOUND;
 		goto _return;
 	}
 	
 	if(table->header.format_version != PI_PARTITION_TABLE_FORMAT_VERSION)
 	{
-		printf("Partition table format version missmatch: flash version %u != BSP version %u\n",
-		       table->header.format_version,
-		       PI_PARTITION_TABLE_FORMAT_VERSION);
+//		printf("Partition table format version missmatch: flash version %u != BSP version %u\n",
+//		       table->header.format_version,
+//		       PI_PARTITION_TABLE_FORMAT_VERSION);
 		rc = PI_ERR_INVALID_VERSION;
 		goto _return;
 	}
@@ -179,7 +179,7 @@ pi_err_t flash_partition_table_load(pi_device_t *flash, const flash_partition_ta
 		rc = flash_partition_table_verify(table);
 		if(rc != PI_OK)
 		{
-			printf("Partitions table verification failed.\n");
+//			printf("Partitions table verification failed.\n");
 			pi_l2_free(table->partitions, sizeof(flash_partition_info_t) * table->header.nbr_of_entries);
 			goto _return;
 		}
