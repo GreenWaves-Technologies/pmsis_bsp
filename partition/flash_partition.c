@@ -217,10 +217,9 @@ const flash_partition_info_t *flash_partition_find_first(const flash_partition_t
 		if(part->type != type || part->subtype != subtype)
 			continue;
 		if(label == NULL)
-			break;
-		if(strncmp(label, (char *) &part->label, PI_PARTITION_LABEL_LENGTH))
-			continue;
-		
+			return part;
+		if(strncmp(label, (char *) &part->label, PI_PARTITION_LABEL_LENGTH) == 0)
+			return part;
 	}
-	return part;
+	return NULL;
 }
