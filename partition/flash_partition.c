@@ -189,6 +189,8 @@ pi_err_t flash_partition_table_load(pi_device_t *flash, const flash_partition_ta
 	if(nbr_of_entries)
 		*nbr_of_entries = table->header.nbr_of_entries;
 	
+	return PI_OK;
+	
 	_return:
 	if(table_offset)
 		pi_l2_free(table_offset, sizeof(*table_offset));
