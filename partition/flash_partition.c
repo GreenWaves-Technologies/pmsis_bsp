@@ -45,7 +45,7 @@ void flash_partition_print_partition_table(const flash_partition_table_t *table)
 	printf("## Label \t   Type Sub Type Offset Length\n");
 	
 	for (uint8_t i = 0;
-	     i <= table->header.nbr_of_entries;
+	     i < table->header.nbr_of_entries;
 	     i++)
 	{
 		printf("%2d %-16s 0x%02x 0x%02x 0x%-8lx 0x%-8lx\n",
