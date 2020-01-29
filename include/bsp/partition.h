@@ -112,9 +112,16 @@ typedef struct partition {
 } pi_partition_t;
 
 /**
+ * @brief partition table object
+ */
+typedef void* pi_partition_table_t;
+
+pi_err_t pi_partition_table_load(pi_device_t *flash, const pi_partition_table_t *table);
+
+/**
  * @brief Find first partition based on one or more parameters
  *
- * @param flash the device where the partition is located
+ * @param table the partition table descriptor on which to do the operation. This table must be loaded before with pi_partition_table_load(...)
  * @param type Partition type, one of pi_partition_type_t values
  * @param subtype Partition subtype, one of pi_partition_subtype_t values.
  *                To find all partitions of given type, use
@@ -126,7 +133,7 @@ typedef struct partition {
  *         This pointer is valid for the lifetime of the application.
  */
 const pi_partition_t *
-pi_partition_find_first(pi_device_t *flash, const pi_partition_type_t type, const pi_partition_subtype_t subtype, const char *label);
+pi_partition_find_first(const pi_partition_table_t table, const pi_partition_type_t type, const pi_partition_subtype_t subtype, const char *label);
 
 /** @brief Close an opened partition device.
  *

@@ -43,30 +43,37 @@
 #define PI_PARTITION_LABEL_LENGTH 16U
 
 typedef struct {
-    uint32_t offset;
-    uint32_t size;
-} pi_partition_pos_t;
+	uint32_t offset;
+	uint32_t size;
+} flash_partition_pos_t;
 
 typedef struct {
-    uint16_t magic_bytes;
-    uint8_t format_version;
-    uint8_t nbr_of_entries;
-    uint8_t crc_flags;
-    uint8_t pad[11];
-    uint8_t md5[16];
-} pi_partition_table_header_t;
+	uint16_t magic_bytes;
+	uint8_t format_version;
+	uint8_t nbr_of_entries;
+	uint8_t crc_flags;
+	uint8_t pad[11];
+	uint8_t md5[16];
+} flash_partition_table_header_t;
 
 /* Structure which describes the layout of partition table entry.
  * See docs/partition_tables.rst for more information about individual fields.
  */
 typedef struct {
-    uint16_t magic_bytes;
-    uint8_t type; // pi_partition_type_t (Replaced by uint8_t to keep this field at 8 bits)
-    uint8_t subtype; // pi_partition_subtype_t
-    pi_partition_pos_t pos;
-    uint8_t  label[PI_PARTITION_LABEL_LENGTH];
-    uint32_t flags;
-} pi_partition_info_t;
+	uint16_t magic_bytes;
+	uint8_t type; // pi_partition_type_t (Replaced by uint8_t to keep this field at 8 bits)
+	uint8_t subtype; // pi_partition_subtype_t
+	flash_partition_pos_t pos;
+	uint8_t label[PI_PARTITION_LABEL_LENGTH];
+	uint32_t flags;
+} flash_partition_info_t;
+
+typedef struct {
+	flash_partition_table_header_t header;
+	flash_partition_info_t *partitions;
+} flash_partition_table_t;
+
+void flash_partition_print_partition_table(const flash_partition_table_t *table);
 
 /**
  * @brief Loads, verifies and  allocates a copy of the partition table of given flash.
@@ -80,7 +87,13 @@ typedef struct {
  * PI_ERR_INVALID_VERSION if the version of the partition table differs between flash and SDK,
  * PI_ERR_INVALID_STATE or PI_ERR_INVALID_CRC if partition table is not valid.
  */
-pi_err_t pi_partition_table_load(pi_device_t *flash, const pi_partition_info_t **table, uint8_t *nbr_of_entries);
+pi_err_t flash_partition_table_load(pi_device_t *flash, const flash_partition_table_t **table, uint8_t *nbr_of_entries);
+
+void flash_partition_table_free(flash_partition_table_t *table);
+
+const flash_partition_info_t *
+flash_partition_find_first(const flash_partition_table_t *table, pi_partition_type_t type,
+                           pi_partition_subtype_t subtype, const char *label);
 
 /**
  * @brief Verify the partition table
@@ -90,7 +103,7 @@ pi_err_t pi_partition_table_load(pi_device_t *flash, const pi_partition_info_t *
  *
  * @return PI_OK on success, PI_ERR_INVALID_STATE if partition table is not valid and PI_ERR_INVALID_CRC if MD5 missmatch.
  */
-pi_err_t pi_partition_table_verify(const pi_partition_table_header_t  *header, const pi_partition_info_t *partition_table);
+pi_err_t flash_partition_table_verify(const flash_partition_table_t *table);
 
 
 #endif //PI_FLASH_PARTITION_H

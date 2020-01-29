@@ -25,130 +25,50 @@
 #include "bsp/bsp.h"
 #include "bsp/flash.h"
 #include "bsp/partition.h"
-
 #include "flash_partition.h"
-
-static const pi_partition_info_t *partition_table = NULL;
-static pmsis_mutex_t *partition_table_mutex;
-
 
 size_t pi_partition_get_size(const pi_partition_t *partition)
 {
-    if (partition)
-        return partition->size;
-    else
-        return 0;
+	if(partition)
+		return partition->size;
+	else
+		return 0;
 }
 
 uint32_t pi_partition_get_flash_offset(const pi_partition_t *partition)
 {
-    if (partition)
-        return partition->offset;
-    else
-        return UINT32_MAX;
+	if(partition)
+		return partition->offset;
+	else
+		return UINT32_MAX;
 }
 
-void print_partition_table(const pi_partition_info_t *table)
+void pi_partition_table_free(pi_partition_table_t table)
 {
-    if (table == NULL)
-    {
-        printf("No partition table\n");
-        return;
-    }
-
-    printf("## Label \t   Type Sub Type Offset Length\n");
-
-    for (uint8_t i = 0;
-         table[i].magic_bytes == PI_PARTITION_MAGIC;
-         i++)
-    {
-        printf("%2d %-16s 0x%02x 0x%02x 0x%-8lx 0x%-8lx\n",
-               i, table[i].label,
-               table[i].type, table[i].subtype,
-               table[i].pos.offset, table[i].pos.size);
-    }
+	flash_partition_table_free((flash_partition_table_t *) table);
 }
 
-static pi_err_t ensure_partitions_loaded(pi_device_t *flash)
-{
-    pi_err_t rc;
-
-    if (partition_table)
-        return PI_OK;
-
-    //    Check if partition table mutex is initialized
-    if (!partition_table_mutex)
-    {
-        int irq_enabled;
-        hal_compiler_barrier();
-        irq_enabled = disable_irq();
-        hal_compiler_barrier();
-        partition_table_mutex = pmsis_l2_malloc(sizeof(pmsis_mutex_t));
-        if (partition_table_mutex == NULL)
-            return PI_ERR_NO_MEM;
-        if (pmsis_mutex_init(partition_table_mutex))
-            return PI_FAIL;
-        restore_irq(irq_enabled);
-        hal_compiler_barrier();
-    }
-
-    // only lock if the partition table is empty (and check again after acquiring lock)
-    pmsis_mutex_take(partition_table_mutex);
-    if (partition_table)
-    {
-        pmsis_mutex_release(partition_table_mutex);
-        return PI_OK;
-    }
-
-    rc = pi_partition_table_load(flash, &partition_table, NULL);
-    pmsis_mutex_release(partition_table_mutex);
-
-    print_partition_table(partition_table);
-
-    return rc;
-}
-
-const pi_partition_info_t *_pi_partition_find_first(pi_partition_type_t type,
-                                              pi_partition_subtype_t subtype, const char *label)
-{
-    const pi_partition_info_t *part;
-
-    if (partition_table == NULL)
-    {
-        return NULL;
-    }
-
-    for (part = partition_table; part->magic_bytes != PI_PARTITION_MAGIC; part++)
-    {
-        if (part->type != type || part->subtype != subtype)
-            continue;
-        if (label == NULL)
-            break;
-        if (strncmp(label, (char *) &part->label, PI_PARTITION_LABEL_LENGTH))
-            continue;
-    }
-    return part;
-}
-
-
-
-const pi_partition_t *
-pi_partition_find_first(pi_device_t *flash, const pi_partition_type_t type, const pi_partition_subtype_t subtype, const char *label)
+pi_err_t pi_partition_table_load(pi_device_t *flash, const pi_partition_table_t  *table)
 {
 	pi_err_t rc;
-	const pi_partition_info_t *info;
+	
+	rc = flash_partition_table_load(flash, (const flash_partition_table_t **) table, NULL);
+	flash_partition_print_partition_table((flash_partition_table_t *) *table);
+	
+	return rc;
+}
+
+const pi_partition_t *
+pi_partition_find_first(const pi_partition_table_t table, const pi_partition_type_t type, const pi_partition_subtype_t subtype,
+                        const char *label)
+{
 	pi_partition_t *partition;
+	const flash_partition_info_t *info;
 	
 	puts("In find partition");
 	
-	rc = ensure_partitions_loaded(flash);
-	if (rc != PI_OK)
-	{
-		return NULL;
-	}
-	
-	info = _pi_partition_find_first(type, subtype, label);
-	if (info == NULL)
+	info = flash_partition_find_first((const flash_partition_table_t*) table, type, subtype, label);
+	if(info == NULL)
 		return NULL;
 	
 	partition = pi_l2_malloc(sizeof(pi_partition_t));
@@ -162,5 +82,4 @@ pi_partition_find_first(pi_device_t *flash, const pi_partition_type_t type, cons
 	partition->read_only = false;
 	
 	return (const pi_partition_t *) partition;
-	
 }
