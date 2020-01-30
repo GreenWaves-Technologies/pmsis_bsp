@@ -18,10 +18,12 @@
  * Authors: Germain Haugou, GreenWaves Technologies (germain.haugou@greenwaves-technologies.com)
  */
 
+#include <string.h>
+
 #include "pmsis.h"
 #include "bsp/fs.h"
 #include "bsp/flash.h"
-#include <string.h>
+#include "bsp/partition.h"
 
 #define READ_FS_THRESHOLD            16
 #define READ_FS_THRESHOLD_BLOCK      128
@@ -95,6 +97,9 @@ static void __pi_fs_free(pi_fs_t *fs)
 static void __pi_fs_mount_step(void *arg)
 {
   pi_fs_t *fs = (pi_fs_t *)arg;
+  const pi_partition_table_t partition_table = NULL;
+  const pi_partition_t *readfs_partition = NULL;
+  pi_err_t rc;
 
   // Each asynchronous step is given fs->step_event which is an intermediate event
   // to reenqueue this function and do everything asynchronously.
@@ -102,20 +107,28 @@ static void __pi_fs_mount_step(void *arg)
   switch (fs->mount_step)
   {
   case 1:
-      // Read the offset telling where is the file-system header
-      pi_flash_read_async(fs->flash, 0, &fs->pi_fs_l2->pi_fs_offset, 8, pi_task_callback(&fs->step_event, __pi_fs_mount_step, (void *)arg));
-      break;
+        
+          // Try to open readfs partition
+    rc = pi_partition_table_load(fs->flash, &partition_table);
+    if (rc != PI_OK) goto error;
+    readfs_partition = pi_partition_find_first(partition_table, PI_PARTITION_TYPE_DATA, PI_PARTITION_SUBTYPE_DATA_READFS, NULL);
+    pi_partition_table_free(partition_table);
+    
+    if (readfs_partition == NULL) goto error;
+    fs->partition_offset = pi_partition_get_flash_offset(readfs_partition);
+    pi_partition_close(readfs_partition);
+    fs->mount_step++;
 
   case 2:
       // Read the header size at the first header word
-      pi_flash_read_async(fs->flash, (int)fs->pi_fs_l2->pi_fs_offset, &fs->pi_fs_l2->pi_fs_size, 8, pi_task_callback(&fs->step_event, __pi_fs_mount_step, (void *)arg));
+      pi_flash_read_async(fs->flash, fs->partition_offset, &fs->pi_fs_l2->pi_fs_size, 8, pi_task_callback(&fs->step_event, __pi_fs_mount_step, (void *)arg));
       break;
 
   case 3:
   {
       // Allocate roon for the file-system header and read it
       int pi_fs_size = ((fs->pi_fs_l2->pi_fs_size + 7) & ~7);
-      int pi_fs_offset = fs->pi_fs_l2->pi_fs_offset;
+      int pi_fs_offset = fs->partition_offset;
       fs->pi_fs_info = pmsis_l2_malloc(pi_fs_size);
       if (fs->pi_fs_info == NULL)
       {
@@ -299,7 +312,7 @@ static pi_fs_file_t *__pi_read_fs_open(struct pi_device *device, const char *fil
     file->header = NULL;
     file->offset = 0;
     file->size = desc->size;
-    file->addr = desc->addr;
+    file->addr = desc->addr + fs->partition_offset;
     file->fs = device;
     file->cache_addr = -1;
 
