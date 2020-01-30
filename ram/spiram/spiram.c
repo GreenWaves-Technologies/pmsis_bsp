@@ -25,7 +25,11 @@
 #include "../extern_alloc.h"
 
 
-#if !defined(__TRACE_ALL__) && !defined(__TRACE_RAM__)
+#if !defined(POS_TRACE)
+#define POS_WARNING(x...)
+#endif
+
+#if !defined(__TRACE_ALL__) && !defined(__TRACE_RAM__) || !defined(POS_TRACE)
 #define RAM_TRACE(x...)
 #else
 #define RAM_TRACE(level, x...) POS_TRACE(level, "[RAM] " x)
