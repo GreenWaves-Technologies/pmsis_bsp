@@ -116,7 +116,27 @@ typedef struct partition {
  */
 typedef void *pi_partition_table_t;
 
+
+/**
+ * @brief Open a partition table from a flash device.
+ * @param flash The flash device in which to fetch the partition table.
+ * @param table
+ * A reference to the user table variable. if the return code is PI_OK, this pointer contains a reference to the new partition table.
+ * @return
+ * PI_OK on success;
+ * PI_ERR_INVALID_ARG if the table pointer is NULL or if the flash device is invalid;
+ *PI_ERR_L2_NO_MEM if the allocation of the table in L2 memory fails;
+ *PI_ERR_NOT_FOUND if the partition table is not present on the flash device;
+ * PI_ERR_INVALID_VERSION if the format version of the partition table missmatch between flash data and BSP program;
+ * PI_ERR_INVALID_STATE if partition table MD5 missmatch (Partition table data corrupted).
+ */
 pi_err_t pi_partition_table_load(pi_device_t *flash, const pi_partition_table_t *table);
+
+/**
+ * @brief Close an opened partition table from pi_partition_table_load.
+ * @param table A reference of the partition table to free.
+ */
+void pi_partition_table_free(pi_partition_table_t table);
 
 /**
  * @brief Find first partition based on one or more parameters

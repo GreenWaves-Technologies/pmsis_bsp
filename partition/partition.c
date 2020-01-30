@@ -85,3 +85,4 @@ pi_partition_find_first(const pi_partition_table_t table, const pi_partition_typ
     
     return (const pi_partition_t *) partition;
 }
+
