@@ -573,8 +573,6 @@ typedef enum {
 
 typedef struct pi_fs_l2_s
 {
-  uint32_t pi_fs_offset;
-  uint32_t reserved0;
   uint32_t pi_fs_size;
   uint32_t reserved1;
 } pi_fs_l2_t;
@@ -582,6 +580,7 @@ typedef struct pi_fs_l2_s
 typedef struct pi_fs_s
 {
   struct pi_device *flash;
+  uint32_t partition_offset;
   pi_task_t step_event;
   pi_task_t *pending_event;
   int mount_step;
