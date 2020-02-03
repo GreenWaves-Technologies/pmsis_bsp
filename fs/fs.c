@@ -26,6 +26,12 @@
 void pi_fs_conf_init(struct pi_fs_conf *conf)
 {
   conf->type = PI_FS_READ_ONLY;
+  
+  // By default, mount operation uses the first partition compatible with the FS.
+  conf->partition_name = NULL;
+  
+  // By default, an error is returned to the user if the file system is not found in the partition.
+  conf->auto_format = false;
 }
 
 

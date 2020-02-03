@@ -111,7 +111,7 @@ static void __pi_fs_mount_step(void *arg)
           // Try to open readfs partition
     rc = pi_partition_table_load(fs->flash, &partition_table);
     if (rc != PI_OK) goto error;
-    readfs_partition = pi_partition_find_first(partition_table, PI_PARTITION_TYPE_DATA, PI_PARTITION_SUBTYPE_DATA_READFS, NULL);
+    readfs_partition = pi_partition_find_first(partition_table, PI_PARTITION_TYPE_DATA, PI_PARTITION_SUBTYPE_DATA_READFS, fs->partition_name);
     pi_partition_table_free(partition_table);
     
     if (readfs_partition == NULL) goto error;
@@ -209,13 +209,14 @@ static int32_t __pi_read_fs_mount(struct pi_device *device)
   fs->pi_fs_l2 = NULL;
   fs->pi_fs_info = NULL;
   fs->flash = conf->flash;
-
-  fs->pi_fs_l2 = pmsis_l2_malloc(sizeof(pi_fs_l2_t));
+    
+    fs->pi_fs_l2 = pmsis_l2_malloc(sizeof(pi_fs_l2_t));
   if (fs->pi_fs_l2 == NULL) goto error;
 
   fs->mount_step = 1;
   fs->pi_fs_info = NULL;
   fs->pending_event = pi_task_block(&task);
+  fs->partition_name = conf->partition_name;
 
   device->data = (void *)fs;
 
