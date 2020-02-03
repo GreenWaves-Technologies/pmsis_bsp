@@ -21,7 +21,7 @@ lfs * lfs utility functions
 #endif
 
 #ifndef LFS_NO_ASSERT
-#include "pmsis/rtos/pmsis_assert.h"
+#include "pmsis/rtos/assert.h"
 #endif
 
 #if !defined(LFS_NO_DEBUG) || \
