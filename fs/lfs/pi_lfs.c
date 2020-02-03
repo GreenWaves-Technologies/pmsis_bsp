@@ -39,7 +39,10 @@ pi_fs_api_t pi_lfs_api;
 static int lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
 {
     pi_lfs_t *pi_lfs = (pi_lfs_t *) c->context;
-
+    
+    if(block * c->block_size + off + size > pi_lfs->partition_offset + pi_lfs->partition_size)
+        return LFS_ERR_IO;
+    
     pi_flash_read(pi_lfs->flash,
                   pi_lfs->partition_offset + block * c->block_size + off,
                   buffer, size);
@@ -49,7 +52,10 @@ static int lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off
 static int lfs_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size)
 {
     pi_lfs_t *pi_lfs = (pi_lfs_t *) c->context;
-
+    
+    if(block * c->block_size + off + size > pi_lfs->partition_offset + pi_lfs->partition_size)
+        return LFS_ERR_IO;
+    
     pi_flash_program(pi_lfs->flash,
                      pi_lfs->partition_offset + block * c->block_size + off,
                      buffer, size);
@@ -59,7 +65,10 @@ static int lfs_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off
 static int lfs_erase(const struct lfs_config *c, lfs_block_t block)
 {
     pi_lfs_t *pi_lfs = (pi_lfs_t *) c->context;
-
+    
+    if(block * c->block_size + c->block_size > pi_lfs->partition_offset + pi_lfs->partition_size)
+        return LFS_ERR_IO;
+    
     pi_flash_erase_sector(pi_lfs->flash,
                           pi_lfs->partition_offset + block * c->block_size);
     return 0;
