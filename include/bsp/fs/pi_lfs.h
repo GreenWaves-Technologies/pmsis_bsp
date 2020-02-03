@@ -22,6 +22,8 @@
 #ifndef PMSIS_PI_LFS_H
 #define PMSIS_PI_LFS_H
 
+#include "stdint.h"
+
 #include "pmsis.h"
 #include "bsp/fs.h"
 #include "bsp/fs/lfs.h"

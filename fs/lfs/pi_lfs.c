@@ -22,6 +22,7 @@
 #include "string.h"
 
 #include "pmsis.h"
+#include "pmsis/errno.h"
 #include "bsp/partition.h"
 #include "bsp/fs/pi_lfs.h"
 #include "bsp/flash.h"
@@ -82,7 +83,7 @@ static int lfs_sync(const struct lfs_config *c)
 static void init_lfs_config(struct lfs_config *lfs_config, pi_lfs_t *pi_lfs, const size_t sector_size)
 {
     memset(lfs_config, 0, sizeof(struct lfs_config));
-
+    
     /**
      *  Store reference to pi_lfs instance in order to fetch flash device
      *  and offset partition.
@@ -96,7 +97,7 @@ static void init_lfs_config(struct lfs_config *lfs_config, pi_lfs_t *pi_lfs, con
     lfs_config->prog = lfs_prog;
     lfs_config->erase = lfs_erase;
     lfs_config->sync = lfs_sync;
-
+    
     /*
      * LittleFS default configuration
      * They can be override by LFS header
@@ -106,121 +107,161 @@ static void init_lfs_config(struct lfs_config *lfs_config, pi_lfs_t *pi_lfs, con
     lfs_config->block_cycles = 100;
     lfs_config->block_size = sector_size;
     lfs_config->block_count = pi_lfs->partition_size / sector_size;
-
+    
     /*
      * Buffers configurations
      */
     lfs_config->cache_size = 1024;
-    lfs_config->lookahead_size = 16;
+    lfs_config->lookahead_size = 16; // 16 * 8 blocks
 }
 
 static int32_t pi_lfs_mount(struct pi_device *device)
 {
-    int rc;
-    struct pi_flash_info info;
-    struct pi_fs_conf *fs_conf;
-    pi_device_t partition;
-    struct pi_partition_conf partition_conf;
-    pi_lfs_t *pi_lfs;
-
+    pi_err_t rc;
+    enum lfs_error lfs_rc;
+    struct pi_flash_info flash_info;
+    struct pi_fs_conf *fs_conf = (struct pi_fs_conf *) device->config;
+    pi_partition_table_t partitionTable = NULL;
+    const pi_partition_t *lfs_partition = NULL;
+    pi_lfs_t *pi_lfs = NULL;
+    
     /*
      * Open LFS partition
-     *currently, there are only both partition, binary and filesystem.
      */
-    fs_conf = (struct pi_fs_conf *) device->config;
-    partition_conf.flash = fs_conf->flash;
-    partition_conf.id = 1;
-    partition.config = &partition_conf;
-    if (pi_partition_open(&partition) < 0)
-        return LFS_ERR_IO;
-
+    rc = pi_partition_table_load(fs_conf->flash, &partitionTable);
+    if(rc != PI_OK)
+    {
+        goto mount_error;
+    }
+    
+    lfs_partition = pi_partition_find_first(partitionTable, PI_PARTITION_TYPE_DATA, PI_PARTITION_SUBTYPE_DATA_LFS,
+                                            fs_conf->partition_name);
+    if(lfs_partition == NULL)
+    {
+        rc = PI_ERR_NOT_FOUND;
+        goto mount_error;
+    }
+    
     /*
      * PI LFS allocation and configuration
      */
     pi_lfs = pi_l2_malloc(sizeof(*pi_lfs));
-    if (pi_lfs == NULL)
+    if(pi_lfs == NULL)
     {
-        pi_partition_close(&partition);
-        return LFS_ERR_NOMEM;
+        rc = PI_ERR_L2_NO_MEM;
+        goto mount_error;
     }
+    
     device->data = pi_lfs;
-
+    
     pi_lfs->flash = fs_conf->flash;
-    pi_lfs->partition_offset = pi_partition_get_flash_offset(&partition);
-    pi_lfs->partition_size = pi_partition_get_size(&partition);
-    printf("%s: LFS flash offset 0x%lx\n", __func__, pi_lfs->partition_offset);
-
+    
     /*
      * To optimize flash access from Little FS,
      * pi_lfs will bypass the partition layer.
      */
-    pi_partition_close(&partition);
-
+    pi_lfs->partition_offset = pi_partition_get_flash_offset(lfs_partition);
+    pi_lfs->partition_size = pi_partition_get_size(lfs_partition);
+//    printf("%s: LFS flash offset 0x%lx\n", __func__, pi_lfs->partition_offset);
+    
+    pi_partition_close(lfs_partition);
+    lfs_partition = NULL;
+    pi_partition_table_free(partitionTable);
+    partitionTable = NULL;
+    
     // Fetch default sector size from flash
-    pi_flash_ioctl(pi_lfs->flash, PI_FLASH_IOCTL_INFO, &info);
-    printf("%s: Flash block size %lx\n", __func__, info.sector_size);
-
-    init_lfs_config(&pi_lfs->config, pi_lfs, info.sector_size);
-
+    pi_flash_ioctl(pi_lfs->flash, PI_FLASH_IOCTL_INFO, &flash_info);
+//    printf("%s: Flash block size %lx\n", __func__, flash_info.sector_size);
+    
+    init_lfs_config(&pi_lfs->config, pi_lfs, flash_info.sector_size);
+    
     // Little FS buffers allocation
     pi_lfs->config.read_buffer = pi_l2_malloc(pi_lfs->config.cache_size);
     pi_lfs->config.prog_buffer = pi_l2_malloc(pi_lfs->config.cache_size);
     pi_lfs->config.lookahead_buffer = pi_l2_malloc_align(pi_lfs->config.lookahead_size, 4);
-    if (!(pi_lfs->config.read_buffer
-          && pi_lfs->config.prog_buffer
-          && pi_lfs->config.lookahead_buffer))
+    if(!(pi_lfs->config.read_buffer
+         && pi_lfs->config.prog_buffer
+         && pi_lfs->config.lookahead_buffer))
     {
-        rc = LFS_ERR_NOMEM;
+        rc = PI_ERR_L2_NO_MEM;
         goto mount_error;
     }
-
+    
     /*
      * Test magic number
      */
-    uint8_t *data = pi_l2_malloc(16);
-    pi_flash_read(pi_lfs->flash, pi_lfs->partition_offset + 8, data, 8);
-    data[8] = '\0';
-    printf("%s: Magic number `%s'\n", __func__, data);
-    pi_l2_free(data, 16);
-
+//    uint8_t *data = pi_l2_malloc(16);
+//    pi_flash_read(pi_lfs->flash, pi_lfs->partition_offset + 8, data, 8);
+//    data[8] = '\0';
+//    printf("%s: Magic number `%s'\n", __func__, data);
+//    pi_l2_free(data, 16);
+    
     // Try to mount Little FS
-    rc = lfs_mount(&pi_lfs->lfs, &pi_lfs->config);
-    if (rc < 0)
+    lfs_rc = lfs_mount(&pi_lfs->lfs, &pi_lfs->config);
+    if(lfs_rc != LFS_ERR_OK)
     {
-        goto mount_error;
+        if(!fs_conf->auto_format)
+        {
+            rc = PI_ERR_NOT_FOUND;
+            goto mount_error;
+        } else
+        {
+            lfs_rc = lfs_format(&pi_lfs->lfs, &pi_lfs->config);
+            if(lfs_rc != LFS_ERR_OK)
+            {
+                rc = PI_ERR_INVALID_STATE;
+                goto mount_error;
+            }
+        }
     }
-
-    return rc;
-
+    
+    return PI_OK;
+    
     mount_error:
-    if (pi_lfs->config.read_buffer)
+    if(lfs_partition)
+    {
+        pi_partition_close(lfs_partition);
+    }
+    if(partitionTable)
+    {
+        pi_partition_table_free(partitionTable);
+    }
+    if(pi_lfs->config.read_buffer)
+    {
         pi_l2_free(pi_lfs->config.read_buffer, pi_lfs->config.cache_size);
-    if (pi_lfs->config.prog_buffer)
+    }
+    if(pi_lfs->config.prog_buffer)
+    {
         pi_l2_free(pi_lfs->config.prog_buffer, pi_lfs->config.cache_size);
-    if (pi_lfs->config.lookahead_buffer)
+    }
+    if(pi_lfs->config.lookahead_buffer)
+    {
         pi_l2_free(pi_lfs->config.lookahead_buffer, pi_lfs->config.lookahead_size);
-    pi_l2_free(pi_lfs, sizeof(pi_lfs_t));
+    }
+    if(pi_lfs)
+    {
+        pi_l2_free(pi_lfs, sizeof(pi_lfs_t));
+    }
     return rc;
 }
 
 static void pi_lfs_unmount(struct pi_device *device)
 {
-    pi_lfs_t *pi_lfs;
-
-    pi_lfs = (pi_lfs_t*) device->data;
-    if (!pi_lfs)
+    pi_lfs_t *pi_lfs = (pi_lfs_t *) device->data;
+    
+    if(!pi_lfs)
         return;
-
-lfs_unmount(&pi_lfs->lfs);
-
-    if (pi_lfs->config.read_buffer)
+    
+    lfs_unmount(&pi_lfs->lfs);
+    
+    if(pi_lfs->config.read_buffer)
         pi_l2_free(pi_lfs->config.read_buffer, pi_lfs->config.cache_size);
-    if (pi_lfs->config.prog_buffer)
+    if(pi_lfs->config.prog_buffer)
         pi_l2_free(pi_lfs->config.prog_buffer, pi_lfs->config.cache_size);
-    if (pi_lfs->config.lookahead_buffer)
+    if(pi_lfs->config.lookahead_buffer)
         pi_l2_free(pi_lfs->config.lookahead_buffer, pi_lfs->config.lookahead_size);
     pi_l2_free(pi_lfs, sizeof(pi_lfs_t));
-device->data = NULL;
+    device->data = NULL;
 }
 
 static pi_fs_file_t *pi_lfs_open(struct pi_device *device, const char *file, int flags)
@@ -282,8 +323,8 @@ pi_fs_api_t pi_lfs_api = {
 lfs_t *pi_lfs_get_native_lfs(pi_device_t *device)
 {
     pi_lfs_t *pi_lfs;
-
-    pi_lfs = (pi_lfs_t*) device->data;
+    
+    pi_lfs = (pi_lfs_t *) device->data;
     return &pi_lfs->lfs;
 }
 
