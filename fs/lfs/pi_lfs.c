@@ -178,7 +178,7 @@ static int32_t pi_lfs_mount(struct pi_device *device)
     // Little FS buffers allocation
     pi_lfs->config.read_buffer = pi_l2_malloc(pi_lfs->config.cache_size);
     pi_lfs->config.prog_buffer = pi_l2_malloc(pi_lfs->config.cache_size);
-    pi_lfs->config.lookahead_buffer = pi_l2_malloc_align(pi_lfs->config.lookahead_size, 4);
+    pi_lfs->config.lookahead_buffer = pi_l2_malloc(pi_lfs->config.lookahead_size);
     if(!(pi_lfs->config.read_buffer
          && pi_lfs->config.prog_buffer
          && pi_lfs->config.lookahead_buffer))
