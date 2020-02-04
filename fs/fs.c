@@ -26,21 +26,40 @@
 void pi_fs_conf_init(struct pi_fs_conf *conf)
 {
   conf->type = PI_FS_READ_ONLY;
+  
+  // By default, mount operation uses the first partition compatible with the FS.
+  conf->partition_name = NULL;
+  
+  // By default, an error is returned to the user if the file system is not found in the partition.
+  conf->auto_format = false;
 }
 
+
+extern pi_fs_api_t pi_lfs_api;
 
 int32_t pi_fs_mount(struct pi_device *device)
 {
   struct pi_fs_conf *conf = (struct pi_fs_conf *)device->config;
   pi_fs_api_t *api;
-  if (conf->type == PI_FS_READ_ONLY)
+
+  switch (conf->type)
   {
-  	api = &__pi_read_fs_api;
+    case PI_FS_READ_ONLY:
+      api = &__pi_read_fs_api;
+      break;
+
+    case PI_FS_LFS:
+      api = &pi_lfs_api;
+      break;
+
+    case PI_FS_HOST:
+      api = &__pi_host_fs_api;
+      break;
+
+    default:
+      return -1;
   }
-  else
-  {
-  	api = &__pi_host_fs_api;
-  }
+
   device->api = (struct pi_device_api *)api;
   return api->mount(device);
 }

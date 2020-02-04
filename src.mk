@@ -1,6 +1,9 @@
 COMMON_SRC = \
   flash/flash.c \
   fs/fs.c \
+  fs/lfs/lfs.c \
+  fs/lfs/lfs_util.c \
+  fs/lfs/pi_lfs.c \
   fs/read_fs/read_fs.c \
   fs/host_fs/semihost.c \
   fs/host_fs/host_fs.c \

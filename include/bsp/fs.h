@@ -17,6 +17,8 @@
 #ifndef __FS__FS__H__
 #define __FS__FS__H__
 
+#include "stdbool.h"
+
 #include "pmsis.h"
 
 /// @cond IMPLEM
@@ -53,7 +55,8 @@ typedef struct __pi_fs_api_t pi_fs_api_t;
  */
 typedef enum {
   PI_FS_READ_ONLY     = 0,    /*!< Read-only file system. */
-  PI_FS_HOST          = 1     /*!< Host file system. */
+  PI_FS_HOST          = 1,     /*!< Host file system. */
+  PI_FS_LFS           = 2,     /*!< LittleFS Filesystem. */
 } pi_fs_type_e;
 
 
@@ -80,7 +83,13 @@ struct pi_fs_conf {
   pi_fs_type_e type;        /*!< File-system type. */
   struct pi_device *flash;  /*!< Flash device. The flash device must be first
     opened and its device structure passed here. */
-  pi_fs_api_t *api;    /*!< Pointer to specific FS methods. Reserved for 
+  char *partition_name; /*!< useful if there are several partitions of this FS type.
+    By default this field is set to null, which allows to find the first partition compatible with this type of FS. */
+  bool auto_format;     /*!< Defined the behavior of the mount operation in case the file system could not be found in the partition.
+    if auto_format is set to false, An error is returned .
+    In the opposite case, if auto_format is set to true, the partition will be formated and ready to use.
+    Not available in ReadFS.  */
+  pi_fs_api_t *api;    /*!< Pointer to specific FS methods. Reserved for
     internal runtime usage. */
 };
 
@@ -580,6 +589,7 @@ typedef struct pi_fs_l2_s
 typedef struct pi_fs_s
 {
   struct pi_device *flash;
+  char *partition_name;
   uint32_t partition_offset;
   pi_task_t step_event;
   pi_task_t *pending_event;
