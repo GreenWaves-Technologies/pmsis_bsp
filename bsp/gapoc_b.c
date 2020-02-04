@@ -23,6 +23,7 @@
 #include "bsp/flash/hyperflash.h"
 #include "bsp/display/ili9341.h"
 #include "bsp/ram/hyperram.h"
+#include "bsp/ram/spiram.h"
 #include "bsp/ble/nina_b112.h"
 #include "bsp/ble/nina_b112/nina_b112_old.h"
 
@@ -78,6 +79,22 @@ int bsp_hyperflash_open(struct pi_hyperflash_conf *conf)
 {
   __bsp_init_pads();
   pi_pad_set_function(CONFIG_HYPERBUS_DATA6_PAD, CONFIG_HYPERRAM_DATA6_PAD_FUNC);
+  return 0;
+}
+
+
+void bsp_spiram_conf_init(struct pi_spiram_conf *conf)
+{
+  conf->ram_start = CONFIG_SPIRAM_START;
+  conf->ram_size = CONFIG_SPIRAM_SIZE;
+  conf->skip_pads_config = 0;
+  conf->spi_itf = CONFIG_SPIRAM_SPI_ITF;
+  conf->spi_cs = CONFIG_SPIRAM_SPI_CS;
+}
+
+int bsp_spiram_open(struct pi_spiram_conf *conf)
+{
+  __bsp_init_pads();
   return 0;
 }
 

@@ -20,6 +20,7 @@
 #define CONFIG_ILI9341
 #define CONFIG_HYPERRAM
 #define CONFIG_NINA_B112
+#define CONFIG_SPIRAM
 
 #define CONFIG_ILI9341_SPI_ITF         ( 1 )
 #define CONFIG_ILI9341_SPI_CS          ( 0 )
@@ -34,6 +35,11 @@
 #define CONFIG_HYPERRAM_HYPER_CS       ( 0 )
 #define CONFIG_HYPERRAM_START          ( 0 )
 #define CONFIG_HYPERRAM_SIZE           ( 8 << 20 )
+
+#define CONFIG_SPIRAM_SPI_ITF   0
+#define CONFIG_SPIRAM_SPI_CS    1
+#define CONFIG_SPIRAM_START     0
+#define CONFIG_SPIRAM_SIZE     (1<<20)
 
 #define CONFIG_HYPERBUS_DATA6_PAD      ( PI_PAD_46_B7_SPIM0_SCK )
 // This is due to a HW bug, to be fixed in the future

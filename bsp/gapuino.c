@@ -57,21 +57,6 @@ int bsp_hyperram_open(struct pi_hyperram_conf *conf)
 }
 
 
-void bsp_spiram_conf_init(struct pi_spiram_conf *conf)
-{
-  conf->ram_start = CONFIG_SPIRAM_START;
-  conf->ram_size = CONFIG_SPIRAM_SIZE;
-  conf->skip_pads_config = 0;
-  conf->spi_itf = CONFIG_SPIRAM_SPI_ITF;
-  conf->spi_cs = CONFIG_SPIRAM_SPI_CS;
-}
-
-int bsp_spiram_open(struct pi_spiram_conf *conf)
-{
-  __bsp_init_pads();
-  return 0;
-}
-
 
 
 void bsp_hyperflash_conf_init(struct pi_hyperflash_conf *conf)
@@ -86,6 +71,22 @@ int bsp_hyperflash_open(struct pi_hyperflash_conf *conf)
   return 0;
 }
 
+
+
+void bsp_spiram_conf_init(struct pi_spiram_conf *conf)
+{
+  conf->ram_start = CONFIG_SPIRAM_START;
+  conf->ram_size = CONFIG_SPIRAM_SIZE;
+  conf->skip_pads_config = 0;
+  conf->spi_itf = CONFIG_SPIRAM_SPI_ITF;
+  conf->spi_cs = CONFIG_SPIRAM_SPI_CS;
+}
+
+int bsp_spiram_open(struct pi_spiram_conf *conf)
+{
+  __bsp_init_pads();
+  return 0;
+}
 
 
 void bsp_himax_conf_init(struct pi_himax_conf *conf)
