@@ -7,9 +7,6 @@ lfs * lfs utility functions
 #ifndef LFS_UTIL_H
 #define LFS_UTIL_H
 
-// GAP configuration
-#define LFS_NO_MALLOC
-
 // System includes
 #include <stdint.h>
 #include <stdbool.h>
@@ -17,7 +14,7 @@ lfs * lfs utility functions
 #include <inttypes.h>
 
 #ifndef LFS_NO_MALLOC
-#include <stdlib.h>
+#include "pmsis.h"
 #endif
 
 #ifndef LFS_NO_ASSERT
@@ -199,7 +196,7 @@ uint32_t lfs_crc(uint32_t crc, const void *buffer, size_t size);
 // Note, memory must be 64-bit aligned
 static inline void *lfs_malloc(size_t size) {
 #ifndef LFS_NO_MALLOC
-    return malloc(size);
+    return pi_l2_malloc(size);
 #else
     (void)size;
     return NULL;
@@ -207,9 +204,9 @@ static inline void *lfs_malloc(size_t size) {
 }
 
 // Deallocate memory, only used if buffers are not provided to littlefs
-static inline void lfs_free(void *p) {
+static inline void lfs_free(void *p, size_t size) {
 #ifndef LFS_NO_MALLOC
-    free(p);
+    pi_l2_free(p, size);
 #else
     (void)p;
 #endif

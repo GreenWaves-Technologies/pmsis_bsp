@@ -2487,7 +2487,7 @@ int lfs_file_close(lfs_t *lfs, lfs_file_t *file) {
 
     // clean up memory
     if (!file->cfg->buffer) {
-        lfs_free(file->cache.buffer);
+        lfs_free(file->cache.buffer, lfs->cfg->cache_size);
     }
 
     file->flags &= ~LFS_F_OPENED;
@@ -3475,15 +3475,15 @@ cleanup:
 static int lfs_deinit(lfs_t *lfs) {
     // free allocated memory
     if (!lfs->cfg->read_buffer) {
-        lfs_free(lfs->rcache.buffer);
+        lfs_free(lfs->rcache.buffer, lfs->cfg->cache_size);
     }
 
     if (!lfs->cfg->prog_buffer) {
-        lfs_free(lfs->pcache.buffer);
+        lfs_free(lfs->pcache.buffer, lfs->cfg->cache_size);
     }
 
     if (!lfs->cfg->lookahead_buffer) {
-        lfs_free(lfs->free.buffer);
+        lfs_free(lfs->free.buffer, lfs->cfg->lookahead_size);
     }
 
     return 0;
