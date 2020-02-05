@@ -31,6 +31,50 @@
 
 
 typedef struct {
+  pi_fs_file_t fs_file;
+  unsigned int offset;
+  unsigned int addr;
+  unsigned int pending_addr;
+  pi_task_t *pending_event;
+  pi_task_t step_event;
+  unsigned int pending_buffer;
+  unsigned int pending_size;
+  unsigned char *cache;
+  unsigned int  cache_addr;
+  uint8_t *header;
+  int header_size;
+} pi_read_fs_file_t;
+
+
+typedef struct pi_fs_l2_s
+{
+  uint32_t pi_fs_size;
+  uint32_t reserved1;
+} pi_fs_l2_t;
+
+typedef struct pi_fs_s
+{
+  struct pi_device *flash;
+  char *partition_name;
+  uint32_t partition_offset;
+  pi_task_t step_event;
+  pi_task_t *pending_event;
+  int mount_step;
+  int pi_fs_size;
+  pi_fs_l2_t *pi_fs_l2;
+  unsigned int *pi_fs_info;
+  int nb_comps;
+  //rt_mutex_t mutex;
+  pi_task_t event;
+  int error;
+  uint32_t free_flash_area;
+  pi_read_fs_file_t *last_created_file;
+} pi_read_fs_t;
+
+
+
+
+typedef struct {
   unsigned int addr;
   unsigned int size;
   unsigned int path_size;
@@ -77,7 +121,7 @@ static inline void __pi_fs_error(int error)
 
 
 
-static void __pi_fs_free(pi_fs_t *fs)
+static void __pi_fs_free(pi_read_fs_t *fs)
 {
   if (fs != NULL)
   {
@@ -96,7 +140,7 @@ static void __pi_fs_free(pi_fs_t *fs)
 //     execution
 static void __pi_fs_mount_step(void *arg)
 {
-  pi_fs_t *fs = (pi_fs_t *)arg;
+  pi_read_fs_t *fs = (pi_read_fs_t *)arg;
   const pi_partition_table_t partition_table = NULL;
   const pi_partition_t *readfs_partition = NULL;
   pi_err_t rc;
@@ -178,7 +222,7 @@ static void __pi_read_fs_unmount(struct pi_device *device)
 {
   //int irq = pi_irq_disable();
 
-  pi_fs_t *fs = (pi_fs_t *)device->data;
+  pi_read_fs_t *fs = (pi_read_fs_t *)device->data;
 
   __pi_fs_free(fs);
 
@@ -200,7 +244,7 @@ static int32_t __pi_read_fs_mount(struct pi_device *device)
 
   //pi_trace(pi_trace_DEV_CTRL, "[FS] Mounting file-system (device: %s)\n", dev_name);
 
-  pi_fs_t *fs = pmsis_l2_malloc(sizeof(pi_fs_t));
+  pi_read_fs_t *fs = pmsis_l2_malloc(sizeof(pi_read_fs_t));
   if (fs == NULL) goto error;
 
   pi_task_t task;
@@ -241,14 +285,15 @@ error:
 
 static pi_fs_file_t *__pi_read_fs_open(struct pi_device *device, const char *file_name, int flags)
 {
-  pi_fs_t *fs = (pi_fs_t *)device->data;
+  pi_read_fs_t *fs = (pi_read_fs_t *)device->data;
+  pi_read_fs_file_t *file;
 
   if (flags == PI_FS_FLAGS_WRITE)
   {
     if (fs->last_created_file)
       return NULL;
 
-    pi_fs_file_t *file = pmsis_l2_malloc(sizeof(pi_fs_file_t));
+    file = pmsis_l2_malloc(sizeof(pi_read_fs_file_t));
     if (file == NULL) return NULL;
 
     // Reserve enough room to store file path, addr and size
@@ -259,7 +304,7 @@ static pi_fs_file_t *__pi_read_fs_open(struct pi_device *device, const char *fil
     uint8_t *header = pmsis_l2_malloc(header_size);
     if (header == NULL)
     {
-      pi_l2_free(file, sizeof(pi_fs_file_t));
+      pi_l2_free(file, sizeof(pi_read_fs_file_t));
       return NULL;
     }
 
@@ -271,14 +316,11 @@ static pi_fs_file_t *__pi_read_fs_open(struct pi_device *device, const char *fil
     
     file->addr = fs->free_flash_area + header_size;
 
-    file->size = 0;  
-    file->offset = 0; 
-    file->fs = device;
+    file->fs_file.size = 0;  
+    file->offset = 0;
     file->cache_addr = -1;
 
     fs->last_created_file = file;
-
-    return file;
   }
   else
   {
@@ -304,7 +346,7 @@ static pi_fs_file_t *__pi_read_fs_open(struct pi_device *device, const char *fil
     if (i == nb_comps) goto error;
 
     // Now allocate the file descriptor and fills it
-    pi_fs_file_t *file = pmsis_l2_malloc(sizeof(pi_fs_file_t));
+    file = pmsis_l2_malloc(sizeof(pi_read_fs_file_t));
     if (file == NULL) goto error;
 
     file->cache = pmsis_l2_malloc(READ_FS_THRESHOLD_BLOCK_FULL);
@@ -312,36 +354,41 @@ static pi_fs_file_t *__pi_read_fs_open(struct pi_device *device, const char *fil
 
     file->header = NULL;
     file->offset = 0;
-    file->size = desc->size;
+    file->fs_file.size = desc->size;
     file->addr = desc->addr + fs->partition_offset;
-    file->fs = device;
     file->cache_addr = -1;
+  }
 
-    return file;
+  file->fs_file.api = (pi_fs_api_t *)device->api;
+  file->fs_file.data = file;
+  file->fs_file.fs = device;
+
+  return &file->fs_file;
 
 error1:
-    pmsis_l2_malloc_free(file, sizeof(pi_fs_file_t));
+    pmsis_l2_malloc_free(file, sizeof(pi_read_fs_file_t));
 error:
     return NULL;
-  }
 }
 
-static void __pi_read_fs_close(pi_fs_file_t *file)
+static void __pi_read_fs_close(pi_fs_file_t *_file)
 {
+  pi_read_fs_file_t *file = (pi_read_fs_file_t *)_file;
+
   //printf("[FS] Closing file (file: %p)\n", file);
   if (file->header == NULL)
   {
     pmsis_l2_malloc_free(file->cache, READ_FS_THRESHOLD_BLOCK_FULL);
-    pmsis_l2_malloc_free((void *)file, sizeof(pi_fs_file_t));
+    pmsis_l2_malloc_free((void *)file, sizeof(pi_read_fs_file_t));
   }
   else
   {
-    pi_fs_t *fs = (pi_fs_t *)file->fs->data;
+    pi_read_fs_t *fs = (pi_read_fs_t *)file->fs_file.fs->data;
     *(uint32_t *)&file->header[0] = file->addr;
-    *(uint32_t *)&file->header[4] = file->size;
+    *(uint32_t *)&file->header[4] = file->fs_file.size;
     pi_flash_program(fs->flash, file->addr - file->header_size, (void *)file->header, file->header_size);
     pi_l2_free((void *)file->header, file->header_size);
-    pi_l2_free((void *)file, sizeof(pi_fs_file_t));
+    pi_l2_free((void *)file, sizeof(pi_read_fs_file_t));
   }
   
 }
@@ -349,7 +396,7 @@ static void __pi_read_fs_close(pi_fs_file_t *file)
 
 
 // Reads a block from device, which must be 4-bytes aligned on both the address and the size
-static int __pi_fs_read_block(pi_fs_t *fs, unsigned int addr, unsigned int buffer, int size, pi_task_t *event)
+static int __pi_fs_read_block(pi_read_fs_t *fs, unsigned int addr, unsigned int buffer, int size, pi_task_t *event)
 {
   //printf("[FS] Read block (buffer: 0x%x, addr: 0x%x, size: 0x%x)\n", buffer, addr, size);
 
@@ -359,11 +406,11 @@ static int __pi_fs_read_block(pi_fs_t *fs, unsigned int addr, unsigned int buffe
 }
 
 // Reads a block from cache, whose size is inferior to READ_FS_THRESHOLD
-static int __pi_fs_read_from_cache(pi_fs_file_t *file, unsigned int buffer, unsigned int addr, int size)
+static int __pi_fs_read_from_cache(pi_read_fs_file_t *file, unsigned int buffer, unsigned int addr, int size)
 {
   //printf("[FS] Read from cache (buffer: 0x%x, addr: 0x%x, size: 0x%x)\n", buffer, addr, size);
 
-  pi_fs_t *fs = (pi_fs_t *)file->fs->data;
+  pi_read_fs_t *fs = (pi_read_fs_t *)file->fs_file.fs->data;
 
   memcpy((void *)buffer, &file->cache[addr - file->cache_addr], size);
 
@@ -375,13 +422,13 @@ static int __pi_fs_read_from_cache(pi_fs_file_t *file, unsigned int buffer, unsi
 // with no alignment constraint.
 // If the data is not in the cache, it is loaded fron FS
 // and then it copied from the cache to the buffer
-static int __pi_fs_read_cached(pi_fs_file_t *file, unsigned int buffer, unsigned int addr, unsigned int size, int *pending, pi_task_t *event)
+static int __pi_fs_read_cached(pi_read_fs_file_t *file, unsigned int buffer, unsigned int addr, unsigned int size, int *pending, pi_task_t *event)
 {
   //printf("[FS] Read cached (buffer: 0x%x, addr: 0x%x, size: 0x%x)\n", buffer, addr, size);
 
   if (size > READ_FS_THRESHOLD_BLOCK_FULL - (addr & 0x7)) size = READ_FS_THRESHOLD_BLOCK_FULL - (addr & 0x7);
 
-  pi_fs_t *fs = (pi_fs_t *)file->fs->data;
+  pi_read_fs_t *fs = (pi_read_fs_t *)file->fs_file.fs->data;
 
   if (addr < file->cache_addr || addr + size > file->cache_addr + READ_FS_THRESHOLD_BLOCK_FULL) {
     file->cache_addr = addr & ~0x7;
@@ -393,9 +440,9 @@ static int __pi_fs_read_cached(pi_fs_file_t *file, unsigned int buffer, unsigned
   return __pi_fs_read_from_cache(file, buffer, addr, size);
 }
 
-int __pi_fs_read(pi_fs_file_t *file, unsigned int buffer, unsigned int addr, int size, int *pending, pi_task_t *event)
+int __pi_fs_read(pi_read_fs_file_t *file, unsigned int buffer, unsigned int addr, int size, int *pending, pi_task_t *event)
 {
-  pi_fs_t *fs = (pi_fs_t *)file->fs->data;
+  pi_read_fs_t *fs = (pi_read_fs_t *)file->fs_file.fs->data;
 
   //printf("[FS] Read through cache (addr: 0x%x, buffer: 0x%x, addr: 0x%x, size: 0x%x)\n", addr, buffer, addr, size);
 
@@ -435,14 +482,15 @@ int __pi_fs_read(pi_fs_file_t *file, unsigned int buffer, unsigned int addr, int
   return block_size;
 }
 
-static int32_t __pi_read_fs_write(pi_fs_file_t *file, void *buffer, uint32_t size, pi_task_t *task)
+static int32_t __pi_read_fs_write(pi_fs_file_t *_file, void *buffer, uint32_t size, pi_task_t *task)
 {
-  pi_fs_t *fs = (pi_fs_t *)file->fs->data;
+  pi_read_fs_t *fs = (pi_read_fs_t *)_file->fs->data;
+  pi_read_fs_file_t *file = (pi_read_fs_file_t *)_file;
 
   int real_size = size;
   unsigned int addr = file->addr + file->offset;
-  if (file->offset + size > file->size) {
-    real_size = file->size - file->offset;
+  if (file->offset + size > file->fs_file.size) {
+    real_size = file->fs_file.size - file->offset;
   }
   file->offset += real_size;
 
@@ -451,11 +499,12 @@ static int32_t __pi_read_fs_write(pi_fs_file_t *file, void *buffer, uint32_t siz
   return 0;
 }
 
-static int32_t __pi_read_fs_seek(pi_fs_file_t *file, unsigned int offset)
+static int32_t __pi_read_fs_seek(pi_fs_file_t *_file, unsigned int offset)
 {
+  pi_read_fs_file_t *file = (pi_read_fs_file_t *)_file;
   //printf("[FS] File seek (file: %p, offset: 0x%x)\n", file, offset);
 
-  if (offset < file->size) {
+  if (offset < file->fs_file.size) {
     file->offset = offset;
     return 0;
   }
@@ -469,9 +518,9 @@ static int32_t __pi_read_fs_seek(pi_fs_file_t *file, unsigned int offset)
 //   - An event is given in which case, the function will just execute one asynchronous
 //     step and will continue with the next step once it is called again by the event
 //     execution
-static void __pi_fs_try_read(void *arg)
+static void __pi_read_fs_try_read(void *arg)
 {
-  pi_fs_file_t *file = (pi_fs_file_t *)arg;
+  pi_read_fs_file_t *file = (pi_read_fs_file_t *)arg;
 
   int pending = 0;
 
@@ -485,7 +534,7 @@ static void __pi_fs_try_read(void *arg)
   }
 
   int size = __pi_fs_read(
-    file, file->pending_buffer, file->pending_addr, file->pending_size, &pending, pi_task_callback(&file->step_event, __pi_fs_try_read, (void *)file)
+    file, file->pending_buffer, file->pending_addr, file->pending_size, &pending, pi_task_callback(&file->step_event, __pi_read_fs_try_read, (void *)file)
   );
 
   file->pending_addr += size;
@@ -502,13 +551,15 @@ static void __pi_fs_try_read(void *arg)
     }
     else
     {
-      pi_task_push(pi_task_callback(&file->step_event, __pi_fs_try_read, (void *)file));
+      pi_task_push(pi_task_callback(&file->step_event, __pi_read_fs_try_read, (void *)file));
     }
   }
 }
 
-static int32_t __pi_read_fs_read_async(pi_fs_file_t *file, void *buffer, uint32_t size, pi_task_t *event)
+static int32_t __pi_read_fs_read_async(pi_fs_file_t *_file, void *buffer, uint32_t size, pi_task_t *event)
 {
+  pi_read_fs_file_t *file = (pi_read_fs_file_t *)_file;
+
   // Lock the file-system instead of masking interrupts as we can return
   // from this function with a pending operation on the cache
   // which must prevent anyone from accessing the cache
@@ -517,8 +568,8 @@ static int32_t __pi_read_fs_read_async(pi_fs_file_t *file, void *buffer, uint32_
   //__pi_mutex_lock(&file->fs->mutex);
 
   int real_size = size;
-  if (file->offset + size > file->size) {
-    real_size = file->size - file->offset;
+  if (file->offset + size > file->fs_file.size) {
+    real_size = file->fs_file.size - file->offset;
   }
 
   //printf("[FS] File read (file: %p, buffer: %p, size: 0x%xx, real_size: 0x%x, offset: 0x%x, addr: 0x%x)\n", file, buffer, (int)size, real_size, file->offset, file->addr + file->offset);
@@ -536,21 +587,22 @@ static int32_t __pi_read_fs_read_async(pi_fs_file_t *file, void *buffer, uint32_
 
   file->offset += real_size;
 
-  __pi_fs_try_read((void *)file);
+  __pi_read_fs_try_read((void *)file);
 
   return real_size;
 }
 
-static int32_t __pi_read_fs_direct_read_async(pi_fs_file_t *file, void *buffer, uint32_t size, pi_task_t *event)
+static int32_t __pi_read_fs_direct_read_async(pi_fs_file_t *_file, void *buffer, uint32_t size, pi_task_t *event)
 {
-  pi_fs_t *fs = (pi_fs_t *)file->fs->data;
+  pi_read_fs_file_t *file = (pi_read_fs_file_t *)_file;
+  pi_read_fs_t *fs = (pi_read_fs_t *)file->fs_file.fs->data;
   // Mask interrupt to update file current position and get information
   //int irq = pi_irq_disable();
 
   int real_size = size;
   unsigned int addr = file->addr + file->offset;
-  if (file->offset + size > file->size) {
-    real_size = file->size - file->offset;
+  if (file->offset + size > file->fs_file.size) {
+    real_size = file->fs_file.size - file->offset;
   }
   file->offset += real_size;
 
@@ -561,179 +613,20 @@ static int32_t __pi_read_fs_direct_read_async(pi_fs_file_t *file, void *buffer, 
   return real_size;
 }
 
-static int32_t __pi_read_fs_copy_async(pi_fs_file_t *file, uint32_t index, void *buffer, uint32_t size, int32_t ext2loc, pi_task_t *task)
+static int32_t __pi_read_fs_copy_async(pi_fs_file_t *_file, uint32_t index, void *buffer, uint32_t size, int32_t ext2loc, pi_task_t *task)
 {
-  pi_fs_t *fs = (pi_fs_t *)file->fs->data;
+  pi_read_fs_file_t *file = (pi_read_fs_file_t *)_file;
+  pi_read_fs_t *fs = (pi_read_fs_t *)file->fs_file.fs->data;
   return pi_flash_copy_async(fs->flash, file->addr + index, buffer, size, ext2loc, task);
 }
 
-static int32_t __pi_read_fs_copy_2d_async(pi_fs_file_t *file, uint32_t index, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int32_t ext2loc, pi_task_t *task)
+static int32_t __pi_read_fs_copy_2d_async(pi_fs_file_t *_file, uint32_t index, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int32_t ext2loc, pi_task_t *task)
 {
-  pi_fs_t *fs = (pi_fs_t *)file->fs->data;
+  pi_read_fs_file_t *file = (pi_read_fs_file_t *)_file;
+  pi_read_fs_t *fs = (pi_read_fs_t *)file->fs_file.fs->data;
   return pi_flash_copy_2d_async(fs->flash, file->addr + index, buffer, size, stride, length, ext2loc, task);
 }
 
-void __pi_cl_fs_req_done(void *_req)
-{
-    pi_cl_fs_req_t *req = (pi_cl_fs_req_t *)_req;
-    #if defined(PMSIS_DRIVERS)
-    cl_notify_task_done(&(req->done), req->cid);
-    #else
-    req->done = 1;
-    __rt_cluster_notif_req_done(req->cid);
-    #endif  /* PMSIS_DRIVERS */
-}
-
-void __pi_cl_fs_req(void *_req)
-{
-    pi_cl_fs_req_t *req = (pi_cl_fs_req_t *)_req;
-    pi_fs_file_t *file = req->file;
-    if (req->direct)
-    {
-        req->result = pi_fs_direct_read_async(file, req->buffer, req->size, pi_task_callback(&req->task, __pi_cl_fs_req_done, (void *)req));
-    }
-    else
-    {
-        req->result = pi_fs_read_async(req->file, req->buffer, req->size, pi_task_callback(&req->task, __pi_cl_fs_req_done, (void *)req));
-    }
-}
-
-void pi_cl_fs_read(pi_fs_file_t *file, void *buffer, uint32_t size, pi_cl_fs_req_t *req)
-{
-    req->file = file;
-    req->buffer = buffer;
-    req->size = size;
-    req->cid = pi_cluster_id();
-    req->done = 0;
-    req->direct = 0;
-
-    #if defined(__PULP_OS__)
-    __rt_task_init_from_cluster(&req->task);
-    #endif  /* __PULP_OS__ */
-    pi_task_callback(&req->task, __pi_cl_fs_req, (void *) req);
-    #if defined(PMSIS_DRIVERS)
-    pi_cl_send_task_to_fc(&(req->task));
-    #else
-    __rt_cluster_push_fc_event(&req->task);
-    #endif  /* PMSIS_DRIVERS */
-}
-
-void pi_cl_fs_direct_read(pi_fs_file_t *file, void *buffer, uint32_t size, pi_cl_fs_req_t *req)
-{
-    req->file = file;
-    req->buffer = buffer;
-    req->size = size;
-    req->cid = pi_cluster_id();
-    req->done = 0;
-    req->direct = 1;
-
-    #if defined(__PULP_OS__)
-    __rt_task_init_from_cluster(&req->task);
-    #endif  /* __PULP_OS__ */
-    pi_task_callback(&req->task, __pi_cl_fs_req, (void *) req);
-    #if defined(PMSIS_DRIVERS)
-    pi_cl_send_task_to_fc(&(req->task));
-    #else
-    __rt_cluster_push_fc_event(&req->task);
-    #endif  /* PMSIS_DRIVERS */
-}
-
-void __pi_cl_fs_seek_req(void *_req)
-{
-    pi_cl_fs_req_t *req = (pi_cl_fs_req_t *)_req;
-    req->result = pi_fs_seek(req->file, req->offset);
-    #if defined(PMSIS_DRIVERS)
-    cl_notify_task_done(&(req->done), req->cid);
-    #else
-    req->done = 1;
-    __rt_cluster_notif_req_done(req->cid);
-    #endif  /* PMSIS_DRIVERS */
-}
-
-void pi_cl_fs_seek(pi_fs_file_t *file, uint32_t offset, pi_cl_fs_req_t *req)
-{
-    req->file = file;
-    req->offset = offset;
-    req->cid = pi_cluster_id();
-    req->done = 0;
-
-    #if defined(__PULP_OS__)
-    __rt_task_init_from_cluster(&req->task);
-    #endif  /* __PULP_OS__ */
-    pi_task_callback(&req->task, __pi_cl_fs_seek_req, (void *) req);
-    #if defined(PMSIS_DRIVERS)
-    pi_cl_send_task_to_fc(&(req->task));
-    #else
-    __rt_cluster_push_fc_event(&req->task);
-    #endif  /* PMSIS_DRIVERS */
-}
-
-void __pi_cl_fs_copy_req_done(void *_req)
-{
-    pi_cl_fs_req_t *req = (pi_cl_fs_req_t *)_req;
-    #if defined(PMSIS_DRIVERS)
-    cl_notify_task_done(&(req->done), req->cid);
-    #else
-    req->done = 1;
-    __rt_cluster_notif_req_done(req->cid);
-    #endif  /* PMSIS_DRIVERS */
-}
-
-void __pi_cl_fs_copy_req(void *_req)
-{
-  pi_cl_fs_req_t *req = (pi_cl_fs_req_t *)_req;
-  if (req->length)
-    req->result = pi_fs_copy_2d_async(req->file, req->index, req->buffer, req->size, req->stride, req->length, req->ext2loc, pi_task_callback(&req->task, __pi_cl_fs_copy_req_done, (void *)req));
-  else
-    req->result = pi_fs_copy_async(req->file, req->index, req->buffer, req->size, req->ext2loc, pi_task_callback(&req->task, __pi_cl_fs_copy_req_done, (void *)req));
-
-  if (req->result)
-    __pi_cl_fs_copy_req_done(_req);
-}
-
-
-void pi_cl_fs_copy(pi_fs_file_t *file, uint32_t index, void *buffer, uint32_t size, int32_t ext2loc, pi_cl_fs_req_t *req)
-{
-  req->file = file;
-  req->index = index;
-  req->buffer = buffer;
-  req->size = size;
-  req->ext2loc = ext2loc;
-  req->length = 0;
-  req->done = 0;
-  req->cid = pi_cluster_id();
-  #if defined(__PULP_OS__)
-  __rt_task_init_from_cluster(&req->task);
-  #endif  /* __PULP_OS__ */
-  pi_task_callback(&req->task, __pi_cl_fs_copy_req, (void *) req);
-  #if defined(PMSIS_DRIVERS)
-  pi_cl_send_task_to_fc(&(req->task));
-  #else
-  __rt_cluster_push_fc_event(&req->task);
-  #endif  /* PMSIS_DRIVERS */
-}
-
-void pi_cl_fs_copy_2d(pi_fs_file_t *file, uint32_t index, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int32_t ext2loc, pi_cl_fs_req_t *req)
-{
-  req->file = file;
-  req->index = index;
-  req->buffer = buffer;
-  req->size = size;
-  req->stride = stride;
-  req->length = length;
-  req->ext2loc = ext2loc;
-  req->done = 0;
-  req->cid = pi_cluster_id();
-  #if defined(__PULP_OS__)
-  __rt_task_init_from_cluster(&req->task);
-  #endif  /* __PULP_OS__ */
-  pi_task_callback(&req->task, __pi_cl_fs_copy_req, (void *) req);
-  #if defined(PMSIS_DRIVERS)
-  pi_cl_send_task_to_fc(&(req->task));
-  #else
-  __rt_cluster_push_fc_event(&req->task);
-  #endif  /* PMSIS_DRIVERS */
-}
 
 pi_fs_api_t __pi_read_fs_api = {
   .mount = __pi_read_fs_mount,

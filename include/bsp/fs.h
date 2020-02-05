@@ -560,50 +560,16 @@ extern pi_fs_api_t __pi_read_fs_api;
 extern pi_fs_api_t __pi_host_fs_api;
 
 typedef struct pi_fs_file_s {
-  unsigned int offset;
-  unsigned int size;
-  unsigned int addr;
-  unsigned int pending_addr;
   struct pi_device *fs;
-  pi_task_t *pending_event;
-  pi_task_t step_event;
-  unsigned int pending_buffer;
-  unsigned int pending_size;
-  unsigned char *cache;
-  unsigned int  cache_addr;
-  uint8_t *header;
-  int header_size;
+  struct __pi_fs_api_t *api;
+  void *data;
+  unsigned int size;
 } pi_fs_file_t;
 
 typedef enum {
   FS_MOUNT_FLASH_ERROR     = 1,     /*!< There was an error mounting the flash filesystem. */
   FS_MOUNT_MEM_ERROR       = 2      /*!< There was an error allocating memory when mounting the file-system. */
 } pi_fs_error_e;
-
-typedef struct pi_fs_l2_s
-{
-  uint32_t pi_fs_size;
-  uint32_t reserved1;
-} pi_fs_l2_t;
-
-typedef struct pi_fs_s
-{
-  struct pi_device *flash;
-  char *partition_name;
-  uint32_t partition_offset;
-  pi_task_t step_event;
-  pi_task_t *pending_event;
-  int mount_step;
-  int pi_fs_size;
-  pi_fs_l2_t *pi_fs_l2;
-  unsigned int *pi_fs_info;
-  int nb_comps;
-  //rt_mutex_t mutex;
-  pi_task_t event;
-  int error;
-  uint32_t free_flash_area;
-  pi_fs_file_t *last_created_file;
-} pi_fs_t;
 
 
 typedef struct pi_cl_fs_req_s
