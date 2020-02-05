@@ -17,7 +17,7 @@
 #include "string.h"
 #include "pmsis.h"
 #include "bsp/bsp.h"
-//#include "bsp/ble/nina_b112/nina_b112_old.h"
+#include "bsp/ble/nina_b112/nina_b112_old.h"
 
 /*******************************************************************************
  * Definitions
@@ -37,7 +37,7 @@
 #define S4str  "\n"             /*!< LF string. */
 
 #define PI_AT_CMD_ARRAY_LENGTH  ( 32 ) /*!< CMD array length. */
-#define PI_AT_RESP_ARRAY_LENGTH ( 64 ) /*!< RESP array length. */
+//#define PI_AT_RESP_ARRAY_LENGTH ( 64 ) /*!< RESP array length. */
 
 #define PI_NINA_UART_AT_BAUDRATE_bps ( 115200 ) /*!< Baudrate used by NINA_B112 module(default value). */
 

@@ -35,7 +35,7 @@
 #define S3str  "\r"             /*!< CR string.  */
 #define S4str  "\n"             /*!< LF string. */
 
-#define PI_AT_RESP_ARRAY_LENGTH ( 64 ) /*!< RESP array length. */
+//#define PI_AT_RESP_ARRAY_LENGTH ( 64 ) /*!< RESP array length. */
 
 #define PI_NINA_B112_UART_BAUDRATE   ( 115200 ) /*!< Baudrate used by NINA_B112 module(default value). */
 #define PI_NINA_B112_DATA_BITS       ( 8 ) /*!< Data bits used by NINA_B112 module(default value). */
