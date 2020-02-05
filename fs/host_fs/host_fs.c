@@ -48,6 +48,10 @@ static pi_fs_file_t *__pi_host_fs_open(struct pi_device *device, const char *fil
   if (file->fd == -1)
     return NULL;
 
+  file->header.api = (pi_fs_api_t *)device->api;
+  file->header.data = file;
+  file->header.fs = device;
+
   return (pi_fs_file_t *)file;
 
 error:
