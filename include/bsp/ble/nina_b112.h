@@ -20,15 +20,17 @@
 #include "bsp/ble.h"
 
 /**
- * \addtogroup BLE
+ * @addtogroup BLE
  * @{
  */
 
 /**
  * @defgroup NINA_B112 NINA_B112
- */
-
-/**
+ *
+ * The nina_b112 driver provides support for for data transfer using a BLE module,
+ * here a NINA B112 BLE module.
+ * This module is interfaced on GAPPOC through UART.
+ *
  * @addtogroup NINA_B112
  * @{
  */
@@ -62,29 +64,30 @@ struct pi_nina_b112_id
 
 typedef enum
 {
-    PI_NINA_B112_MODEL_INFO       = 0,
-    PI_NINA_B112_SERVER_CONFIGURE,
-    PI_NINA_B112_CLIENT_CONFIGURE,
-    PI_NINA_B112_UART_CONFIGURE,
-    PI_NINA_B112_DATA_MODE_ENTER,
-    PI_NINA_B112_DATA_MODE_EXIT,
-    PI_NINA_B112_WAIT_FOR_EVENT
+    PI_NINA_B112_MODEL_INFO       = 0, /*!< BLE device info. */
+    PI_NINA_B112_SERVER_CONFIGURE,     /*!< Configure BLE device as a server. */
+    PI_NINA_B112_CLIENT_CONFIGURE,     /*!< Configure BLE device as a client. */
+    PI_NINA_B112_UART_CONFIGURE,       /*!< Configure HCI UART. */
+    PI_NINA_B112_DATA_MODE_ENTER,      /*!< Enter Data Mode. */
+    PI_NINA_B112_DATA_MODE_EXIT,       /*!< Exit Data Mode. */
+    PI_NINA_B112_WAIT_FOR_EVENT        /*!< Wait for some responses/events from BLE device. */
 } pi_ble_ioctl_cmd_e;
 
 
 /**
  * \brief Initialize NINA_B112 configuration structure.
  *
+ * \param device         Pointer to the BLE device structure.
  * \param conf           Pointer to NINA_B112 configuration structure.
  */
 void pi_ble_nina_b112_conf_init(struct pi_device *device, struct pi_nina_b112_conf *conf);
 
 /**
- * @} end of NINA_B112
+ * @} addtogroup NINA_B112
  */
 
 /**
- * @} end of BLE
+ * @} addtogroup BLE
  */
 
 #endif  /* __PI_BSP_BLE_NINA_B112_H__ */

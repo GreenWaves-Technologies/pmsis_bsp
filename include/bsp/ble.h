@@ -51,7 +51,7 @@ typedef struct pi_ble_api_s
  * This function opens and intializes a BLE device.
  * This function must be called before using device.
  *
- * \param device         A pointer to the BLE device structure.
+ * \param device         Pointer to the BLE device structure.
  *
  * \retval 0             If the operation is successful.
  * \retval ERRNO         Error code otherwise.
@@ -64,7 +64,7 @@ int32_t pi_ble_open(struct pi_device *device);
  * This function closes an opened BLE device. It frees all allocated objects and
  * interfaces used.
  *
- * \param device         A pointer to the BLE device structure.
+ * \param device         Pointer to the BLE device structure.
  */
 void pi_ble_close(struct pi_device *device);
 
@@ -73,8 +73,9 @@ void pi_ble_close(struct pi_device *device);
  *
  * This function is used to send special command to BLE device.
  *
- * \param device         A pointer to the BLE device structure.
+ * \param device         Pointer to the BLE device structure.
  * \param cmd            Ioctl command.
+ * \param arg            Ioctl command arg.
  *
  * \return Value         Value depends on ioctl command.
  */
@@ -85,7 +86,7 @@ int32_t pi_ble_ioctl(struct pi_device *device, uint32_t cmd, void *arg);
  *
  * This function is used to send AT commands to BLE device.
  *
- * \param device         A pointer to the BLE device structure.
+ * \param device         Pointer to the BLE device structure.
  * \param cmd            Command string to send.
  * \param resp           Buffer to store response.
  * \param size           Size of the response to store, in Bytes.
@@ -103,7 +104,7 @@ int32_t pi_ble_at_cmd(struct pi_device *device, const char *cmd, char *resp, uin
  *
  * This function should be used to connect to a remote peer.
  *
- * \param device         A device pointer to the BLE device structure.
+ * \param device         Pointer to the BLE device structure.
  * \param addr           Address in string format.
  *
  * \retval 0             If operation is successful.
@@ -116,7 +117,7 @@ int32_t pi_ble_peer_connect(struct pi_device *device, const char *addr);
  *
  * This function closes an existing peer connection.
  *
- * \param device         A device pointer to the BLE device structure.
+ * \param device         Pointer to the BLE device structure.
  * \param addr           Address in string format.
  *
  * \retval 0             If operation is successful.
@@ -129,7 +130,7 @@ int32_t pi_ble_peer_disconnect(struct pi_device *device, const char *addr);
  *
  * This function is used to send data to BLE device.
  *
- * \param device         A device pointer to the BLE structure.
+ * \param device         Pointer to the BLE structure.
  * \param buffer         Buffer to send.
  * \param size           Size of data to send.
  *
@@ -143,7 +144,7 @@ void pi_ble_data_send(struct pi_device *device, uint8_t *buffer, uint32_t size);
  *
  * This function is used to send data to BLE device.
  *
- * \param device         A device pointer to the BLE structure.
+ * \param device         Pointer to the BLE structure.
  * \param buffer         Buffer to send.
  * \param size           Size of data to send.
  * \param task           Event task used to check end of transfer.
@@ -159,7 +160,7 @@ void pi_ble_data_send_async(struct pi_device *device, uint8_t *buffer,
  *
  * This function is used to retrieve data from BLE device.
  *
- * \param device         A device pointer to the BLE structure.
+ * \param device         Pointer to the BLE structure.
  * \param buffer         Buffer to store data.
  * \param size           Size of data.
  *
@@ -173,7 +174,7 @@ void pi_ble_data_get(struct pi_device *device, uint8_t *buffer, uint32_t size);
  *
  * This function is used to retrieve data from BLE device.
  *
- * \param device         A device pointer to the BLE structure.
+ * \param device         Pointer to the BLE structure.
  * \param buffer         Buffer to store data.
  * \param size           Size of data.
  * \param task           Event task used to check end of transfer.
@@ -185,7 +186,7 @@ void pi_ble_data_get_async(struct pi_device *device, uint8_t *buffer,
                            uint32_t size, pi_task_t *task);
 
 /**
- * @} end of BLE
+ * @} addtogroup BLE
  */
 
 #endif  /* __PI_BSP_BLE_H__ */
