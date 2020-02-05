@@ -20,15 +20,22 @@
 #include "pmsis.h"
 
 /**
- * @defgroup BLE BLE
+ * @addtogroup BLE
+ * @{
+ */
+
+/**
+ * \deprecated This API is no longer supported.
+ *             Please refer to @ref BLE API.
+ *
+ * @defgroup NINA_B112_OLD NINA_B112_OLD
+ * \brief Deprecated
  *
  * The nina_b112 driver provides support for for data transfer using a BLE module,
  * here a NINA B112 BLE module.
  * This module is interfaced on GAPPOC through UART.
- */
-
-/**
- * @addtogroup BLE
+ *
+ * @addtogroup NINA_B112_OLD
  * @{
  */
 
@@ -225,7 +232,11 @@ void pi_nina_b112_send_data(pi_nina_ble_t *ble, const uint8_t* buffer, uint32_t 
 void pi_nina_b112_exit_data_mode(pi_nina_ble_t *ble);
 
 /**
- * @}
+ * @} addtogroup NINA_B112_OLD
+ */
+
+/**
+ * @} addtogroup BLE
  */
 
 #endif  /* __BSP_NINA_B112_H__ */
