@@ -33,6 +33,8 @@
  * @{
  */
 
+#define PI_AT_RESP_ARRAY_LENGTH ( 64 ) /*!< RESP array length. */
+
 /**
  * \struct pi_nina_b112_conf
  *

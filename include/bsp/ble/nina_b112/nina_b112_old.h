@@ -36,6 +36,8 @@
  * Definitions
  ******************************************************************************/
 
+#define PI_AT_RESP_ARRAY_LENGTH ( 64 ) /*!< RESP array length. */
+
 /* @brief NINA Ble module struct.  */
 typedef struct
 {
