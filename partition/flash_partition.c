@@ -131,7 +131,7 @@ pi_err_t flash_partition_table_load(pi_device_t *flash, const flash_partition_ta
 	if(*table_offset == 0)
 	{
 		rc = PI_ERR_NOT_FOUND;
-		goto _return;
+		goto mount_error;
 	}
 
 // Alloc table containing header
@@ -139,7 +139,7 @@ pi_err_t flash_partition_table_load(pi_device_t *flash, const flash_partition_ta
 	if(table == NULL)
 	{
 		rc = PI_ERR_L2_NO_MEM;
-		goto _return;
+		goto mount_error;
 	}
 	
 	// Load table header
@@ -151,7 +151,7 @@ pi_err_t flash_partition_table_load(pi_device_t *flash, const flash_partition_ta
 	{
 //		printf("Partition table header magic number error\n");
 		rc = PI_ERR_NOT_FOUND;
-		goto _return;
+		goto mount_error;
 	}
 	
 	if(table->header.format_version != PI_PARTITION_TABLE_FORMAT_VERSION)
@@ -160,7 +160,7 @@ pi_err_t flash_partition_table_load(pi_device_t *flash, const flash_partition_ta
 //		       table->header.format_version,
 //		       PI_PARTITION_TABLE_FORMAT_VERSION);
 		rc = PI_ERR_INVALID_VERSION;
-		goto _return;
+		goto mount_error;
 	}
 	
 	// Alloc partition entries
@@ -168,7 +168,7 @@ pi_err_t flash_partition_table_load(pi_device_t *flash, const flash_partition_ta
 	if(table->partitions == NULL)
 	{
 		rc = PI_ERR_L2_NO_MEM;
-		goto _return;
+		goto mount_error;
 	}
 	
 	pi_flash_read(flash, *table_offset + PI_PARTITION_HEADER_SIZE, table->partitions,
@@ -181,7 +181,7 @@ pi_err_t flash_partition_table_load(pi_device_t *flash, const flash_partition_ta
 		{
 //			printf("Partitions table verification failed.\n");
 			pi_l2_free(table->partitions, sizeof(flash_partition_info_t) * table->header.nbr_of_entries);
-			goto _return;
+			goto mount_error;
 		}
 	}
 	
@@ -191,7 +191,7 @@ pi_err_t flash_partition_table_load(pi_device_t *flash, const flash_partition_ta
 	
 	return PI_OK;
 	
-	_return:
+	mount_error:
 	if(table_offset)
 		pi_l2_free(table_offset, sizeof(*table_offset));
 	if(table)
