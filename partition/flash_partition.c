@@ -116,7 +116,7 @@ pi_err_t flash_partition_table_load(pi_device_t *flash, const flash_partition_ta
                                     uint8_t *nbr_of_entries)
 {
     pi_err_t rc = PI_OK;
-    uint32_t *table_offset = NULL;
+    uint32_t *table_offset_l2 = NULL;
     uint32_t _table_offset;
     flash_partition_table_t *table = NULL;
     flash_partition_info_t *partitions = NULL;
@@ -132,19 +132,21 @@ pi_err_t flash_partition_table_load(pi_device_t *flash, const flash_partition_ta
         goto mount_error;
     }
 
-    table_offset = pi_l2_malloc(sizeof(*table_offset));
-    if(table_offset == NULL)
+    table_offset_l2 = pi_l2_malloc(sizeof(*table_offset_l2));
+    if(table_offset_l2 == NULL)
         return PI_ERR_L2_NO_MEM;
 
-    pi_flash_read(flash, 0, table_offset, 4);
-    if(*table_offset == 0)
+    pi_flash_read(flash, 0, table_offset_l2, 4);
+    if(*table_offset_l2 == 0)
     {
         rc = PI_ERR_NOT_FOUND;
         goto mount_error;
     }
 
-    _table_offset = *table_offset;
-    pi_l2_free(table_offset, sizeof(*table_offset));
+    _table_offset = *table_offset_l2;
+    pi_l2_free(table_offset_l2, sizeof(*table_offset_l2));
+    table_offset_l2 = NULL;
+    
 
     // Load table header
     pi_flash_read(flash, _table_offset, table, sizeof(flash_partition_table_header_t));
@@ -197,8 +199,8 @@ pi_err_t flash_partition_table_load(pi_device_t *flash, const flash_partition_ta
     return PI_OK;
 
     mount_error:
-    if(table_offset)
-        pi_l2_free(table_offset, sizeof(*table_offset));
+    if(table_offset_l2)
+        pi_l2_free(table_offset_l2, sizeof(*table_offset_l2));
     if(table)
         pi_l2_free(table, sizeof(*table));
     return rc;
