@@ -127,6 +127,7 @@ static void __pi_fs_free(pi_read_fs_t *fs)
   {
     if (fs->pi_fs_info) pmsis_l2_malloc_free(fs->pi_fs_info, fs->pi_fs_l2->pi_fs_size);
     if (fs->pi_fs_l2) pmsis_l2_malloc_free(fs->pi_fs_l2, sizeof(pi_fs_l2_t));
+    pmsis_l2_malloc_free(fs, sizeof(pi_read_fs_t));
   }
 }
 
@@ -151,16 +152,16 @@ static void __pi_fs_mount_step(void *arg)
   switch (fs->mount_step)
   {
   case 1:
-        
+
           // Try to open readfs partition
     rc = pi_partition_table_load(fs->flash, &partition_table);
     if (rc != PI_OK) goto error;
     readfs_partition = pi_partition_find_first(partition_table, PI_PARTITION_TYPE_DATA, PI_PARTITION_SUBTYPE_DATA_READFS, fs->partition_name);
-    pi_partition_table_free(partition_table);
-    
+
     if (readfs_partition == NULL) goto error;
     fs->partition_offset = pi_partition_get_flash_offset(readfs_partition);
     pi_partition_close(readfs_partition);
+    pi_partition_table_free(partition_table);
     fs->mount_step++;
 
   case 2:
@@ -253,7 +254,7 @@ static int32_t __pi_read_fs_mount(struct pi_device *device)
   fs->pi_fs_l2 = NULL;
   fs->pi_fs_info = NULL;
   fs->flash = conf->flash;
-    
+
     fs->pi_fs_l2 = pmsis_l2_malloc(sizeof(pi_fs_l2_t));
   if (fs->pi_fs_l2 == NULL) goto error;
 
@@ -313,10 +314,10 @@ static pi_fs_file_t *__pi_read_fs_open(struct pi_device *device, const char *fil
 
     memcpy(&file->header[12], file_name, str_len);
     *(uint32_t *)&file->header[8] = str_len;
-    
+
     file->addr = fs->free_flash_area + header_size;
 
-    file->fs_file.size = 0;  
+    file->fs_file.size = 0;
     file->offset = 0;
     file->cache_addr = -1;
 
@@ -390,7 +391,7 @@ static void __pi_read_fs_close(pi_fs_file_t *_file)
     pi_l2_free((void *)file->header, file->header_size);
     pi_l2_free((void *)file, sizeof(pi_read_fs_file_t));
   }
-  
+
 }
 
 
