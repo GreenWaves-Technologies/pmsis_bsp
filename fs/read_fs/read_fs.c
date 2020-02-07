@@ -22,6 +22,7 @@
 
 #include "pmsis.h"
 #include "bsp/fs.h"
+#include "bsp/fs/readfs.h"
 #include "bsp/flash.h"
 #include "bsp/partition.h"
 
@@ -646,14 +647,20 @@ __pi_read_fs_copy_2d_async(pi_fs_file_t *_file, uint32_t index, void *buffer, ui
 
 
 pi_fs_api_t __pi_read_fs_api = {
-        .mount = __pi_read_fs_mount,
-        .unmount = __pi_read_fs_unmount,
-        .open = __pi_read_fs_open,
-        .close = __pi_read_fs_close,
-        .read = __pi_read_fs_read_async,
-        .direct_read = __pi_read_fs_direct_read_async,
-        .write = __pi_read_fs_write,
-        .seek = __pi_read_fs_seek,
-        .copy = __pi_read_fs_copy_async,
-        .copy_2d = __pi_read_fs_copy_2d_async
+    .mount = __pi_read_fs_mount,
+    .unmount = __pi_read_fs_unmount,
+    .open = __pi_read_fs_open,
+    .close = __pi_read_fs_close,
+    .read = __pi_read_fs_read_async,
+    .direct_read = __pi_read_fs_direct_read_async,
+    .write = __pi_read_fs_write,
+    .seek = __pi_read_fs_seek,
+    .copy = __pi_read_fs_copy_async,
+    .copy_2d = __pi_read_fs_copy_2d_async
 };
+
+void pi_readfs_conf_init(struct pi_readfs_conf *conf)
+{
+    pi_fs_conf_init(&conf->fs);
+    conf->fs.api = &__pi_read_fs_api;
+}

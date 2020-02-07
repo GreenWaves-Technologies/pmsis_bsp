@@ -328,3 +328,9 @@ lfs_t *pi_lfs_get_native_lfs(pi_device_t *device)
     return &pi_lfs->lfs;
 }
 
+
+void pi_lfs_conf_init(struct pi_hostfs_conf *conf)
+{
+    pi_fs_conf_init(&conf->fs);
+    conf->fs.api = &pi_lfs_api;
+}

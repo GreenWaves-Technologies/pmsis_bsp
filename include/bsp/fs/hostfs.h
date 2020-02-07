@@ -14,19 +14,9 @@
  * limitations under the License.
  */
 
-/*
- * Created by Mathieu Barbe <mathieu.barbe@greenwaves-technologies.com>.
- * on 11/29/2019.
- */
 
-#ifndef PMSIS_PI_LFS_H
-#define PMSIS_PI_LFS_H
-
-#include "stdint.h"
-
-#include "pmsis.h"
-#include "bsp/fs.h"
-#include "bsp/fs/lfs.h"
+#ifndef __BSP__FS__HOSTFS_H__
+#define __BSP__FS__HOSTFS_H__
 
 #include "bsp/fs.h"
 
@@ -36,38 +26,36 @@
  */
 
 /**
- * @defgroup LFS LFS
+ * @defgroup Hostfs Hostfs
  *
  */
 
 /**
- * @addtogroup LFS
+ * @addtogroup Hostfs
  * @{
  */
 
 /**@{*/
 
 /** \struct hostfs_conf
- * \brief LFS configuration structure.
+ * \brief Hostfs configuration structure.
  *
- * This structure is used to pass the desired LFS configuration to the
+ * This structure is used to pass the desired Hyperflash configuration to the
  * runtime when opening the device.
  */
-struct pi_lfs_conf
+struct pi_hostfs_conf
 {
   struct pi_fs_conf fs;  /*!< Generic flaFSsh configuration. */
 };
 
-/** \brief Initialize a LFS configuration with default values.
+/** \brief Initialize a Hostfs configuration with default values.
  *
  * The structure containing the configuration must be kept alive until the
  * FS device is opened.
  *
  * \param conf A pointer to the Hostfs configuration.
  */
-void pi_lfs_conf_init(struct pi_lfs_conf *conf);
-
-lfs_t *pi_lfs_get_native_lfs(pi_device_t *device);
+void pi_hostfs_conf_init(struct pi_hostfs_conf *conf);
 
 //!@}
 
@@ -79,4 +67,4 @@ lfs_t *pi_lfs_get_native_lfs(pi_device_t *device);
  * @} end of FS
  */
 
-#endif //PMSIS_PI_LFS_H
+#endif 

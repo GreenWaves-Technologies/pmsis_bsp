@@ -14,19 +14,9 @@
  * limitations under the License.
  */
 
-/*
- * Created by Mathieu Barbe <mathieu.barbe@greenwaves-technologies.com>.
- * on 11/29/2019.
- */
 
-#ifndef PMSIS_PI_LFS_H
-#define PMSIS_PI_LFS_H
-
-#include "stdint.h"
-
-#include "pmsis.h"
-#include "bsp/fs.h"
-#include "bsp/fs/lfs.h"
+#ifndef __BSP__FS__READFS_H__
+#define __BSP__FS__READFS_H__
 
 #include "bsp/fs.h"
 
@@ -36,47 +26,45 @@
  */
 
 /**
- * @defgroup LFS LFS
+ * @defgroup ReadFS ReadFS
  *
  */
 
 /**
- * @addtogroup LFS
+ * @addtogroup ReadFS
  * @{
  */
 
 /**@{*/
 
-/** \struct hostfs_conf
- * \brief LFS configuration structure.
+/** \struct readfs_conf
+ * \brief ReadFS configuration structure.
  *
- * This structure is used to pass the desired LFS configuration to the
+ * This structure is used to pass the desired Hyperflash configuration to the
  * runtime when opening the device.
  */
-struct pi_lfs_conf
+struct pi_readfs_conf
 {
   struct pi_fs_conf fs;  /*!< Generic flaFSsh configuration. */
 };
 
-/** \brief Initialize a LFS configuration with default values.
+/** \brief Initialize a ReadFS configuration with default values.
  *
  * The structure containing the configuration must be kept alive until the
  * FS device is opened.
  *
- * \param conf A pointer to the Hostfs configuration.
+ * \param conf A pointer to the ReadFS configuration.
  */
-void pi_lfs_conf_init(struct pi_lfs_conf *conf);
-
-lfs_t *pi_lfs_get_native_lfs(pi_device_t *device);
+void pi_readfs_conf_init(struct pi_readfs_conf *conf);
 
 //!@}
 
 /**
- * @} end of Hostfs
+ * @} end of ReadFS
  */
 
 /**
  * @} end of FS
  */
 
-#endif //PMSIS_PI_LFS_H
+#endif 
