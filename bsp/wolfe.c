@@ -65,6 +65,23 @@ int bsp_hyperflash_open(struct pi_hyperflash_conf *conf)
 }
 
 
+void bsp_spiflash_conf_init(struct pi_spiflash_conf *conf)
+{
+  conf->size = CONFIG_SPIFLASH_SIZE;
+  // sector size is in number of KB
+  conf->sector_size = CONFIG_SPIFLASH_SECTOR_SIZE;
+  conf->spi_itf = CONFIG_SPIFLASH_SPI_ITF;
+  conf->spi_cs = CONFIG_SPIFLASH_SPI_CS;
+  // try to reach max freq on gapoc_a
+  conf->baudrate = 50*1000000;
+}
+
+int bsp_spiflash_open(struct pi_spiflash_conf *conf)
+{
+  return 0;
+}
+
+
 
 void bsp_spiram_conf_init(struct pi_spiram_conf *conf)
 {

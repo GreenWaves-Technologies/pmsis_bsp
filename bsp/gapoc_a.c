@@ -94,6 +94,7 @@ int bsp_spiram_open(struct pi_spiram_conf *conf)
   return 0;
 }
 
+
 void bsp_spiflash_conf_init(struct pi_spiflash_conf *conf)
 {
   conf->size = CONFIG_SPIFLASH_SIZE;

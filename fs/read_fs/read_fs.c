@@ -163,7 +163,6 @@ static void __pi_fs_mount_step(void *arg)
     pi_partition_close(readfs_partition);
     fs->mount_step++;
 
-  case 2:
       // Read the header size at the first header word
       pi_flash_read_async(fs->flash, fs->partition_offset, &fs->pi_fs_l2->pi_fs_size, 8, pi_task_callback(&fs->step_event, __pi_fs_mount_step, (void *)arg));
       break;

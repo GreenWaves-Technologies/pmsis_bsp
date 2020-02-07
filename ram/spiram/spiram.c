@@ -108,7 +108,7 @@ static int spiram_open(struct pi_device *device)
     // We take more margin for sending as the TX buffer is enqueued after the command buffer
     // which makes the time between CS low and the end of transfer unpredictable, e.g. a cache miss
     // can increase it.
-    spi_conf.max_snd_chunk_size = (chunk_size - 36) & ~0x3;
+    spi_conf.max_snd_chunk_size = (chunk_size - 48) & ~0x3;
 
     spi_conf.max_baudrate = conf->baudrate*2;
 

@@ -23,6 +23,7 @@
 #define CONFIG_HYPERRAM
 #define CONFIG_NINA_B112
 #define CONFIG_SPIRAM
+#define CONFIG_SPIFLASH
 
 #define CONFIG_MT9V034_CPI_ITF               0
 #define CONFIG_MT9V034_I2C_ITF               1

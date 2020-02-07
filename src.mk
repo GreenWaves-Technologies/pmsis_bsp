@@ -19,6 +19,7 @@ VEGA_SRC = \
   flash/hyperflash/hyperflash.c \
   ram/hyperram/hyperram.c \
   ram/spiram/spiram.c \
+  flash/spiflash/spiflash.c \
   ram/ram.c \
   ram/alloc_extern.c
 
@@ -30,6 +31,7 @@ GAP9_SRC = \
   flash/hyperflash/hyperflash.c \
   ram/hyperram/hyperram.c \
   ram/spiram/spiram.c \
+  flash/spiflash/spiflash.c \
   ram/ram.c \
   ram/alloc_extern.c
 
@@ -41,6 +43,7 @@ WOLFE_SRC = \
   flash/hyperflash/hyperflash.c \
   ram/hyperram/hyperram.c \
   ram/spiram/spiram.c \
+  flash/spiflash/spiflash.c \
   ram/ram.c \
   ram/alloc_extern.c
 
@@ -54,6 +57,7 @@ GAPUINO_SRC = \
   flash/hyperflash/hyperflash.c \
   ram/hyperram/hyperram.c \
   ram/spiram/spiram.c \
+  flash/spiflash/spiflash.c \
   ram/ram.c \
   ram/alloc_extern.c
 
@@ -67,6 +71,7 @@ AI_DECK_SRC = \
   transport/nina_w10/nina_w10.c \
   ram/hyperram/hyperram.c \
   ram/spiram/spiram.c \
+  flash/spiflash/spiflash.c \
   ram/ram.c \
   ram/alloc_extern.c
 
@@ -81,6 +86,7 @@ GAPOC_A_SRC = \
   display/display.c \
   display/ili9341/ili9341.c \
   ram/spiram/spiram.c \
+  flash/spiflash/spiflash.c \
   ram/hyperram/hyperram.c \
   ram/ram.c \
   ram/alloc_extern.c \
@@ -97,6 +103,7 @@ GAPOC_B_SRC = \
   display/ili9341/ili9341.c \
   ram/hyperram/hyperram.c \
   ram/spiram/spiram.c \
+  flash/spiflash/spiflash.c \
   ram/ram.c \
   ram/alloc_extern.c \
   ble/ble.c \
@@ -113,6 +120,7 @@ GAPOC_B_SRC = \
   display/ili9341/ili9341.c \
   ram/hyperram/hyperram.c \
   ram/spiram/spiram.c \
+  flash/spiflash/spiflash.c \
   ram/ram.c \
   ram/alloc_extern.c \
   ble/ble.c \
