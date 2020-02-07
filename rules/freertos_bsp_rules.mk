@@ -26,7 +26,7 @@ else ifeq ($(BOARD_NAME), gapoc_b)
 PMSIS_BSP_SRC = $(GAPOC_B_SRC)
 endif
 
-EXCLUDE_FROM_SRCS= transport/transport.c transport/nina_w10/nina_w10.c
+EXCLUDE_FROM_SRCS= transport/transport.c transport/nina_w10/nina_w10.c flash/spiflash/spiflash.c
 
 PMSIS_BSP_SRCS := $(filter-out $(EXCLUDE_FROM_SRCS), $(PMSIS_BSP_SRC))
 PMSIS_BSP_SRCS := $(foreach f, $(PMSIS_BSP_SRCS), $(PMSIS_BSP_DIR)/$f)
