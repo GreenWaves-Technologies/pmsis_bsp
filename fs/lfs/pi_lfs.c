@@ -330,7 +330,7 @@ static int32_t pi_lfs_direct_read_async(pi_fs_file_t *file, void *buffer, uint32
     return -1;
 }
 
-static int32_t pi_lfs_write(pi_fs_file_t *file, void *buffer, uint32_t size, pi_task_t *task)
+static int32_t pi_lfs_write_async(pi_fs_file_t *file, void *buffer, uint32_t size, pi_task_t *task)
 {
     size_t rc;
     pi_lfs_t *pi_lfs = file->fs->data;
@@ -430,7 +430,7 @@ pi_fs_api_t pi_lfs_api = {
         .close = pi_lfs_close,
         .read = pi_lfs_read_async,
         .direct_read = pi_lfs_direct_read_async,
-        .write = pi_lfs_write,
+        .write = pi_lfs_write_async,
         .seek = pi_lfs_seek,
         .copy = pi_lfs_copy_async,
         .copy_2d = pi_lfs_copy_2d_async
