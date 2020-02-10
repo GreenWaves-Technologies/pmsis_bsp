@@ -340,6 +340,8 @@ static int32_t pi_lfs_write_async(pi_fs_file_t *file, void *buffer, uint32_t siz
     rc = lfs_file_write(lfs, lfs_file, buffer, size);
     file->size = lfs_file_size(lfs, lfs_file);
     
+    pi_task_push(task);
+    
     return rc;
 }
 
