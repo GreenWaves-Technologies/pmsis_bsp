@@ -381,7 +381,7 @@ pi_lfs_copy_async(pi_fs_file_t *file, uint32_t index, void *buffer, uint32_t siz
 }
 
 static int32_t
-pi_lfs_copy_2d_async(pi_fs_file_t *file, uint32_t index, void *buffer, uint32_t size, uint32_t stride, uint32_t length,
+pi_lfs_copy_2d_async(pi_fs_file_t *file, uint32_t index, void *buffer, uint32_t size, uint32_t  stride, uint32_t length,
                      int32_t ext2loc, pi_task_t *task)
 {
     int32_t rc;
@@ -408,8 +408,9 @@ pi_lfs_copy_2d_async(pi_fs_file_t *file, uint32_t index, void *buffer, uint32_t 
         
         index += stride;
         size -= loop_length;
+        buffer += length;
         
-        rc = lfs_file_seek(lfs, lfs_file, stride, LFS_SEEK_CUR);
+        rc = lfs_file_seek(lfs, lfs_file, stride - length, LFS_SEEK_CUR);
         if(rc < 0) return -1;
     }
     
