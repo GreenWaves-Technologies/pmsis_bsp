@@ -40,6 +40,7 @@ pi_fs_api_t pi_lfs_api;
 static int lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
 {
     pi_lfs_t *pi_lfs = (pi_lfs_t *) c->context;
+    printf("go %s addr 0x%lx, size 0x%lx\n", __func__, pi_lfs->partition_offset + block * c->block_size + off, size);
     
     if(block * c->block_size + off + size > pi_lfs->partition_offset + pi_lfs->partition_size)
         return LFS_ERR_IO;
@@ -47,6 +48,8 @@ static int lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off
     pi_flash_read(pi_lfs->flash,
                   pi_lfs->partition_offset + block * c->block_size + off,
                   buffer, size);
+    printf("exit %s\n", __func__);
+    
     return 0;
 }
 
@@ -54,12 +57,17 @@ static int lfs_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off
 {
     pi_lfs_t *pi_lfs = (pi_lfs_t *) c->context;
     
+    printf("go %s\n", __func__);
+    
     if(block * c->block_size + off + size > pi_lfs->partition_offset + pi_lfs->partition_size)
         return LFS_ERR_IO;
     
     pi_flash_program(pi_lfs->flash,
                      pi_lfs->partition_offset + block * c->block_size + off,
                      buffer, size);
+    
+    printf("exit %s\n", __func__);
+    
     return 0;
 }
 
@@ -320,6 +328,7 @@ static int32_t pi_lfs_read_async(pi_fs_file_t *file, void *buffer, uint32_t size
     lfs_file_t *lfs_file = file->data;
     
     rc = lfs_file_read(lfs, lfs_file, buffer, size);
+    
     pi_task_push(task);
     return rc;
 }
@@ -337,9 +346,16 @@ static int32_t pi_lfs_write_async(pi_fs_file_t *file, void *buffer, uint32_t siz
     lfs_t *lfs = &pi_lfs->lfs;
     lfs_file_t *lfs_file = file->data;
     
+    printf("go %s\n", __func__);
     rc = lfs_file_write(lfs, lfs_file, buffer, size);
-    file->size = lfs_file_size(lfs, lfs_file);
+    printf("after lfs_file_write %s\n", __func__);
     
+    
+    file->size = lfs_file_size(lfs, lfs_file);
+    printf("after fetch size %s\n", __func__);
+    
+    pi_task_push(task);
+    printf("after push %s\n", __func__);
     return rc;
 }
 
