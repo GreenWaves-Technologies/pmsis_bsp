@@ -271,11 +271,17 @@ static pi_fs_file_t *pi_lfs_open(struct pi_device *device, const char *file, int
     lfs_file_t *lfs_file = NULL;
     pi_lfs_t *pi_lfs = device->data;
     lfs_t *lfs = &pi_lfs->lfs;
+    int lfs_flags = LFS_O_RDONLY;
+    
+    if (flags == PI_FS_FLAGS_WRITE)
+    {
+        lfs_flags = LFS_O_CREAT | LFS_O_RDWR;
+    }
     
     lfs_file = pi_fc_l1_malloc(sizeof(lfs_file_t));
     if(lfs_file == NULL) return NULL;
     
-    rc = lfs_file_open(lfs, lfs_file, file, flags);
+    rc = lfs_file_open(lfs, lfs_file, file, lfs_flags);
     if(rc != LFS_ERR_OK) goto error;
     
     pi_file = pi_fc_l1_malloc(sizeof(*pi_file));
