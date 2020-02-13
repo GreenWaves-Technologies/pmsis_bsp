@@ -23,7 +23,7 @@
 #include "stdio.h"
 
 #include "flash_partition.h"
-#include "md5.h"
+#include "bsp/crc/md5.h"
 
 void flash_partition_print_partition_table(const flash_partition_table_t *table)
 {

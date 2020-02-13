@@ -4,7 +4,7 @@ BSP_LFS_SRC = fs/lfs/lfs.c fs/lfs/lfs_util.c fs/lfs/pi_lfs.c
 BSP_FS_SRC = fs/fs.c
 
 BSP_FLASH_SRC = flash/flash.c partition/partition.c partition/flash_partition.c \
-  partition/md5.c
+  crc/md5.c
 BSP_HYPERFLASH_SRC = flash/hyperflash/hyperflash.c
 BSP_SPIFLASH_SRC = flash/spiflash/spiflash.c
 
