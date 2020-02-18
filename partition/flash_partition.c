@@ -208,10 +208,10 @@ pi_err_t flash_partition_table_load(pi_device_t *flash, const flash_partition_ta
     return rc;
 }
 
-void flash_partition_table_free(flash_partition_table_t *table)
+void flash_partition_table_free(const flash_partition_table_t *table)
 {
-    pi_l2_free(table->partitions, sizeof(flash_partition_info_t) * table->header.nbr_of_entries);
-    pi_l2_free(table, sizeof(flash_partition_table_t));
+    pi_l2_free((void *) table->partitions, sizeof(flash_partition_info_t) * table->header.nbr_of_entries);
+    pi_l2_free((void *) table, sizeof(flash_partition_table_t));
 }
 
 

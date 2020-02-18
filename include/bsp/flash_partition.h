@@ -89,7 +89,7 @@ void flash_partition_print_partition_table(const flash_partition_table_t *table)
  */
 pi_err_t flash_partition_table_load(pi_device_t *flash, const flash_partition_table_t **table, uint8_t *nbr_of_entries);
 
-void flash_partition_table_free(flash_partition_table_t *table);
+void flash_partition_table_free(const flash_partition_table_t *table);
 
 const flash_partition_info_t *
 flash_partition_find_first(const flash_partition_table_t *table, pi_partition_type_t type,
