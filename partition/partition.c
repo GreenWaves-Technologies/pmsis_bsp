@@ -25,7 +25,7 @@
 #include "bsp/bsp.h"
 #include "bsp/flash.h"
 #include "bsp/partition.h"
-#include "flash_partition.h"
+#include "bsp/flash_partition.h"
 
 size_t pi_partition_get_size(const pi_partition_t *partition)
 {
