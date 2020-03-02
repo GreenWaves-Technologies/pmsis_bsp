@@ -91,10 +91,14 @@ CFLAGS += -Wno-unused-variable -Wno-unused-function
 CFLAGS += -MMD -MP -c
 CFLAGS += -DCHIP_VERSION=$(TARGET_CHIP_VERSION)
 
+ifeq '$(TARGET_CHIP)' 'GAP9_V2'
+all:
+else
 ifeq '$(TARGET_CHIP)' 'GAP9'
 all: dir header vega_bsp
 else
 all: dir header gapuino_bsp ai_deck_bsp gapoc_a_bsp gapoc_b_bsp
+endif
 endif
 
 dir:
