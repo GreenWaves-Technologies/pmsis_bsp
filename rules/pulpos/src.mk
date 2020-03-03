@@ -17,6 +17,11 @@ PULP_CFLAGS += -DCONFIG_PROFILE_$(BOARD_PROFILE_UPPER)
 
 
 
+# BSP is needed if i2s is used to properly configure pads
+ifeq '$(CONFIG_I2S)' '1'
+CONFIG_BSP = 1
+endif
+
 
 ifeq '$(CONFIG_SPIRAM)' '1'
 PULP_SRCS += ram/ram.c ram/alloc_extern.c ram/spiram/spiram.c
