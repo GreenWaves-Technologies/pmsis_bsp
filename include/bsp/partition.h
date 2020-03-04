@@ -321,7 +321,7 @@ static inline pi_err_t pi_partition_erase(const pi_partition_t *partition, uint3
  * See the documentation of pi_task_t for more details.
  * @return PI_OK if the operation is successfull, PI_FAIL if there was an error.
  */
-static inline pi_err_t pi_partition_format_async(const pi_partition_t *partition, pi_task_t *task);
+//static inline pi_err_t pi_partition_format_async(const pi_partition_t *partition, pi_task_t *task);
 
 /** @brief Erase the whole flash partition.
  *
@@ -333,7 +333,7 @@ static inline pi_err_t pi_partition_format_async(const pi_partition_t *partition
  * The partition descriptor on which to do the operation.
  * @return PI_OK if the operation is successfull, PI_FAIL if there was an error.
  */
-static inline pi_err_t pi_partition_format(const pi_partition_t *partition);
+//static inline pi_err_t pi_partition_format(const pi_partition_t *partition);
 
 /** @brief Get the size in byte of the partition
  *

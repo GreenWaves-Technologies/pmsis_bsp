@@ -55,6 +55,7 @@ void flash_partition_print_partition_table(const flash_partition_table_t *table)
     }
 }
 
+#if 0
 static void print_partition_header(flash_partition_table_header_t *header)
 {
     printf("Partition table header:\n"
@@ -73,6 +74,7 @@ static void print_partition_header(flash_partition_table_header_t *header)
     }
     printf("\n");
 }
+#endif
 
 pi_err_t flash_partition_table_verify(const flash_partition_table_t *table)
 {
