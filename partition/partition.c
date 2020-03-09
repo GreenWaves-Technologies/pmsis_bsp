@@ -78,6 +78,7 @@ pi_partition_find_first(const pi_partition_table_t table, const pi_partition_typ
     partition->subtype = info->subtype;
     partition->size = info->pos.size;
     partition->offset = info->pos.offset;
+    partition->flash = ((const flash_partition_table_t *)table)->flash;
     memcpy(partition->label, info->label, 16);
     partition->label[16] = 0;
     partition->encrypted = false;
