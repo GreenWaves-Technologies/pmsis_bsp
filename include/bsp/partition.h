@@ -70,6 +70,17 @@ typedef enum {
     PI_PARTITION_SUBTYPE_APP_UPDATER_0 = 0x30,  //!< Updater partition 0
     PI_PARTITION_SUBTYPE_APP_UPDATER_1 = 0x31,  //!< Updater partition 1
     
+    PI_PARTITION_SUBTYPE_APP_0 = 0x40,  //!< App partition 0 to run once
+    PI_PARTITION_SUBTYPE_APP_1 = 0x41,  //!< App partition 1 to run once
+    PI_PARTITION_SUBTYPE_APP_2 = 0x42,  //!< App partition 2 to run once
+    PI_PARTITION_SUBTYPE_APP_3 = 0x43,  //!< App partition 3 to run once
+    PI_PARTITION_SUBTYPE_APP_4 = 0x44,  //!< App partition 4 to run once
+    PI_PARTITION_SUBTYPE_APP_5 = 0x45,  //!< App partition 5 to run once
+    PI_PARTITION_SUBTYPE_APP_6 = 0x46,  //!< App partition 6 to run once
+    PI_PARTITION_SUBTYPE_APP_7 = 0x47,  //!< App partition 7 to run once
+    PI_PARTITION_SUBTYPE_APP_8 = 0x48,  //!< App partition 8 to run once
+    PI_PARTITION_SUBTYPE_APP_9 = 0x49,  //!< App partition 9 to run once
+    
     PI_PARTITION_SUBTYPE_DATA_OTA = 0x00,                                    //!< OTA selection partition
     PI_PARTITION_SUBTYPE_DATA_PHY = 0x01,                                    //!< PHY init data partition
     
