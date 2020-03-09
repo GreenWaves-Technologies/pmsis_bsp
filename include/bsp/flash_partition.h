@@ -69,6 +69,7 @@ typedef struct {
 } flash_partition_info_t;
 
 typedef struct {
+    pi_device_t *flash;
 	flash_partition_table_header_t header;
 	flash_partition_info_t *partitions;
 } flash_partition_table_t;
