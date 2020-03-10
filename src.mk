@@ -2,22 +2,24 @@ BSP_READFS_SRC = fs/read_fs/read_fs.c
 BSP_HOSTFS_SRC = fs/host_fs/semihost.c fs/host_fs/host_fs.c
 BSP_LFS_SRC = fs/lfs/lfs.c fs/lfs/lfs_util.c fs/lfs/pi_lfs.c
 BSP_FS_SRC = fs/fs.c
-
 BSP_FLASH_SRC = flash/flash.c partition/partition.c partition/flash_partition.c \
   crc/md5.c
 BSP_HYPERFLASH_SRC = flash/hyperflash/hyperflash.c
 BSP_SPIFLASH_SRC = flash/spiflash/spiflash.c
-
 BSP_HYPERRAM_SRC = ram/hyperram/hyperram.c
 BSP_SPIRAM_SRC = ram/spiram/spiram.c
 BSP_RAM_SRC = ram/ram.c ram/alloc_extern.c
+BSP_OTA_SRC = ota/ota.c ota/ota_utility.c ota/updater.c
+BSP_BOOTLOADER_SRC = bootloader/bootloader_utility.c
 
 COMMON_SRC = \
   $(BSP_FLASH_SRC) \
   $(BSP_FS_SRC) \
   $(BSP_LFS_SRC) \
   $(BSP_READFS_SRC) \
-  $(BSP_HOSTFS_SRC)
+  $(BSP_HOSTFS_SRC) \
+  $(BSP_OTA_SRC) \
+  $(BSP_BOOTLOADER_SRC)
 
 VEGA_SRC = \
   $(COMMON_SRC) \
