@@ -66,10 +66,6 @@ bool bootloader_utility_binary_is_valid(pi_device_t *flash, uint32_t flash_offse
 
 pi_err_t bootloader_utility_fill_state(const flash_partition_table_t *table, bootloader_state_t *bs);
 
-void sav_pad_func_and_cfg();
-
-void restore_pad_func_and_cfg();
-
 pi_err_t bootloader_utility_boot_from_partition(pi_device_t *flash, const uint32_t partition_offset);
 
 pi_partition_subtype_t bootloader_utility_get_boot_partition(const flash_partition_table_t *table, const bootloader_state_t *bs);

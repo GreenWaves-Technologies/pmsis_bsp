@@ -161,32 +161,6 @@ bool bootloader_utility_binary_is_valid(pi_device_t *flash, uint32_t flash_offse
 static uint32_t pad_func_sav[ARCHI_PAD_NB_PADFUNC_REG];
 static uint32_t pad_cfg_sav[ARCHI_PAD_NB_PADCFG_REG];
 
-void sav_pad_func_and_cfg()
-{
-    for (uint32_t i = 0; i < (uint32_t) ARCHI_PAD_NB_PADFUNC_REG; i++)
-    {
-        pad_func_sav[i] = soc_ctrl_safe_padfun_get(i);
-    }
-    
-    for (uint32_t i = 0; i < (uint32_t) ARCHI_PAD_NB_PADCFG_REG; i++)
-    {
-        pad_cfg_sav[i] = soc_ctrl_safe_padcfg_get(i);
-    }
-}
-
-void restore_pad_func_and_cfg()
-{
-    for (uint32_t i = 0; i < (uint32_t) ARCHI_PAD_NB_PADFUNC_REG; i++)
-    {
-        hal_pad_set_padfunc(i, pad_func_sav[i]);
-    }
-    
-    for (uint32_t i = 0; i < (uint32_t) ARCHI_PAD_NB_PADCFG_REG; i++)
-    {
-        soc_ctrl_safe_padcfg_set(i, pad_cfg_sav[i]);
-    }
-}
-
 static void load_segment(pi_device_t *flash, const uint32_t partition_offset, const bin_segment_t *segment)
 {
     static PI_L2 uint8_t
@@ -261,10 +235,6 @@ pi_err_t bootloader_utility_boot_from_partition(pi_device_t *flash, const uint32
     
     SSBL_TRC("Close flash");
     pi_flash_close(flash);
-    
-    // Restore Pad func and config.
-    SSBL_TRC("Restore PAD configuration");
-    restore_pad_func_and_cfg();
     
     SSBL_TRC("Disable global IRQ and timer interrupt");
     disable_irq();
