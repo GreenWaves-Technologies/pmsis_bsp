@@ -305,7 +305,7 @@ static pi_ram_api_t spiram_api = {
 void pi_spiram_conf_init(struct pi_spiram_conf *conf)
 {
     conf->ram.api = &spiram_api;
-    conf->baudrate = 25000000;
+    conf->baudrate = 24000000;
     bsp_spiram_conf_init(conf);
 }
 
