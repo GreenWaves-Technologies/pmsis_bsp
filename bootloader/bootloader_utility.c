@@ -29,7 +29,9 @@
 pi_err_t bootloader_utility_fill_state(const flash_partition_table_t *table, bootloader_state_t *bs)
 {
     pi_err_t rc;
+#if PI_LOG_LOCAL_LEVEL >= PI_LOG_TRACE
     const char *partition_usage;
+#endif
     
     SSBL_TRC("Partition Table:");
     SSBL_TRC("## Label            SSBL usage     Type ST   Offset   Length\n");
@@ -39,7 +41,9 @@ pi_err_t bootloader_utility_fill_state(const flash_partition_table_t *table, boo
     for (uint8_t i = 0; i < table->header.nbr_of_entries; i++)
     {
         const flash_partition_info_t *partition = table->partitions + i;
+#if PI_LOG_LOCAL_LEVEL >= PI_LOG_TRACE
         partition_usage = "unknown";
+#endif
         
         /* valid partition table */
         switch (partition->type)
@@ -49,11 +53,15 @@ pi_err_t bootloader_utility_fill_state(const flash_partition_table_t *table, boo
                 {
                     case PI_PARTITION_SUBTYPE_APP_FACTORY:
                         bs->factory = partition->pos;
+#if PI_LOG_LOCAL_LEVEL >= PI_LOG_TRACE
                         partition_usage = "factory app";
+#endif
                         break;
                     case PI_PARTITION_SUBTYPE_APP_TEST:
                         bs->test = partition->pos;
+#if PI_LOG_LOCAL_LEVEL >= PI_LOG_TRACE
                         partition_usage = "test app";
+#endif
                         break;
                     default:
                         /* OTA binary */
@@ -61,10 +69,14 @@ pi_err_t bootloader_utility_fill_state(const flash_partition_table_t *table, boo
                         {
                             bs->ota[partition->subtype & PART_SUBTYPE_OTA_MASK] = partition->pos;
                             bs->app_count++;
+#if PI_LOG_LOCAL_LEVEL >= PI_LOG_TRACE
                             partition_usage = "OTA app";
+#endif
                         } else
                         {
+#if PI_LOG_LOCAL_LEVEL >= PI_LOG_TRACE
                             partition_usage = "Unknown app";
+#endif
                         }
                         break;
                 }
@@ -74,10 +86,14 @@ pi_err_t bootloader_utility_fill_state(const flash_partition_table_t *table, boo
                 {
                     case PI_PARTITION_SUBTYPE_DATA_OTA: /* ota data */
                         bs->ota_info = partition->pos;
+#if PI_LOG_LOCAL_LEVEL >= PI_LOG_TRACE
                         partition_usage = "OTA data";
+#endif
                         break;
                     default:
+#if PI_LOG_LOCAL_LEVEL >= PI_LOG_TRACE
                         partition_usage = "Unknown data";
+#endif
                         break;
                 }
                 break; /* PARTITION_USAGE_DATA */
@@ -158,9 +174,6 @@ bool bootloader_utility_binary_is_valid(pi_device_t *flash, uint32_t flash_offse
     return is_valid;
 }
 
-static uint32_t pad_func_sav[ARCHI_PAD_NB_PADFUNC_REG];
-static uint32_t pad_cfg_sav[ARCHI_PAD_NB_PADCFG_REG];
-
 static void load_segment(pi_device_t *flash, const uint32_t partition_offset, const bin_segment_t *segment)
 {
     static PI_L2 uint8_t
@@ -238,7 +251,9 @@ pi_err_t bootloader_utility_boot_from_partition(pi_device_t *flash, const uint32
     
     SSBL_TRC("Disable global IRQ and timer interrupt");
     disable_irq();
+#ifdef __FREERTOS__
     NVIC_DisableIRQ(SYSTICK_IRQN);
+#endif
     
     if(differ_copy_of_irq_table)
     {
@@ -252,9 +267,11 @@ pi_err_t bootloader_utility_boot_from_partition(pi_device_t *flash, const uint32
     }
     
     // Flush instruction cache
+#ifdef __FREERTOS__
     SSBL_TRC("Flush icache");
     SCBC_Type *icache = SCBC;
     icache->ICACHE_FLUSH = 1;
+#endif
     
     SSBL_INF("Jump to app entry point at 0x%lX", bin_desc.header.entry);
     jump_to_address(bin_desc.header.entry);
