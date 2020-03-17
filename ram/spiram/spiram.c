@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* 
+/*
  * Authors: Germain Haugou, GreenWaves Technologies (germain.haugou@greenwaves-technologies.com)
  */
 
@@ -57,7 +57,7 @@ static int __spiram_send_cmd(spiram_t *spiram, uint32_t cmd, uint32_t flags)
 
 
 static int spiram_open(struct pi_device *device)
-{  
+{
     RAM_TRACE(POS_LOG_INFO, "Opening SPIRAM device (device: %p)\n", device);
 
     struct pi_spiram_conf *conf = (struct pi_spiram_conf *)device->config;
@@ -198,6 +198,7 @@ static void spiram_close(struct pi_device *device)
     spiram_t *spiram = (spiram_t *)device->data;
     RAM_TRACE(POS_LOG_INFO, "Closing SPIRAM device (device: %p)\n", device);
     pi_spi_close(&spiram->spi_device);
+    extern_alloc_deinit(&spiram->alloc);
     pi_l2_free(spiram->buffer, sizeof(uint32_t));
     pi_fc_l1_free(spiram, sizeof(spiram_t));
 }
