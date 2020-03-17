@@ -57,6 +57,7 @@ static int hyperram_open(struct pi_device *device)
   struct pi_hyper_conf hyper_conf;
   pi_hyper_conf_init(&hyper_conf);
 
+  hyper_conf.burst_length = 4000;
   hyper_conf.id = conf->hyper_itf;
   hyper_conf.cs = conf->hyper_cs;
   hyper_conf.type = PI_HYPER_TYPE_RAM;
