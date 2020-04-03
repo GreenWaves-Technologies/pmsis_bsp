@@ -21,6 +21,7 @@
 #include "pmsis/drivers/pad.h"
 #include "bsp/gapuino.h"
 #include "bsp/camera/himax.h"
+#include "bsp/camera/ov7670.h"
 #include "bsp/display/ili9341.h"
 #include "bsp/flash/hyperflash.h"
 #include "bsp/ram/hyperram.h"
@@ -112,6 +113,20 @@ void bsp_himax_conf_init(struct pi_himax_conf *conf)
 }
 
 int bsp_himax_open(struct pi_himax_conf *conf)
+{
+  __bsp_init_pads();
+  return 0;
+}
+
+
+void bsp_ov7670_conf_init(struct pi_ov7670_conf *conf)
+{
+  __bsp_init_pads();
+  conf->i2c_itf = CONFIG_HIMAX_I2C_ITF;
+  conf->cpi_itf = CONFIG_HIMAX_CPI_ITF;
+}
+
+int bsp_ov7670_open(struct pi_ov7670_conf *conf)
 {
   __bsp_init_pads();
   return 0;
