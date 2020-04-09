@@ -18,37 +18,6 @@
 #define __CAM_OV7670_H__
 
 
-typedef struct {
-  uint8_t addr;
-  uint8_t value;
-} i2c_req_t;
-
-
-typedef struct {
-  struct pi_device cpi_device;
-  struct pi_device i2c_device;
-
-  struct pi_device ov7670_reset;
-  struct pi_device ov7670_pwdn;
-
-  i2c_req_t i2c_req;
-  uint32_t i2c_read_value;
-
-  int is_awake;
-} ov7670_t;
-
-
-typedef i2c_req_t ov7670_reg_init_t;
-
-typedef struct {
-    ov7670_t *ov7670;
-    pi_task_t *task;
-	void *buffer;
-	uint32_t bufferlen;
-} ov7670_callbak;
-
-
-
 /*
  *  Address of Camera Registers
  */

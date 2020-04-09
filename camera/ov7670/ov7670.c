@@ -26,6 +26,39 @@
 #include "bsp/camera/ov7670.h"
 #include "ov7670.h"
 
+typedef struct {
+  uint8_t addr;
+  uint8_t value;
+} i2c_req_t;
+
+
+typedef struct {
+  struct pi_device cpi_device;
+  struct pi_device i2c_device;
+
+  struct pi_device ov7670_reset;
+  struct pi_device ov7670_pwdn;
+
+  i2c_req_t i2c_req;
+  uint32_t i2c_read_value;
+
+  int is_awake;
+} ov7670_t;
+
+
+typedef i2c_req_t ov7670_reg_init_t;
+
+typedef struct {
+    ov7670_t *ov7670;
+    pi_task_t *task;
+	void *buffer;
+	uint32_t bufferlen;
+} ov7670_callbak;
+
+
+
+
+
 
 static ov7670_reg_init_t __ov7670_reg_init[] =
 {
@@ -269,7 +302,7 @@ int32_t __ov7670_open(struct pi_device *device)
     if (pi_i2c_open(&ov7670->i2c_device))
         goto error2;
 
-    pi_cpi_set_format(&ov7670->cpi_device, PI_CPI_FORMAT_BYPASS_BIGEND);
+    pi_cpi_set_format(&ov7670->cpi_device, PI_CPI_FORMAT_BYPASS_LITEND);
 
     __ov7670_reset(ov7670);
     __ov7670_init_regs(ov7670);
