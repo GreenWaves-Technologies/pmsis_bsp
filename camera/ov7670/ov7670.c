@@ -302,7 +302,13 @@ int32_t __ov7670_open(struct pi_device *device)
     if (pi_i2c_open(&ov7670->i2c_device))
         goto error2;
 
+
+    // Workaround for FreeRTOS, TODO to be fixed
+#if defined(__FREERTOS__)
     pi_cpi_set_format(&ov7670->cpi_device, PI_CPI_FORMAT_BYPASS_LITEND);
+#else
+    pi_cpi_set_format(&ov7670->cpi_device, PI_CPI_FORMAT_BYPASS_BIGEND);
+#endif
 
     __ov7670_reset(ov7670);
     __ov7670_init_regs(ov7670);
