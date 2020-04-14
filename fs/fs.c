@@ -171,7 +171,9 @@ void __pi_cl_fs_req(void *_req)
     }
     else
     {
-        req->result = pi_fs_read_async(req->file, req->buffer, req->size, pi_task_callback(&req->task, __pi_cl_fs_req_done, (void *)req));
+        pi_task_callback(&req->task, __pi_cl_fs_req_done, (void *)req);
+        req->result = pi_fs_read_async(req->file, req->buffer, req->size, NULL);
+        pi_task_push(&req->task);
     }
 }
 
