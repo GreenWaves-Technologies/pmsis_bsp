@@ -72,6 +72,12 @@ void bsp_ov7670_conf_init(struct pi_ov7670_conf *conf);
 int bsp_ov7670_open(struct pi_ov7670_conf *conf);
 #endif
 
+#if defined(CONFIG_GC0308)
+#include "bsp/camera/gc0308.h"
+void bsp_gc0308_conf_init(struct pi_gc0308_conf *conf);
+int bsp_gc0308_open(struct pi_gc0308_conf *conf);
+#endif
+
 #if defined(CONFIG_MT9V034)
 #include "bsp/camera/mt9v034.h"
 void bsp_mt9v034_conf_init(struct pi_mt9v034_conf *conf);
