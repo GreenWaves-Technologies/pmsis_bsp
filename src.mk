@@ -131,5 +131,6 @@ GAPOC_B_SRC = \
   ble/ble.c \
   ble/nina_b112/nina_b112.c \
   ble/nina_b112/nina_b112_old.c \
-  camera/thermeye/thermeye.c
+  camera/thermeye/thermeye.c \
+  camera/ov5640/ov5640.c
 endif				# TARGET_CHIP
