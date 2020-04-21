@@ -177,21 +177,21 @@ int bsp_thermeye_open(struct pi_thermeye_conf *conf)
 
 void bsp_ov5640_conf_init(struct pi_ov5640_conf *conf)
 {
-  __bsp_init_pads();
-  conf->i2c_itf = CONFIG_OV5640_I2C_ID;
-  conf->cpi_itf = CONFIG_OV5640_CPI_ID;
+    __bsp_init_pads();
+    conf->i2c_itf = CONFIG_OV5640_I2C_ID;
+    conf->cpi_itf = CONFIG_OV5640_CPI_ID;
 }
 
 int bsp_ov5640_open(struct pi_ov5640_conf *conf)
 {
-  __bsp_init_pads();
-  return 0;
+    __bsp_init_pads();
+    return 0;
 }
 
 
 void bsp_init()
 {
-  __bsp_init_pads();
+    __bsp_init_pads();
 }
 
 

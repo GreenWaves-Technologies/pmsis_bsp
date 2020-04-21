@@ -64,7 +64,7 @@
 #define CONFIG_THERMEYE_GPIO_RESET     ( GPIO_IR_NRST )
 
 #define CONFIG_OV5640_CPI_ID         ( 0 )
-#define CONFIG_OV5640_I2C_ID         ( 0 )
+#define CONFIG_OV5640_I2C_ID         ( 1 )
 
 #define CONFIG_NINA_B112_UART_ID       ( 0 )
 
