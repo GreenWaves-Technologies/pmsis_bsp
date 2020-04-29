@@ -81,7 +81,7 @@ static void __gc0308_reg_write(gc0308_t *gc0308, unsigned int addr, uint8_t valu
     {
         gc0308->i2c_req.value = value;
         gc0308->i2c_req.addr = (uint8_t)addr;
-        pi_i2c_write(&gc0308->i2c_device, (uint8_t *)&gc0308->i2c_req, 1, PI_I2C_XFER_STOP);
+        pi_i2c_write(&gc0308->i2c_device, (uint8_t *)&gc0308->i2c_req, 2, PI_I2C_XFER_STOP);
     }
 }
 
@@ -92,7 +92,7 @@ static uint8_t __gc0308_reg_read(gc0308_t *gc0308, unsigned int addr)
     if (is_i2c_active())
     {
         gc0308->i2c_req.addr = (addr & 0xFF);
-        pi_i2c_write(&gc0308->i2c_device, (uint8_t *)&gc0308->i2c_req, 1, PI_I2C_XFER_NO_STOP);
+        pi_i2c_write(&gc0308->i2c_device, (uint8_t *)&gc0308->i2c_req.addr, 1, PI_I2C_XFER_NO_STOP);
         pi_i2c_read(&gc0308->i2c_device, (uint8_t *)&gc0308->i2c_req.value, 1, PI_I2C_XFER_STOP);
         return gc0308->i2c_req.value;
     }
@@ -187,6 +187,7 @@ int32_t __gc0308_open(struct pi_device *device)
     i2c_conf.itf = conf->i2c_itf;
     i2c_conf.max_baudrate = 200000;
     pi_open_from_conf(&gc0308->i2c_device, &i2c_conf);
+    printf("i2c : %d\n", i2c_conf.itf);
 
     if (pi_i2c_open(&gc0308->i2c_device))
         goto error2;
@@ -199,7 +200,7 @@ int32_t __gc0308_open(struct pi_device *device)
     pi_cpi_set_format(&gc0308->cpi_device, PI_CPI_FORMAT_BYPASS_BIGEND);
 #endif
 
-    __gc0308_reset(gc0308);
+    //__gc0308_reset(gc0308);
     __gc0308_init_regs(gc0308);
 
     return 0;

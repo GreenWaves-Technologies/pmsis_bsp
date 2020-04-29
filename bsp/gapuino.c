@@ -28,6 +28,7 @@
 #include "bsp/ram/hyperram.h"
 #include "bsp/ram/spiram.h"
 #include "bsp/transport/nina_w10.h"
+#include "bsp/camera/ov5640.h"
 
 
 static int __bsp_init_pads_done = 0;
@@ -148,6 +149,19 @@ int bsp_gc0308_open(struct pi_gc0308_conf *conf)
   return 0;
 }
 
+void bsp_ov5640_conf_init(struct pi_ov5640_conf *conf)
+{
+    __bsp_init_pads();
+    conf->i2c_itf = CONFIG_OV5640_I2C_ID;
+    conf->cpi_itf = CONFIG_OV5640_CPI_ID;
+}
+
+int bsp_ov5640_open(struct pi_ov5640_conf *conf)
+{
+    __bsp_init_pads();
+    return 0;
+}
+
 void bsp_ili9341_conf_init(struct pi_ili9341_conf *conf)
 {
   conf->gpio = CONFIG_ILI9341_GPIO;
@@ -167,8 +181,6 @@ int bsp_ili9341_open(struct pi_ili9341_conf *conf)
 
   return 0;
 }
-
-
 
 
 void pi_bsp_init_profile(int profile)
