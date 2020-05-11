@@ -122,8 +122,8 @@ static ov5640_reg_init_t __ov5640_reg_init[] =
     {0x3807, 0x9f}, // VH (VE)
     {0x3808, (320 >> 8)}, // DVPHO
     {0x3809, (320 & 0xff)}, // DVPHO
-    {0x380a, (240 >> 8)}, // DVPVO
-    {0x380b, (240 & 0xff)}, // DVPVO
+    {0x380a, (260 >> 8)}, // DVPVO
+    {0x380b, (260 & 0xff)}, // DVPVO
     {0x380c, 0x07}, // HTS
     {0x380d, 0x58}, // HTS
     {0x380e, 0x01}, // VTS
@@ -445,7 +445,7 @@ int32_t __ov5640_open(struct pi_device *device)
     pi_i2c_conf_init(&i2c_conf);
     i2c_conf.cs = 0x78;
     i2c_conf.itf = conf->i2c_itf;
-    i2c_conf.max_baudrate = 200000;
+    i2c_conf.max_baudrate = 400000;
     pi_open_from_conf(&ov5640->i2c_device, &i2c_conf);
 
     if (pi_i2c_open(&ov5640->i2c_device))
