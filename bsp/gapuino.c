@@ -140,12 +140,13 @@ void bsp_gc0308_conf_init(struct pi_gc0308_conf *conf)
   __bsp_init_pads();
   conf->i2c_itf = CONFIG_HIMAX_I2C_ITF;
   conf->cpi_itf = CONFIG_HIMAX_CPI_ITF;
-  conf->reset_gpio = PI_PAD_32_A13_TIMER0_CH1;
+  conf->reset_gpio = PI_GPIO_A17_PAD_31_B11;
 }
 
 int bsp_gc0308_open(struct pi_gc0308_conf *conf)
 {
   __bsp_init_pads();
+  pi_pad_set_function(PI_PAD_31_B11_TIMER0_CH0, PI_PAD_31_B11_GPIO_A17_FUNC1);
   return 0;
 }
 

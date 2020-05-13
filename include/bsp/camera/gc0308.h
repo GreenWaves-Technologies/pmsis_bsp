@@ -46,7 +46,7 @@ struct pi_gc0308_conf
     connected. */
   int i2c_itf;                  /*!< I2C interface where the camera control
     interface is connected. */
-  char reset_gpio;              /*!< GPIO number for reset the gc0308 camera */
+  pi_gpio_e reset_gpio;              /*!< GPIO number for reset the gc0308 camera */
   char skip_pads_config;        /*!< Skip pads configuration if set to 1. */
   pi_camera_format_e format;    /*!< Camera image resolution. */
 };
