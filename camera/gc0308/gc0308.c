@@ -21,7 +21,6 @@
  */
 
 #include "pmsis.h"
-#include "pmsis/rtos/os_frontend_api/pmsis_time.h"
 #include "bsp/bsp.h"
 #include "bsp/camera/gc0308.h"
 #include "gc0308.h"

@@ -17,6 +17,7 @@
 #ifndef __BSP_CAMERA_GC0308_H__
 #define __BSP_CAMERA_GC0308_H__
 
+#include "pmsis.h"
 #include "bsp/camera.h"
 
 /**
