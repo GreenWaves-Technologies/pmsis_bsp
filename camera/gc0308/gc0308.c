@@ -36,7 +36,7 @@ typedef struct {
     struct pi_device cpi_device;
     struct pi_device i2c_device;
 
-    struct pi_device gc0308_reset;
+    struct pi_device gpio_port;
 
     i2c_req_t i2c_req;
     uint32_t i2c_read_value;
@@ -51,7 +51,6 @@ typedef i2c_req_t gc0308_reg_init_t;
 static gc0308_reg_init_t __gc0308_reg_init[] =
 {
     {0xfe,0x00},
-#if 1//MCK49.5Mz 10fps
     {0x01,0xcb},   //0x28
     {0x02,0x60},   //0x00
     {0x0f,0x18},	 //0x21
@@ -65,21 +64,6 @@ static gc0308_reg_init_t __gc0308_reg_init[] =
     {0xe9,0xE8},
     {0xea,0x09},
     {0xeb,0xC4},
-#else//MCK24MHz10fps
-    {0x0f,0x05},	 //0x00
-    {0x01,0xe1},   //0x6a
-    {0x02,0x70},   //0x70
-    {0xe2,0x00},
-    {0xe3,0x96},
-    {0xe4,0x02},
-    {0xe5,0x58},
-    {0xe6,0x02},
-    {0xe7,0x58},
-    {0xe8,0x02},
-    {0xe9,0x58},
-    {0xea,0x0e},
-    {0xeb,0xa6},
-#endif
     {0xec,0x20},
     {0x05,0x00},
     {0x06,0x00},
@@ -110,9 +94,9 @@ static gc0308_reg_init_t __gc0308_reg_init[] =
     {0x20,0x7f},
     {0x21,0xfa},
     {0x22,0x57},
-    {0x24,0xa2},	//YCbYCr
+    {0x24,0xb1},	//Only Y, can be changed to RGB or YUV
     {0x25,0x0f},
-    {0x26,0x03}, // 0x01
+    {0x26,0x02},    // Vsync Low active, Hsync High active
     {0x28,0x00},
     {0x2d,0x0a},
     {0x2f,0x01},
@@ -341,17 +325,16 @@ static void __gc0308_reg_write(gc0308_t *gc0308, unsigned int addr, uint8_t valu
 
 static uint8_t __gc0308_reg_read(gc0308_t *gc0308, unsigned int addr)
 {
+
     if (is_i2c_active())
     {
         gc0308->i2c_req.addr = (addr & 0xFF);
         pi_i2c_write(&gc0308->i2c_device, (uint8_t *)&gc0308->i2c_req.addr, 1, PI_I2C_XFER_NO_STOP);
-        pi_i2c_read(&gc0308->i2c_device, (uint8_t *)&gc0308->i2c_req.value, 1, PI_I2C_XFER_STOP);
-        return gc0308->i2c_req.value;
+        pi_i2c_read(&gc0308->i2c_device, (uint8_t *)&gc0308->i2c_read_value, 1, PI_I2C_XFER_STOP);
+        return *(volatile uint8_t *)&gc0308->i2c_read_value;
     }
     return 0;
 }
-
-
 
 static void __gc0308_init_regs(gc0308_t *gc0308)
 {
@@ -360,16 +343,27 @@ static void __gc0308_init_regs(gc0308_t *gc0308)
     {
         __gc0308_reg_write(gc0308, __gc0308_reg_init[i].addr, __gc0308_reg_init[i].value);
     }
+
+#ifdef DEBUG
+    uint8_t reg_value = 0;
+    for(i=0; i<(sizeof(__gc0308_reg_init)/sizeof(gc0308_reg_init_t)); i++)
+    {
+        reg_value = __gc0308_reg_read(gc0308, __gc0308_reg_init[i].addr);
+        if (reg_value != __gc0308_reg_init[i].value)
+            printf("error reg: @%X = %X (expected: %X)\n", __gc0308_reg_init[i].addr, reg_value, __gc0308_reg_init[i].value);
+    }
+#endif
+
 }
 
 
 
 static void __gc0308_reset(gc0308_t *gc0308)
 {
-    pi_gpio_pin_write(&gc0308->gc0308_reset, gc0308->conf.reset_gpio, 0);
+    pi_gpio_pin_write(&gc0308->gpio_port, gc0308->conf.reset_gpio, 0);
     pi_time_wait_us(10000);
-    pi_gpio_pin_write(&gc0308->gc0308_reset, gc0308->conf.reset_gpio, 1);
-    pi_time_wait_us(10000);
+    pi_gpio_pin_write(&gc0308->gpio_port, gc0308->conf.reset_gpio, 1);
+    pi_time_wait_us(100000);
 }
 
 
@@ -412,6 +406,7 @@ int32_t __gc0308_open(struct pi_device *device)
     gc0308_t *gc0308 = (gc0308_t *)pmsis_l2_malloc(sizeof(gc0308_t));
     if (gc0308 == NULL) return -1;
 
+    memcpy(&gc0308->conf, conf, sizeof(*conf));
     device->data = (void *)gc0308;
 
     if (bsp_gc0308_open(conf))
@@ -419,11 +414,11 @@ int32_t __gc0308_open(struct pi_device *device)
 
     struct pi_gpio_conf gpio_reset_conf;
     pi_gpio_conf_init(&gpio_reset_conf);
-    pi_open_from_conf(&gc0308->gc0308_reset, &gpio_reset_conf);
-    if (pi_gpio_open(&gc0308->gc0308_reset))
+    pi_open_from_conf(&gc0308->gpio_port, &gpio_reset_conf);
+    if (pi_gpio_open(&gc0308->gpio_port))
         goto error;
 
-    pi_gpio_pin_configure(&gc0308->gc0308_reset, conf->reset_gpio, PI_GPIO_OUTPUT);
+    pi_gpio_pin_configure(&gc0308->gpio_port, conf->reset_gpio, PI_GPIO_OUTPUT);
 
     struct pi_cpi_conf cpi_conf;
     pi_cpi_conf_init(&cpi_conf);
@@ -437,9 +432,8 @@ int32_t __gc0308_open(struct pi_device *device)
     pi_i2c_conf_init(&i2c_conf);
     i2c_conf.cs = 0x42;
     i2c_conf.itf = conf->i2c_itf;
-    i2c_conf.max_baudrate = 400000;
+    i2c_conf.max_baudrate = 300000;
     pi_open_from_conf(&gc0308->i2c_device, &i2c_conf);
-    printf("i2c : %d\n", i2c_conf.itf);
 
     if (pi_i2c_open(&gc0308->i2c_device))
         goto error2;
@@ -452,15 +446,11 @@ int32_t __gc0308_open(struct pi_device *device)
 #endif
 
     __gc0308_reset(gc0308);
-    __gc0308_init_regs(gc0308);
 
-    uint8_t cam_id;
-    cam_id = __gc0308_reg_read(gc0308, 0x00);
-    if(cam_id != 0x9b)
-    {
-        printf("camera open failed: cam_id 0x%X is wrong\n", cam_id );
-        goto error2;
-    }
+    uint8_t cam_id = __gc0308_reg_read(gc0308, 0x00);
+    if (cam_id != 0x9b) goto error2;
+
+    __gc0308_init_regs(gc0308);
 
     return 0;
 
