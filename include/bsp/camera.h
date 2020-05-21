@@ -63,7 +63,7 @@ typedef enum {
 
 /** \brief Open an image sensor device.
  *
- * This function must be called before the Camera device can be used. 
+ * This function must be called before the Camera device can be used.
  * It will do all the needed configuration to make it usable and initialize
  * the handle used to refer to this opened device when calling other functions.
  *
