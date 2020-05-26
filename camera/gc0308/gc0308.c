@@ -311,7 +311,7 @@ static inline int is_i2c_active()
 
 
 
-static void __gc0308_reg_write(gc0308_t *gc0308, unsigned int addr, uint8_t value)
+static void __gc0308_reg_write(gc0308_t *gc0308, uint8_t addr, uint8_t value)
 {
     if (is_i2c_active())
     {
@@ -323,7 +323,7 @@ static void __gc0308_reg_write(gc0308_t *gc0308, unsigned int addr, uint8_t valu
 
 
 
-static uint8_t __gc0308_reg_read(gc0308_t *gc0308, unsigned int addr)
+static uint8_t __gc0308_reg_read(gc0308_t *gc0308, uint8_t addr)
 {
 
     if (is_i2c_active())
@@ -338,8 +338,8 @@ static uint8_t __gc0308_reg_read(gc0308_t *gc0308, unsigned int addr)
 
 static void __gc0308_init_regs(gc0308_t *gc0308)
 {
-    unsigned int i;
-    for(i=0; i<(sizeof(__gc0308_reg_init)/sizeof(gc0308_reg_init_t)); i++)
+    int32_t i;
+    for(i=0; i<(int32_t)(sizeof(__gc0308_reg_init)/sizeof(gc0308_reg_init_t)); i++)
     {
         __gc0308_reg_write(gc0308, __gc0308_reg_init[i].addr, __gc0308_reg_init[i].value);
     }
