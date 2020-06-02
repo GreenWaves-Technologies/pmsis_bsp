@@ -161,6 +161,7 @@ void __pi_cl_fs_req_done(void *_req)
     cl_notify_task_done(&(req->done), req->cid);
 }
 
+
 void __pi_cl_fs_req(void *_req)
 {
     pi_cl_fs_req_t *req = (pi_cl_fs_req_t *)_req;
@@ -175,6 +176,7 @@ void __pi_cl_fs_req(void *_req)
     }
 }
 
+
 void pi_cl_fs_read(pi_fs_file_t *file, void *buffer, uint32_t size, pi_cl_fs_req_t *req)
 {
     req->file = file;
@@ -187,6 +189,31 @@ void pi_cl_fs_read(pi_fs_file_t *file, void *buffer, uint32_t size, pi_cl_fs_req
     pi_task_callback(&req->task, __pi_cl_fs_req, (void *) req);
     pi_cl_send_task_to_fc(&(req->task));
 }
+
+
+void __pi_cl_fs_req_write(void *_req)
+{
+    pi_cl_fs_req_t *req = (pi_cl_fs_req_t *)_req;
+    pi_fs_file_t *file = req->file;
+
+    req->result = pi_fs_write_async(file, req->buffer, req->size, pi_task_callback(&req->task, __pi_cl_fs_req_done, (void *)req));
+}
+
+
+void pi_cl_fs_write(pi_fs_file_t *file, void *buffer, uint32_t size,
+  pi_cl_fs_req_t *req)
+{
+    req->file = file;
+    req->buffer = buffer;
+    req->size = size;
+    req->cid = pi_cluster_id();
+    req->done = 0;
+    req->direct = 0;
+
+    pi_task_callback(&req->task, __pi_cl_fs_req_write, (void *) req);
+    pi_cl_send_task_to_fc(&(req->task));
+}
+
 
 void pi_cl_fs_direct_read(pi_fs_file_t *file, void *buffer, uint32_t size, pi_cl_fs_req_t *req)
 {
