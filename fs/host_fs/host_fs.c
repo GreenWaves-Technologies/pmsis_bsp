@@ -71,6 +71,11 @@ static int32_t __pi_host_fs_read_async(pi_fs_file_t *arg, void *buffer, uint32_t
 {
   pi_host_fs_file_t *file = (pi_host_fs_file_t *)arg;
   int result = size - semihost_read(file->fd, buffer, size);
+  #if defined(__PULP_OS__)
+  task->implem.data[0] = result;
+  #else
+  task->data[0] = result;
+  #endif  /* __PULP_OS__ */
   pi_task_push(task);
   return result;
 }
@@ -79,6 +84,11 @@ static int32_t __pi_host_fs_direct_read_async(pi_fs_file_t *arg, void *buffer, u
 {
   pi_host_fs_file_t *file = (pi_host_fs_file_t *)arg;
   int result = size - semihost_read(file->fd, buffer, size);
+  #if defined(__PULP_OS__)
+  task->implem.data[0] = result;
+  #else
+  task->data[0] = result;
+  #endif  /* __PULP_OS__ */
   pi_task_push(task);
   return result;
 }

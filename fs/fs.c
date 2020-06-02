@@ -158,6 +158,11 @@ int32_t pi_fs_seek(pi_fs_file_t *file, unsigned int offset)
 void __pi_cl_fs_req_done(void *_req)
 {
     pi_cl_fs_req_t *req = (pi_cl_fs_req_t *)_req;
+    #if defined(__PULP_OS__)
+    req->result = req->task.implem.data[0];
+    #else
+    req->result = req->task.data[0];
+    #endif  /* __PULP_OS__ */
     cl_notify_task_done(&(req->done), req->cid);
 }
 
@@ -183,6 +188,7 @@ void pi_cl_fs_read(pi_fs_file_t *file, void *buffer, uint32_t size, pi_cl_fs_req
     req->cid = pi_cluster_id();
     req->done = 0;
     req->direct = 0;
+    req->result = -1;
 
     pi_task_callback(&req->task, __pi_cl_fs_req, (void *) req);
     pi_cl_send_task_to_fc(&(req->task));
@@ -196,6 +202,7 @@ void pi_cl_fs_direct_read(pi_fs_file_t *file, void *buffer, uint32_t size, pi_cl
     req->cid = pi_cluster_id();
     req->done = 0;
     req->direct = 1;
+    req->result = -1;
 
     pi_task_callback(&req->task, __pi_cl_fs_req, (void *) req);
     pi_cl_send_task_to_fc(&(req->task));
