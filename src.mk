@@ -115,8 +115,8 @@ GAPOC_B_SRC = \
   $(BSP_RAM_SRC) \
   ble/ble.c \
   ble/nina_b112/nina_b112.c \
-  ble/nina_b112/nina_b112_old.c
-  camera/pixart/pixart.c \
+  ble/nina_b112/nina_b112_old.c \
+  camera/pixart/pixart.c
 else
 GAPOC_B_SRC = \
   $(COMMON_SRC) \
