@@ -94,7 +94,7 @@ endif
 CFLAGS += -std=gnu99 -mPE=8 -mFC=1 -D__riscv__ -Os -g -Werror -Wall
 CFLAGS += -Wno-unused-variable -Wno-unused-function
 CFLAGS += -MMD -MP -c
-CFLAGS += -DCHIP_VERSION=$(TARGET_CHIP_VERSION)
+CFLAGS += -DCHIP_VERSION=$(TARGET_CHIP_VERSION) -D__PULP_OS__
 CFLAGS += -fdata-sections -ffunction-sections
 
 ifeq '$(TARGET_CHIP)' 'GAP9_V2'
