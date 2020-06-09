@@ -69,10 +69,13 @@ static gc0308_reg_init_t __gc0308_reg_init[] =
     {0x06,0x00},
     {0x07,0x00},
     {0x08,0x00},
-    {0x09,0x01},
-    {0x0a,0xe8},
-    {0x0b,0x02},
-    {0x0c,0x88},
+    
+    //{0x09,0x00}, 
+    //{0x0a,0xF8},
+    
+    //{0x0b,0x01},
+    //{0x0c,0x48},
+
     {0x0d,0x02},
     {0x0e,0x02},
     {0x10,0x26},
@@ -94,7 +97,7 @@ static gc0308_reg_init_t __gc0308_reg_init[] =
     {0x20,0x7f},
     {0x21,0xfa},
     {0x22,0x57},
-    {0x24,0xb1},	//Only Y, can be changed to RGB or YUV
+    {0x24,0xa6},	//Only Y, can be changed to RGB or YUV
     {0x25,0x0f},
     {0x26,0x02},    // Vsync Low active, Hsync High active
     {0x28,0x00},
@@ -113,6 +116,7 @@ static gc0308_reg_init_t __gc0308_reg_init[] =
     {0x3d,0x00},
     {0x3e,0x00},
     {0x3f,0x00},
+    
     {0x50,0x14}, // 0x14
     {0x52,0x41},
     {0x53,0x80},
@@ -279,8 +283,8 @@ static gc0308_reg_init_t __gc0308_reg_init[] =
     {0x43,0xA7},
     {0x44,0xB8},
     {0x45,0xD6},
-    {0x46,0xEE},
-    {0x47,0x0d},
+ //   {0x46,0xEE},
+//    {0x47,0x0d},
     {0x62,0xf7},
     {0x63,0x68},
     {0x64,0xd3},
@@ -432,18 +436,13 @@ int32_t __gc0308_open(struct pi_device *device)
     pi_i2c_conf_init(&i2c_conf);
     i2c_conf.cs = 0x42;
     i2c_conf.itf = conf->i2c_itf;
-    i2c_conf.max_baudrate = 300000;
+    i2c_conf.max_baudrate = 200000;
     pi_open_from_conf(&gc0308->i2c_device, &i2c_conf);
 
     if (pi_i2c_open(&gc0308->i2c_device))
         goto error2;
 
-    // Workaround for FreeRTOS, TODO to be fixed
-#if defined(__FREERTOS__)
     pi_cpi_set_format(&gc0308->cpi_device, PI_CPI_FORMAT_BYPASS_LITEND);
-#else
-    pi_cpi_set_format(&gc0308->cpi_device, PI_CPI_FORMAT_BYPASS_BIGEND);
-#endif
 
     __gc0308_reset(gc0308);
 
@@ -530,7 +529,41 @@ int32_t __gc0308_reg_get(struct pi_device *device, uint32_t addr, uint8_t *value
     *value = __gc0308_reg_read(gc0308, addr);
     return 0;
 }
+/*
+    {0x46,0x80}, //Enable CROP 
+    {0x47,0x78}, //CROP Y0 for QVGA 120 
+    {0x48,0xA0}, //CROP X0 for QVGA 160 
+    
+    {0x49,0x01}, //CROP height for QVGA 240 - 
+    {0x4A,0xF0}, //CROP height for QVGA 240 - 0xF0
 
+    {0x4B,0x01}, //CROP width for QVGA 320 - 0x140
+    {0x4C,0x40}, //CROP width for QVGA 320 - 0x140
+*/
+void __gc0308_set_crop(struct pi_device *device, uint8_t offset_x, uint8_t offset_y,uint16_t width,uint16_t height)
+{
+    uint8_t reg8;
+
+    gc0308_t *gc0308 = (gc0308_t *)device->data;
+    //Enable Crop
+    __gc0308_reg_write(gc0308, 0x46, 0x80);
+    //set x offset
+    __gc0308_reg_write(gc0308, 0x48, offset_x);
+    //set y offset
+    __gc0308_reg_write(gc0308, 0x47, offset_y);
+    //set width
+    reg8 = ( width & 0x00ff);
+    __gc0308_reg_write(gc0308, 0x4C, reg8);
+    reg8 = ( width & 0x0300) >> 8;
+    __gc0308_reg_write(gc0308, 0x4B, reg8);
+    //set height
+    reg8 = ( height & 0x00ff);
+    __gc0308_reg_write(gc0308, 0x4A, reg8);
+    reg8 = ( height & 0x0100) >> 8;
+    __gc0308_reg_write(gc0308, 0x49, reg8);
+    
+    return;
+}
 
 
 static pi_camera_api_t gc0308_api =
@@ -540,7 +573,8 @@ static pi_camera_api_t gc0308_api =
     .control        = &__gc0308_control,
     .capture_async  = &__gc0308_capture_async,
     .reg_set        = &__gc0308_reg_set,
-    .reg_get        = &__gc0308_reg_get
+    .reg_get        = &__gc0308_reg_get,
+    .set_crop       = &__gc0308_set_crop,
 };
 
 
