@@ -12,6 +12,7 @@ BSP_RAM_SRC = ram/ram.c ram/alloc_extern.c
 BSP_OTA_SRC = ota/ota.c ota/ota_utility.c ota/updater.c
 BSP_BOOTLOADER_SRC = bootloader/bootloader_utility.c
 BSP_NINA_SRC = transport/transport.c transport/nina_w10/nina_w10.c
+BSP_24XX1025_SRC = eeprom/24XX1025.c
 
 COMMON_SRC = \
   $(BSP_FLASH_SRC) \
