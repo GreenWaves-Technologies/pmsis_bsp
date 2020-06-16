@@ -141,7 +141,8 @@ typedef struct __pi_eeprom_api_t
 
 static inline int pi_eeprom_open(struct pi_device *device)
 {
-    pi_eeprom_api_t *api = (pi_eeprom_api_t *)device->api;
+    struct pi_eeprom_conf *conf = (struct pi_eeprom_conf *)device->config;
+    pi_eeprom_api_t *api = conf->api;
     return api->open(device);
 }
 
