@@ -171,9 +171,11 @@ int pi_virtual_eeprom_open(struct pi_device *device)
         pi_i2c_slave_set_rx(eeprom_slave->i2c_slave_device.data, eeprom_slave->rx_buffer, RX_BUFFER_SIZE);
         pi_i2c_slave_set_tx(eeprom_slave->i2c_slave_device.data, eeprom_slave->data_buffer, EEPROM_BUFFER_SIZE);
 
+        int irq = disable_irq();
         /* Add to EEPROM list */
         eeprom_slave->next = virtual_eeprom_list;
         virtual_eeprom_list = eeprom_slave;
+        restore_irq(irq);
     }
     else
     {
@@ -196,6 +198,7 @@ static void pi_virtual_eeprom_close(struct pi_device *device)
     pi_l2_free(&eeprom_slave->i2c_slave_device, sizeof(pi_device_t));
 
     /* remove from EEPROM list */
+    int irq = disable_irq();
     eeprom_slave_t *iter = virtual_eeprom_list;
     eeprom_slave_t *pre_iter = virtual_eeprom_list;
 
@@ -219,6 +222,7 @@ static void pi_virtual_eeprom_close(struct pi_device *device)
             break;
         }
     }
+    restore_irq(irq);
 
     return;
 }

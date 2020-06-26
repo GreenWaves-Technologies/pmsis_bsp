@@ -42,8 +42,6 @@ typedef struct __pi_eeprom_slave_api_t pi_eeprom_slave_api_t;
 /**
  * \struct pi_eeprom_slave_conf
  * \brief EEPROM slave configuration structure.
- *
- * TODO
  */
 struct pi_eeprom_slave_conf {
     pi_eeprom_slave_api_t *api;   /*!< Pointer to specific RAM methods. Reserved for
@@ -51,8 +49,6 @@ struct pi_eeprom_slave_conf {
 };
 
 /** \brief Open an eeprom slave
- *
- * TODO
  *
  * \param device    A pointer to the device structure of the device to open.
  *   This structure is allocated by the called and must be kept alive until the
@@ -62,8 +58,6 @@ struct pi_eeprom_slave_conf {
 static inline int pi_eeprom_slave_open(struct pi_device *device);
 
 /** \brief Close an opened eeprom slave
- *
- * TODO
  *
  * \param device    The device structure of the device to close.
  */
