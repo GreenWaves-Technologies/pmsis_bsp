@@ -13,6 +13,7 @@ BSP_OTA_SRC = ota/ota.c ota/ota_utility.c ota/updater.c
 BSP_BOOTLOADER_SRC = bootloader/bootloader_utility.c
 BSP_NINA_SRC = transport/transport.c transport/nina_w10/nina_w10.c
 BSP_24XX1025_SRC = eeprom/24XX1025.c
+BSP_VIRTUAL_EEPROM_SRC = eeprom/virtual_eeprom.c
 
 COMMON_SRC = \
   $(BSP_FLASH_SRC) \
@@ -37,6 +38,7 @@ VEGA_SRC = \
 GAP9_SRC = \
   $(COMMON_SRC) \
   eeprom/24XX1025.c \
+  $(BSP_VIRTUAL_EEPROM_SRC)\
   bsp/gap9_v2.c \
   $(BSP_HYPERFLASH_SRC) \
   $(BSP_HYPERRAM_SRC) \

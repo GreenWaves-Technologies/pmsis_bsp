@@ -23,7 +23,7 @@
 #include "bsp/ram/hyperram.h"
 #include "bsp/ram/spiram.h"
 #include "bsp/eeprom/24xx1025.h"
-
+#include "bsp/eeprom/virtual_eeprom.h"
 
 static int __bsp_init_pads_done = 0;
 
@@ -42,6 +42,11 @@ void bsp_24xx1025_conf_init(struct pi_24xx1025_conf *conf)
   conf->i2c_itf = CONFIG_24XX1025_I2C_ITF;
 }
 
+void bsp_virtual_eeprom_conf_init(struct pi_virtual_eeprom_conf *conf)
+{
+  conf->i2c_addr = CONFIG_VIRTUAL_EEPROM_I2C_ADDR;
+  conf->i2c_itf = CONFIG_VIRTUAL_EEPROM_I2C_ITF;
+}
 
 void bsp_hyperram_conf_init(struct pi_hyperram_conf *conf)
 {
