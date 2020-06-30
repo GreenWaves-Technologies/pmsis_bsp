@@ -72,7 +72,7 @@ static gc0308_reg_init_t __gc0308_reg_init[] =
     
     //{0x09,0x00}, 
     //{0x0a,0xF8},
-    
+    //
     //{0x0b,0x01},
     //{0x0c,0x48},
 
@@ -83,7 +83,9 @@ static gc0308_reg_init_t __gc0308_reg_init[] =
     {0x12,0x2a},
     {0x13,0x00},
     {0x14,0x11},
-    {0x15,0x0a},
+    
+    //{0x15,0x4a},
+    
     {0x16,0x05},
     {0x17,0x01},
     {0x18,0x44},
@@ -364,10 +366,8 @@ static void __gc0308_init_regs(gc0308_t *gc0308)
 
 static void __gc0308_reset(gc0308_t *gc0308)
 {
+    //set to 0 power down pin
     pi_gpio_pin_write(&gc0308->gpio_port, gc0308->conf.reset_gpio, 0);
-    pi_time_wait_us(10000);
-    pi_gpio_pin_write(&gc0308->gpio_port, gc0308->conf.reset_gpio, 1);
-    pi_time_wait_us(100000);
 }
 
 
