@@ -137,12 +137,13 @@ static int hyperflash_open(struct pi_device *device)
     goto error;
   }
 
-  struct pi_hyper_conf hyper_conf;
+  struct pi_hyper_conf hyper_conf = {0};
   pi_hyper_conf_init(&hyper_conf);
 
   hyper_conf.id = (unsigned char) conf->hyper_itf;
   hyper_conf.cs = conf->hyper_cs;
   hyper_conf.type = PI_HYPER_TYPE_FLASH;
+  hyper_conf.xip_en = conf->xip_en;
 
   pi_open_from_conf(&hyperflash->hyper_device, &hyper_conf);
 
@@ -784,4 +785,5 @@ void pi_hyperflash_conf_init(struct pi_hyperflash_conf *conf)
   conf->flash.api = &hyperflash_api;
   bsp_hyperflash_conf_init(conf);
   __flash_conf_init(&conf->flash);
+  conf->xip_en = 0;
 }
