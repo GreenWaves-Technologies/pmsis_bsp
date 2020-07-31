@@ -40,6 +40,8 @@ GAP9_SRC = \
   eeprom/24XX1025.c \
   $(BSP_VIRTUAL_EEPROM_SRC)\
   bsp/gap9_v2.c \
+  camera/camera.c \
+  camera/himax/himax.c \
   $(BSP_HYPERFLASH_SRC) \
   $(BSP_HYPERRAM_SRC) \
   $(BSP_RAM_SRC)
