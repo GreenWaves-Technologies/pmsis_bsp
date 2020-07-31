@@ -141,7 +141,8 @@ static himax_reg_init_t __himax_reg_init[] =
 //    {0x3060, 0x25}, //Clock gating and clock divisors
   {0x3068, 0x20}, //PCLK0 polarity
   {HIMAX_IMG_ORIENTATION, 0x00}, // change the orientation
-  {0x0104, 0x01}
+  {0x0104, 0x01},
+  {HIMAX_VSYNC_HSYNC_PIXEL_SHIFT_EN, 0x01}, // avoid 2 invalid pixel columns
 };
 
 
