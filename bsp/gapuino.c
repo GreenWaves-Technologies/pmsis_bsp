@@ -20,15 +20,17 @@
 #include "pmsis/drivers/gpio.h"
 #include "pmsis/drivers/pad.h"
 #include "bsp/gapuino.h"
-#include "bsp/camera/himax.h"
-#include "bsp/camera/ov7670.h"
-#include "bsp/camera/gc0308.h"
 #include "bsp/display/ili9341.h"
 #include "bsp/flash/hyperflash.h"
 #include "bsp/ram/hyperram.h"
 #include "bsp/ram/spiram.h"
 #include "bsp/transport/nina_w10.h"
+
+#include "bsp/camera/himax.h"
+#include "bsp/camera/ov7670.h"
+#include "bsp/camera/gc0308.h"
 #include "bsp/camera/ov5640.h"
+#include "bsp/camera/pixart.h"
 
 
 static int __bsp_init_pads_done = 0;
@@ -167,6 +169,24 @@ void bsp_ili9341_conf_init(struct pi_ili9341_conf *conf)
     conf->spi_itf = CONFIG_ILI9341_SPI_ITF;
     conf->spi_cs = CONFIG_ILI9341_SPI_CS;
 
+}
+
+void bsp_pixart_conf_init(struct pi_pixart_conf *conf)
+{
+    conf->cpi_itf = CONFIG_PIXART_CPI_ITF;
+    conf->spi_itf = CONFIG_PIXART_SPI_ITF;
+    conf->spi_cs = CONFIG_PIXART_SPI_CS;
+    conf->pwm_id = CONFIG_PIXART_PWM_ID;
+    conf->pwm_channel = CONFIG_PIXART_PWM_CH;
+    conf->gpio_ctl.gpio_power_4V = CONFIG_PIXART_GPIO_PWR_4V;
+    conf->gpio_ctl.gpio_power_2V5 = CONFIG_PIXART_GPIO_PWR_2V5;
+    conf->gpio_ctl.gpio_reset = CONFIG_PIXART_GPIO_RESET;
+}
+
+int bsp_pixart_open(struct pi_pixart_conf *conf)
+{
+    __bsp_init_pads();
+    return 0;
 }
 
 int bsp_ili9341_open(struct pi_ili9341_conf *conf)

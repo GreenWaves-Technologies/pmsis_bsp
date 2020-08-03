@@ -65,6 +65,7 @@ GAPUINO_SRC = \
   camera/ov7670/ov7670.c \
   camera/gc0308/gc0308.c \
   camera/ov5640/ov5640.c \
+  camera/pixart/pixart.c \
   display/display.c \
   display/ili9341/ili9341.c \
   $(BSP_HYPERFLASH_SRC) \
