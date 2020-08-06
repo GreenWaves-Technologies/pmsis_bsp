@@ -512,6 +512,17 @@ int spiflash_copy_2d(struct pi_device *device, uint32_t flash_addr,
 
 static int32_t spiflash_ioctl(struct pi_device *device, uint32_t cmd, void *arg)
 {
+    switch (cmd)
+    {
+        case PI_FLASH_IOCTL_INFO:
+            {
+                struct pi_flash_info *flash_info = (struct pi_flash_info *)arg;
+                flash_info->sector_size = 1<<12;
+                // TODO find a way to know what is on the flash, as they may be a boot binary
+                // For now, leave 128 sectors (512KB) at the begining (max bin size)
+                flash_info->flash_start = flash_info->sector_size * 128;
+            }
+    }
     return 0;
 }
 
