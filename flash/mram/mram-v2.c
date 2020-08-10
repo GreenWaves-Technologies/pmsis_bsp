@@ -20,7 +20,38 @@
 
 #include "pmsis.h"
 #include "bsp/flash/mram.h"
-#include "mram-v2.h"
+#include "archi/chips/gap9_v2/pulp_archi.h"
+
+
+
+#if !defined(__TRACE_ALL__) && !defined(__TRACE_MRAM__)
+#define MRAM_TRACE(x...)
+#else
+#define MRAM_TRACE(level, x...) POS_TRACE(level, "[MRAM] " x)
+#endif
+
+
+typedef struct
+{
+    uint32_t base;
+    pi_task_t *pending_copy;
+    pi_task_t *waiting_first;
+    pi_task_t *waiting_last;
+    int freq;
+    uint32_t pending_data;
+    uint32_t pending_addr;
+    uint32_t pending_size;
+    uint8_t pending_erase;
+    uint8_t tx_channel;
+    uint8_t rx_channel;
+    uint8_t id;
+    uint8_t open_count;
+    uint8_t periph_id;
+} pos_mram_t;
+
+
+
+extern PI_FC_L1 pos_mram_t pos_mram[ARCHI_UDMA_NB_MRAM];
 
 
 #define TRIM_CFG_SIZE 7
@@ -36,14 +67,16 @@
 
 #define SECTOR_ERASE 1
 #define NUM_PULSE    1
+#define POS_MRAM_ROW_SIZE    (1<<(7+4))
 
 #define POS_MRAM_PENDING_ERASE_CHIP   0
 #define POS_MRAM_PENDING_ERASE_SECTOR 1
 #define POS_MRAM_PENDING_ERASE_WORD   2
 #define POS_MRAM_PENDING_PROGRAM      3
 #define POS_MRAM_PENDING_READ         4
+#define POS_MRAM_PENDING_READ_2D      5
 
-#define POS_MRAM_WORD_SIZE_LOG2 3
+#define POS_MRAM_WORD_SIZE_LOG2 4
 
 PI_FC_L1 pos_mram_t pos_mram[ARCHI_UDMA_NB_MRAM];
 
@@ -52,12 +85,15 @@ PI_L2 uint32_t trim_cfg_buffer[TRIM_CFG_SIZE];
 
 void pos_mram_handler_asm();
 
-static void mram_erase_exec(pos_mram_t *mram, uint32_t addr, int size);
-static void mram_erase_sector_exec(pos_mram_t *mram, uint32_t addr);
-static void mram_erase_chip_exec(pos_mram_t *mram);
-static void mram_read_exec(pos_mram_t *mram, uint32_t mram_addr, uint32_t data, uint32_t size);
-static void mram_program_exec(pos_mram_t *mram, uint32_t mram_addr, uint32_t data, uint32_t size);
 
+static void mram_erase_resume(pos_mram_t *mram);
+static void mram_program_resume(pos_mram_t *mram);
+static void mram_erase_async(struct pi_device *device, uint32_t addr, int size, pi_task_t *task);
+static void mram_erase_sector_async(struct pi_device *device, uint32_t addr, pi_task_t *task);
+static void mram_erase_chip_async(struct pi_device *device, pi_task_t *task);
+static void mram_read_async(struct pi_device *device, uint32_t addr, void *data, uint32_t size, pi_task_t *task);
+static void mram_program_async(struct pi_device *device, uint32_t mram_addr, const void *data, uint32_t size, pi_task_t *task);
+static int mram_copy_2d_async(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_task_t *task);
 
 static int pos_get_div(pos_mram_t *mram, int freq)
 {
@@ -87,8 +123,10 @@ static inline void __rt_mram_trim_cfg_exec(pos_mram_t *mram, void *data, void *a
     mode.operation = MRAM_CMD_TRIM_CFG;
     udma_mram_mode_set(base, mode.raw);
 
+    udma_mram_trans_mode_set(base, UDMA_MRAM_TRANS_MODE_AUTO_ENA(1));
     udma_mram_trans_addr_set(base, (uint32_t)data);
     udma_mram_trans_size_set(base, size);
+    udma_mram_enable_2d_set(mram->base, 0);
     udma_mram_trans_cfg_set(base, UDMA_MRAM_TRANS_CFG_VALID(1));
 
 }
@@ -132,36 +170,55 @@ static void __rt_mram_do_trim(pos_mram_t *mram, void *_trim_cfg_buff)
 
 static void pos_mram_handle_event(int event, void *arg)
 {
-    pos_mram_t *mram = (pos_mram_t *)arg;
-    pi_task_t *task = mram->pending_copy;
-    mram->pending_copy = NULL;
-
-    pos_task_push_locked(task);
-
-    task = mram->waiting_first;
-    if (task)
+    pi_device_t *dev = (pi_device_t *)arg;
+    pos_mram_t *mram = (pos_mram_t *)(pos_mram_t *)dev->data;
+  
+    if (mram->pending_size)
     {
-        mram->waiting_first = task->next;
-        mram->pending_copy = task;
+      if (mram->pending_erase)
+        mram_erase_resume(mram);
+      else
+        mram_program_resume(mram);
+    }
+    else
+    {
+      pi_task_t *task = mram->pending_copy;
+      mram->pending_copy = NULL;
 
-        switch (task->data[0])
-        {
-            case POS_MRAM_PENDING_ERASE_CHIP:
-                mram_erase_chip_exec(mram);
-                break;
-            case POS_MRAM_PENDING_ERASE_SECTOR:
-                mram_erase_sector_exec(mram, task->data[1]);
-                break;
-            case POS_MRAM_PENDING_ERASE_WORD:
-                mram_erase_exec(mram, task->data[1], task->data[2]);
-                break;
-            case POS_MRAM_PENDING_PROGRAM:
-                mram_program_exec(mram, task->data[1], task->data[2], task->data[3]);
-              break;
-            case POS_MRAM_PENDING_READ:
-                mram_read_exec(mram, task->data[1], task->data[2], task->data[3]);
-              break;
-        }
+      pos_task_push_locked(task);
+
+      task = mram->waiting_first;
+      if (task)
+      {
+          mram->waiting_first = task->next;
+
+          switch (task->data[0])
+          {
+              case POS_MRAM_PENDING_ERASE_CHIP:
+                  mram_erase_chip_async(dev, task);
+                  break;
+
+              case POS_MRAM_PENDING_ERASE_SECTOR:
+                  mram_erase_sector_async(dev, task->data[1], task);
+                  break;
+
+              case POS_MRAM_PENDING_ERASE_WORD:
+                  mram_erase_async(dev, task->data[1], task->data[2], task);
+                  break;
+
+              case POS_MRAM_PENDING_PROGRAM:
+                  mram_program_async(dev, task->data[1], (void *)task->data[2], task->data[3], task);
+                  break;
+
+              case POS_MRAM_PENDING_READ:
+                  mram_read_async(dev, task->data[1], (void *)task->data[2], task->data[3], task);
+                  break;
+
+              case POS_MRAM_PENDING_READ_2D:
+                  mram_copy_2d_async(dev, task->data[1], (void *)task->data[2], task->data[3], task->data[4], task->data[5], task->data[6], task);
+                  break;
+          }
+      }
     }
 }
 
@@ -178,6 +235,8 @@ static int mram_open(struct pi_device *device)
 
     uint32_t base = mram->base;
 
+    device->data = (void *)mram;
+
     mram->open_count++;
     if (mram->open_count == 1)
     {
@@ -190,20 +249,18 @@ static int mram_open(struct pi_device *device)
         udma_clockgate_clr(ARCHI_UDMA_ADDR, mram->periph_id);
 
         soc_eu_fcEventMask_setEvent(ARCHI_SOC_EVENT_MRAM_ERASE);
-        pos_soc_event_register_callback(ARCHI_SOC_EVENT_MRAM_ERASE, pos_mram_handle_event, (void *)mram);
+        pos_soc_event_register_callback(ARCHI_SOC_EVENT_MRAM_ERASE, pos_mram_handle_event, (void *)device);
         soc_eu_fcEventMask_setEvent(ARCHI_SOC_EVENT_MRAM_TX);
-        pos_soc_event_register_callback(ARCHI_SOC_EVENT_MRAM_TX, pos_mram_handle_event, (void *)mram);
+        pos_soc_event_register_callback(ARCHI_SOC_EVENT_MRAM_TX, pos_mram_handle_event, (void *)device);
         soc_eu_fcEventMask_setEvent(ARCHI_SOC_EVENT_MRAM_RX);
-        pos_soc_event_register_callback(ARCHI_SOC_EVENT_MRAM_RX, pos_mram_handle_event, (void *)mram);
+        pos_soc_event_register_callback(ARCHI_SOC_EVENT_MRAM_RX, pos_mram_handle_event, (void *)device);
         soc_eu_fcEventMask_setEvent(ARCHI_SOC_EVENT_MRAM_TRIM);
-        pos_soc_event_register_callback(ARCHI_SOC_EVENT_MRAM_TRIM, pos_mram_handle_event, (void *)mram);
+        pos_soc_event_register_callback(ARCHI_SOC_EVENT_MRAM_TRIM, pos_mram_handle_event, (void *)device);
 
         udma_mram_rx_dest_set(base, mram->rx_channel);
         udma_mram_tx_dest_set(base, mram->tx_channel);
 
         udma_mram_clk_div_set(base, pos_get_div(mram, conf->baudrate));
-
-        udma_mram_trans_mode_set(base, UDMA_MRAM_TRANS_MODE_AUTO_ENA(1));
 
         udma_mram_ier_set(base,
              UDMA_MRAM_IER_ERASE_DONE(1) |
@@ -244,8 +301,6 @@ static int mram_open(struct pi_device *device)
 
         __rt_mram_do_trim(mram, trim_cfg_buffer);
     }
-
-    device->data = (void *)mram;
 
     return 0;
 }
@@ -331,83 +386,19 @@ static inline __attribute__((always_inline)) void pos_mram_enqueue_pending_copy_
 }
 
 
-void pos_mram_copy_2d(struct pi_device *device,
-  uint32_t mram_addr, void *addr, uint32_t size, uint32_t stride, uint32_t length, struct pi_task *task, int is_read)
-{
-    pos_mram_t *mram = (pos_mram_t *)device->data;
-    
-    MRAM_TRACE(POS_LOG_TRACE, "%s transfer (device: %p, mram_addr: 0x%lx, buffer: %p, size: 0x%lx, stride: 0x%lx, length: 0x%lx, task: %p)\n", stride == 0 ? (is_read ? "Read" : "Write") : (is_read ? "2D read" : "2D write"), device, mram_addr, addr, size, stride, length, task);
-
-    int irq = hal_irq_disable();
-
-    if (likely(!mram->pending_copy))
-    {
-        mram->pending_copy = task;
-
-        pos_mram_copy_2d_exec(mram, (uint32_t)addr, size, mram_addr, stride, length, is_read);
-
-        hal_irq_restore(irq);
-
-        return;
-    }
-
-    pos_mram_enqueue_pending_copy_7(mram, task, POS_MRAM_PENDING_READ, (int)addr, size, mram_addr, stride, length, is_read);
-
-    hal_irq_restore(irq);
-}
-
-
 static void __attribute__((constructor)) pos_mram_init()
 {
     for (int i=0; i<ARCHI_UDMA_NB_MRAM; i++)
     {
         pos_mram_t *mram = &pos_mram[i];
         mram->open_count = 0;
+        mram->pending_size = 0;
         mram->pending_copy = NULL;
         mram->waiting_first = NULL;
         mram->id = i;
         mram->periph_id = ARCHI_UDMA_MRAM_ID(i);
         mram->base = UDMA_MRAM_ADDR(i);
-        //pos_irq_mask_set(1<<(ARCHI_FC_EVT_MRAM0 + i));
     }
-
-    //pos_irq_set_handler(ARCHI_FC_EVT_MRAM0, pos_mram_handler_asm);
-}
-
-void pos_mram_handler()
-{
-    pos_mram_t *mram = &pos_mram[0];
-
-    pi_task_t *task = mram->pending_copy;
-    mram->pending_copy = NULL;
-
-    pos_task_push_locked(task);
-
-    task = mram->waiting_first;
-    if (task)
-    {
-        mram->waiting_first = task->next;
-        mram->pending_copy = task;
-
-        pos_mram_copy_2d_exec(mram, task->data[0], task->data[1], task->data[2], task->data[3], task->data[4], task->data[5]);
-    }
-}
-
-
-static void mram_read_exec(pos_mram_t *mram, uint32_t mram_addr, uint32_t data, uint32_t size)
-{
-    unsigned int base = mram->base;
-    
-    udma_mram_mode_t mode = { .raw = udma_mram_mode_get(base) };
-    mode.operation = MRAM_CMD_READ;
-    udma_mram_mode_set(base, mode.raw);
-
-    udma_mram_trans_addr_set(mram->base, data);
-    udma_mram_trans_size_set(mram->base, size);
-    udma_mram_ext_addr_set(mram->base, mram_addr);
-    udma_mram_trans_cfg_set(mram->base, UDMA_MRAM_TRANS_CFG_RXTX(1) | UDMA_MRAM_TRANS_CFG_VALID(1));
-
-    udma_mram_trans_cfg_set(base, UDMA_MRAM_TRANS_CFG_VALID(1));
 }
 
 
@@ -424,7 +415,20 @@ static void mram_read_async(struct pi_device *device, uint32_t addr, void *data,
     {
         mram->pending_copy = task;
 
-        mram_read_exec(mram, addr, (uint32_t)data, size);
+        unsigned int base = mram->base;
+    
+        udma_mram_mode_t mode = { .raw = udma_mram_mode_get(base) };
+        mode.operation = MRAM_CMD_READ;
+        udma_mram_mode_set(base, mode.raw);
+
+        udma_mram_trans_mode_set(base, UDMA_MRAM_TRANS_MODE_AUTO_ENA(1));
+        udma_mram_trans_addr_set(mram->base, (uint32_t)data);
+        udma_mram_trans_size_set(mram->base, size);
+        udma_mram_ext_addr_set(mram->base, addr);
+        udma_mram_enable_2d_set(mram->base, 0);
+        udma_mram_trans_cfg_set(mram->base, UDMA_MRAM_TRANS_CFG_RXTX(1) | UDMA_MRAM_TRANS_CFG_VALID(1));
+
+        udma_mram_trans_cfg_set(base, UDMA_MRAM_TRANS_CFG_VALID(1));
 
         hal_irq_restore(irq);
 
@@ -437,18 +441,30 @@ static void mram_read_async(struct pi_device *device, uint32_t addr, void *data,
 }
 
 
-static void mram_program_exec(pos_mram_t *mram, uint32_t mram_addr, uint32_t data, uint32_t size)
+static void mram_program_resume(pos_mram_t *mram)
 {
+    unsigned int iter_size = POS_MRAM_ROW_SIZE - (mram->pending_addr & (POS_MRAM_ROW_SIZE - 1));
+    if (iter_size > mram->pending_size)
+      iter_size = mram->pending_size;
+
+    uint32_t addr = mram->pending_addr;
+    uint32_t data = mram->pending_data;
     unsigned int base = mram->base;
-    
+
     udma_mram_mode_t mode = { .raw = udma_mram_mode_get(base) };
     mode.operation = MRAM_CMD_PROGRAM;
     udma_mram_mode_set(base, mode.raw);
 
-    udma_mram_trans_addr_set(base, data);
-    udma_mram_trans_size_set(base, size);
-    udma_mram_ext_addr_set(base, mram_addr);
+    udma_mram_trans_mode_set(base, UDMA_MRAM_TRANS_MODE_AUTO_ENA(1));
+    udma_mram_trans_addr_set(base, (uint32_t)data);
+    udma_mram_trans_size_set(base, iter_size);
+    udma_mram_ext_addr_set(base, addr);
+    udma_mram_enable_2d_set(mram->base, 0);
     udma_mram_trans_cfg_set(base, UDMA_MRAM_TRANS_CFG_RXTX(0) | UDMA_MRAM_TRANS_CFG_VALID(1));
+
+    mram->pending_addr += iter_size;
+    mram->pending_data += iter_size;
+    mram->pending_size -= iter_size;
 }
 
 
@@ -465,7 +481,12 @@ static void mram_program_async(struct pi_device *device, uint32_t mram_addr, con
     {
         mram->pending_copy = task;
 
-        mram_program_exec(mram, mram_addr, (uint32_t)data, size);
+        mram->pending_addr = mram_addr;
+        mram->pending_data = (uint32_t)data;
+        mram->pending_size = size;
+        mram->pending_erase = 0;
+
+        mram_program_resume(mram);
 
         hal_irq_restore(irq);
 
@@ -475,18 +496,6 @@ static void mram_program_async(struct pi_device *device, uint32_t mram_addr, con
     pos_mram_enqueue_pending_copy_4(mram, task, POS_MRAM_PENDING_PROGRAM, mram_addr, (uint32_t)data, size);
 
     hal_irq_restore(irq);
-}
-
-
-static void mram_erase_chip_exec(pos_mram_t *mram)
-{
-    unsigned int base = mram->base;
-    
-    udma_mram_mode_t mode = { .raw = udma_mram_mode_get(base) };
-    mode.operation = MRAM_CMD_ERASE_CHIP;
-    udma_mram_mode_set(base, mode.raw);
-
-    udma_mram_trans_cfg_set(base, UDMA_MRAM_TRANS_CFG_VALID(1));
 }
 
 
@@ -503,7 +512,14 @@ static void mram_erase_chip_async(struct pi_device *device, pi_task_t *task)
     {
         mram->pending_copy = task;
 
-        mram_erase_chip_exec(mram);
+        unsigned int base = mram->base;
+        
+        udma_mram_mode_t mode = { .raw = udma_mram_mode_get(base) };
+        mode.operation = MRAM_CMD_ERASE_CHIP;
+        udma_mram_mode_set(base, mode.raw);
+
+        udma_mram_trans_mode_set(base, UDMA_MRAM_TRANS_MODE_AUTO_ENA(0));
+        udma_mram_trans_cfg_set(base, UDMA_MRAM_TRANS_CFG_VALID(1));
 
         hal_irq_restore(irq);
 
@@ -513,19 +529,6 @@ static void mram_erase_chip_async(struct pi_device *device, pi_task_t *task)
     pos_mram_enqueue_pending_copy_3(mram, task, POS_MRAM_PENDING_ERASE_CHIP, 0, 0);
 
     hal_irq_restore(irq);
-}
-
-
-static void mram_erase_sector_exec(pos_mram_t *mram, uint32_t addr)
-{
-    unsigned int base = mram->base;
-    
-    udma_mram_mode_t mode = { .raw = udma_mram_mode_get(base) };
-    mode.operation = MRAM_CMD_ERASE_SECT;
-    udma_mram_mode_set(base, mode.raw);
-
-    udma_mram_erase_addr_set(base, (((unsigned int)addr) + ARCHI_MRAM_ADDR) >> POS_MRAM_WORD_SIZE_LOG2);
-    udma_mram_trans_cfg_set(base, UDMA_MRAM_TRANS_CFG_VALID(1));
 }
 
 
@@ -542,7 +545,15 @@ static void mram_erase_sector_async(struct pi_device *device, uint32_t addr, pi_
     {
         mram->pending_copy = task;
 
-        mram_erase_sector_exec(mram, addr);
+        unsigned int base = mram->base;
+        
+        udma_mram_mode_t mode = { .raw = udma_mram_mode_get(base) };
+        mode.operation = MRAM_CMD_ERASE_SECT;
+        udma_mram_mode_set(base, mode.raw);
+
+        udma_mram_trans_mode_set(base, UDMA_MRAM_TRANS_MODE_AUTO_ENA(0));
+        udma_mram_erase_addr_set(base, ((unsigned int)addr) + ARCHI_MRAM_ADDR);
+        udma_mram_trans_cfg_set(base, UDMA_MRAM_TRANS_CFG_VALID(1));
 
         hal_irq_restore(irq);
 
@@ -555,17 +566,26 @@ static void mram_erase_sector_async(struct pi_device *device, uint32_t addr, pi_
 }
 
 
-static void mram_erase_exec(pos_mram_t *mram, uint32_t addr, int size)
+static void mram_erase_resume(pos_mram_t *mram)
 {
+    unsigned int iter_size = POS_MRAM_ROW_SIZE - (mram->pending_addr & (POS_MRAM_ROW_SIZE - 1));
+    if (iter_size > mram->pending_size)
+      iter_size = mram->pending_size;
+
+    uint32_t addr = mram->pending_addr;
     unsigned int base = mram->base;
 
     udma_mram_mode_t mode = { .raw = udma_mram_mode_get(base) };
     mode.operation = MRAM_CMD_ERASE_WORD;
     udma_mram_mode_set(base, mode.raw);
 
-    udma_mram_erase_addr_set(base, (((unsigned int)addr) + ARCHI_MRAM_ADDR) >> POS_MRAM_WORD_SIZE_LOG2);
-    udma_mram_erase_size_set(base, (size >> POS_MRAM_WORD_SIZE_LOG2) - 1);
+    udma_mram_trans_mode_set(base, UDMA_MRAM_TRANS_MODE_AUTO_ENA(0));
+    udma_mram_erase_addr_set(base, ((unsigned int)addr) + ARCHI_MRAM_ADDR);
+    udma_mram_erase_size_set(base, (iter_size >> POS_MRAM_WORD_SIZE_LOG2) - 1);
     udma_mram_trans_cfg_set(base, UDMA_MRAM_TRANS_CFG_VALID(1));
+
+    mram->pending_addr += iter_size;
+    mram->pending_size -= iter_size;
 }
 
 
@@ -582,7 +602,11 @@ static void mram_erase_async(struct pi_device *device, uint32_t addr, int size, 
     {
         mram->pending_copy = task;
 
-        mram_erase_exec(mram, addr, size);
+        mram->pending_addr = addr;
+        mram->pending_size = size;
+        mram->pending_erase = 1;
+
+        mram_erase_resume(mram);
 
         hal_irq_restore(irq);
 
@@ -598,6 +622,11 @@ static void mram_erase_async(struct pi_device *device, uint32_t addr, int size, 
 
 static int mram_copy_async(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, int ext2loc, pi_task_t *task)
 {
+    if (!ext2loc)
+        mram_program_async(device, flash_addr, buffer, size, task);
+    else
+        mram_read_async(device, flash_addr, buffer, size, task);
+
     return 0;
 }
 
@@ -605,6 +634,36 @@ static int mram_copy_async(struct pi_device *device, uint32_t flash_addr, void *
 
 static int mram_copy_2d_async(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc, pi_task_t *task)
 {
+    if (!ext2loc)
+        return -1;
+
+    pos_mram_t *mram = (pos_mram_t *)device->data;
+
+    MRAM_TRACE(POS_LOG_TRACE, "2D read transfer (device: %p, mram_addr: 0x%lx, buffer: %p, size: 0x%lx, stride: 0x%lx, length: 0x%lx, task: %p)\n", device, flash_addr, buffer, size, stride, length, task);
+
+    int irq = hal_irq_disable();
+
+    if (likely(!mram->pending_copy))
+    {
+        mram->pending_copy = task;
+
+        udma_mram_trans_addr_set(mram->base, (uint32_t)buffer);
+        udma_mram_trans_size_set(mram->base, size);
+        udma_mram_ext_addr_set(mram->base, flash_addr);
+        udma_mram_line_2d_set(mram->base, length);
+        udma_mram_stride_2d_set(mram->base, stride);
+        udma_mram_enable_2d_set(mram->base, 1);
+        udma_mram_trans_cfg_set(mram->base, UDMA_MRAM_TRANS_CFG_RXTX(1) | UDMA_MRAM_TRANS_CFG_VALID(1));
+
+        hal_irq_restore(irq);
+
+        return 0;
+    }
+
+    pos_mram_enqueue_pending_copy_7(mram, task, POS_MRAM_PENDING_READ_2D, flash_addr, (uint32_t)buffer, size, stride, length, ext2loc);
+
+    hal_irq_restore(irq);
+
     return 0;
 }
 
@@ -659,18 +718,34 @@ static inline int mram_reg_get(struct pi_device *device, uint32_t pi_flash_addr,
     return 0;
 }
 
-static inline int mram_copy(struct pi_device *device, uint32_t pi_flash_addr, void *buffer, uint32_t size, int ext2loc)
+static inline int mram_copy(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, int ext2loc)
 {
+    struct pi_task task;
+    //mram_async(device, flash_addr, buffer, size, ext2loc, pi_task_block(&task));
+    pi_task_wait_on(&task);
     return 0;
 }
 
-static inline int mram_copy_2d(struct pi_device *device, uint32_t pi_flash_addr, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc)
+static inline int mram_copy_2d(struct pi_device *device, uint32_t flash_addr, void *buffer, uint32_t size, uint32_t stride, uint32_t length, int ext2loc)
 {
+    struct pi_task task;
+    mram_copy_2d_async(device, flash_addr, buffer, size, stride, length, ext2loc, pi_task_block(&task));
+    pi_task_wait_on(&task);
     return 0;
 }
 
 static int32_t mram_ioctl(struct pi_device *device, uint32_t cmd, void *arg)
 {
+    switch (cmd)
+    {
+        case PI_FLASH_IOCTL_INFO:
+        {
+            struct pi_flash_info *flash_info = (struct pi_flash_info *)arg;
+            flash_info->sector_size = 1<<13;
+            // TODO find a way to know what is on the flash, as they may be a boot binary
+            flash_info->flash_start = 1<<16;
+        }
+    }
     return 0;
 }
 
@@ -716,5 +791,5 @@ void pi_mram_conf_init(struct pi_mram_conf *conf)
 {
     conf->flash.api = &mram_api;
     conf->itf = 0;
-    conf->baudrate = 0;
+    conf->baudrate = 10000000;
 }
