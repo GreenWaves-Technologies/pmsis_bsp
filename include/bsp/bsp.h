@@ -122,6 +122,10 @@ void bsp_hyperflash_conf_init(struct pi_hyperflash_conf *conf);
 int bsp_hyperflash_open(struct pi_hyperflash_conf *conf);
 #endif
 
+#if defined(CONFIG_MRAM)
+#include "bsp/flash/mram.h"
+#endif
+
 #if defined(CONFIG_SPIFLASH)
 #include "bsp/flash/spiflash.h"
 void bsp_spiflash_conf_init(struct pi_spiflash_conf *conf);

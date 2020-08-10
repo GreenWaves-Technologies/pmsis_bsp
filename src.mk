@@ -14,6 +14,7 @@ BSP_BOOTLOADER_SRC = bootloader/bootloader_utility.c
 BSP_NINA_SRC = transport/transport.c transport/nina_w10/nina_w10.c
 BSP_24XX1025_SRC = eeprom/24XX1025.c
 BSP_VIRTUAL_EEPROM_SRC = eeprom/virtual_eeprom.c
+BSP_MRAM_SRC = flash/mram/mram-v2.c
 
 COMMON_SRC = \
   $(BSP_FLASH_SRC) \
