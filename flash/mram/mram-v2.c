@@ -260,8 +260,6 @@ static int mram_open(struct pi_device *device)
         udma_mram_rx_dest_set(base, mram->rx_channel);
         udma_mram_tx_dest_set(base, mram->tx_channel);
 
-        udma_mram_clk_div_set(base, pos_get_div(mram, conf->baudrate));
-
         udma_mram_ier_set(base,
              UDMA_MRAM_IER_ERASE_DONE(1) |
              UDMA_MRAM_IER_PROGRAM_DONE(1) |
@@ -275,7 +273,7 @@ static int mram_open(struct pi_device *device)
         udma_mram_clk_div_set(base,
             UDMA_MRAM_CLK_DIV_ENABLE(1)   |
             UDMA_MRAM_CLK_DIV_VALID(1)    |
-            UDMA_MRAM_CLK_DIV_DATA(2)
+            UDMA_MRAM_CLK_DIV_DATA(pos_get_div(mram, conf->baudrate))
         );
 
         // Set PORb, RETb, RSTb, NVR, TMEN, AREF, DPD, ECCBYPS to 0
