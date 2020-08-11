@@ -47,8 +47,11 @@ static void __bsp_init_pads()
     if (!__bsp_init_pads_done)
     {
         __bsp_init_pads_done = 1;
-        uint32_t pads_value[] = {0x00055500, 0x0f450000, 0x003fffff, 0x00000000};
-        pi_pad_init(pads_value);
+
+        // This has been removed because it is messing-up pad configs done by user
+        // The pads should now be configured by the drivers themselves
+        //uint32_t pads_value[] = {0x00055500, 0x0f450000, 0x003fffff, 0x00000000};
+        //pi_pad_init(pads_value);
         __gpio_init();
     }
 }
@@ -106,7 +109,6 @@ void bsp_spiram_conf_init(struct pi_spiram_conf *conf)
 
 int bsp_spiram_open(struct pi_spiram_conf *conf)
 {
-    __bsp_init_pads();
     return 0;
 }
 
@@ -120,8 +122,6 @@ void bsp_ili9341_conf_init(struct pi_ili9341_conf *conf)
 
 int bsp_ili9341_open(struct pi_ili9341_conf *conf)
 {
-    __bsp_init_pads();
-
     if (!conf->skip_pads_config)
     {
         pi_pad_set_function(CONFIG_ILI9341_GPIO_PAD, CONFIG_ILI9341_GPIO_PAD_FUNC);
@@ -143,8 +143,6 @@ int bsp_nina_b112_open(struct pi_nina_b112_conf *conf)
 
 int bsp_nina_b112_open_old()
 {
-    __bsp_init_pads();
-
     pi_pad_set_function(CONFIG_HYPERBUS_DATA6_PAD, CONFIG_UART_RX_PAD_FUNC);
     return 0;
 }
@@ -174,14 +172,12 @@ int bsp_thermeye_open(struct pi_thermeye_conf *conf)
 
 void bsp_ov5640_conf_init(struct pi_ov5640_conf *conf)
 {
-    __bsp_init_pads();
     conf->i2c_itf = CONFIG_OV5640_I2C_ID;
     conf->cpi_itf = CONFIG_OV5640_CPI_ID;
 }
 
 int bsp_ov5640_open(struct pi_ov5640_conf *conf)
 {
-    __bsp_init_pads();
     return 0;
 }
 
