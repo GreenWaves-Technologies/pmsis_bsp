@@ -748,7 +748,7 @@ static inline int hyperflash_copy_2d(struct pi_device *device, uint32_t pi_flash
 {
   pi_task_t task;
   pi_task_block(&task);
-  if (hyperflash_copy_2d_async(device, pi_flash_addr, buffer, size, ext2loc, stride, length, &task))
+  if (hyperflash_copy_2d_async(device, pi_flash_addr, buffer, size, stride, length, ext2loc, &task))
     return -1;
   pi_task_wait_on(&task);
   return 0;
