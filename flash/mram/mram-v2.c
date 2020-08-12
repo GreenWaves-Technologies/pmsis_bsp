@@ -83,9 +83,6 @@ PI_FC_L1 pos_mram_t pos_mram[ARCHI_UDMA_NB_MRAM];
 PI_L2 uint32_t trim_cfg_buffer[TRIM_CFG_SIZE];
 
 
-void pos_mram_handler_asm();
-
-
 static void mram_erase_resume(pos_mram_t *mram);
 static void mram_program_resume(pos_mram_t *mram);
 static void mram_erase_async(struct pi_device *device, uint32_t addr, int size, pi_task_t *task);
@@ -449,6 +446,9 @@ static void mram_program_resume(pos_mram_t *mram)
     uint32_t data = mram->pending_data;
     unsigned int base = mram->base;
 
+    MRAM_TRACE(POS_LOG_TRACE, "Program resume (mram: %p, mram_addr: 0x%lx, data: 0x%lx, size: 0x%lx)\n",
+      mram, addr, data, iter_size);
+
     udma_mram_mode_t mode = { .raw = udma_mram_mode_get(base) };
     mode.operation = MRAM_CMD_PROGRAM;
     udma_mram_mode_set(base, mode.raw);
@@ -516,6 +516,7 @@ static void mram_erase_chip_async(struct pi_device *device, pi_task_t *task)
         mode.operation = MRAM_CMD_ERASE_CHIP;
         udma_mram_mode_set(base, mode.raw);
 
+        udma_mram_enable_2d_set(mram->base, 0);
         udma_mram_trans_mode_set(base, UDMA_MRAM_TRANS_MODE_AUTO_ENA(0));
         udma_mram_trans_cfg_set(base, UDMA_MRAM_TRANS_CFG_VALID(1));
 
@@ -549,6 +550,7 @@ static void mram_erase_sector_async(struct pi_device *device, uint32_t addr, pi_
         mode.operation = MRAM_CMD_ERASE_SECT;
         udma_mram_mode_set(base, mode.raw);
 
+        udma_mram_enable_2d_set(mram->base, 0);
         udma_mram_trans_mode_set(base, UDMA_MRAM_TRANS_MODE_AUTO_ENA(0));
         udma_mram_erase_addr_set(base, ((unsigned int)addr) + ARCHI_MRAM_ADDR);
         udma_mram_trans_cfg_set(base, UDMA_MRAM_TRANS_CFG_VALID(1));
@@ -573,10 +575,14 @@ static void mram_erase_resume(pos_mram_t *mram)
     uint32_t addr = mram->pending_addr;
     unsigned int base = mram->base;
 
+    MRAM_TRACE(POS_LOG_TRACE, "Word erase resume (mram: %p, mram_addr: 0x%lx, size: 0x%lx)\n",
+      mram, addr, iter_size);
+
     udma_mram_mode_t mode = { .raw = udma_mram_mode_get(base) };
     mode.operation = MRAM_CMD_ERASE_WORD;
     udma_mram_mode_set(base, mode.raw);
 
+    udma_mram_enable_2d_set(mram->base, 0);
     udma_mram_trans_mode_set(base, UDMA_MRAM_TRANS_MODE_AUTO_ENA(0));
     udma_mram_erase_addr_set(base, ((unsigned int)addr) + ARCHI_MRAM_ADDR);
     udma_mram_erase_size_set(base, (iter_size >> POS_MRAM_WORD_SIZE_LOG2) - 1);
@@ -789,5 +795,5 @@ void pi_mram_conf_init(struct pi_mram_conf *conf)
 {
     conf->flash.api = &mram_api;
     conf->itf = 0;
-    conf->baudrate = 10000000;
+    conf->baudrate = 40000000;
 }
