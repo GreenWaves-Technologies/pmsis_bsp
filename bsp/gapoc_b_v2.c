@@ -160,12 +160,37 @@ void bsp_thermeye_conf_init(struct pi_thermeye_conf *conf)
 
 int bsp_thermeye_open(struct pi_thermeye_conf *conf)
 {
-    __gpio_init();
 
-    if (!conf->skip_pads_config)
-    {
-        pi_pad_set_function(CONFIG_HYPERBUS_DATA6_PAD, CONFIG_UART_RX_PAD_FUNC);
-    }
+    //Set Pad to control GPIO
+    //IR Trig
+    pi_pad_set_function(PI_PAD_15_B1_RF_PACTRL3, PI_PAD_FUNC1);
+    pi_gpio_pin_configure(0,GPIO_IR_TRIG,PI_GPIO_OUTPUT);
+    pi_gpio_pin_write(0,GPIO_1V8_EN,1);
+    //IR Power ON
+    pi_pad_set_function(PI_PAD_17_B40_RF_PACTRL5, PI_PAD_FUNC1);
+    pi_gpio_pin_configure(0,GPIO_IR_PWRON, PI_GPIO_OUTPUT);
+    pi_gpio_pin_write(0,GPIO_IR_PWRON,1);
+    //1V8 enable
+    pi_pad_set_function(PI_PAD_16_A44_RF_PACTRL4, PI_PAD_FUNC1);
+    pi_gpio_pin_configure(0, GPIO_1V8_EN  , PI_GPIO_OUTPUT | PI_GPIO_PULL_DISABLE);
+    pi_gpio_pin_write(0,GPIO_1V8_EN,1);
+    //PWM IR Clock
+    pi_pad_set_function(PI_PAD_33_B12_TIMER0_CH2, PI_PAD_FUNC0);
+
+    //Set camera PAD CPI + I2C
+    pi_pad_set_function(PI_PAD_18_A43_CAM_PCLK ,PI_PAD_FUNC0);
+    pi_pad_set_function(PI_PAD_19_A37_CAM_HSYNC,PI_PAD_FUNC0);
+    pi_pad_set_function(PI_PAD_20_B39_CAM_DATA0,PI_PAD_FUNC0);
+    pi_pad_set_function(PI_PAD_21_A42_CAM_DATA1,PI_PAD_FUNC0);
+    pi_pad_set_function(PI_PAD_22_B38_CAM_DATA2,PI_PAD_FUNC0);
+    pi_pad_set_function(PI_PAD_23_A41_CAM_DATA3,PI_PAD_FUNC0);
+    pi_pad_set_function(PI_PAD_24_B37_CAM_DATA4,PI_PAD_FUNC0);
+    pi_pad_set_function(PI_PAD_25_A40_CAM_DATA5,PI_PAD_FUNC0);
+    pi_pad_set_function(PI_PAD_26_B36_CAM_DATA6,PI_PAD_FUNC0);
+    pi_pad_set_function(PI_PAD_27_A38_CAM_DATA7,PI_PAD_FUNC0);
+    pi_pad_set_function(PI_PAD_28_A36_CAM_VSYNC,PI_PAD_FUNC0);
+    pi_pad_set_function(PI_PAD_29_B34_CAM_SDA  ,PI_PAD_FUNC0);
+    pi_pad_set_function(PI_PAD_30_D1_CAM_SCL   ,PI_PAD_FUNC0);
 
     return 0;
 }
