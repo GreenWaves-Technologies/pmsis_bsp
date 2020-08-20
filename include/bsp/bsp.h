@@ -144,6 +144,12 @@ void bsp_spiram_conf_init(struct pi_spiram_conf *conf);
 int bsp_spiram_open(struct pi_spiram_conf *conf);
 #endif
 
+#if defined(CONFIG_APS25XXXN)
+#include "bsp/ram/aps25xxxn.h"
+void bsp_aps25xxxn_conf_init(struct pi_aps25xxxn_conf *conf);
+int bsp_aps25xxxn_open(struct pi_aps25xxxn_conf *conf);
+#endif
+
 #if defined(CONFIG_NINA_W10)
 #include "bsp/transport/nina_w10.h"
 void bsp_nina_w10_conf_init(struct pi_nina_w10_conf *conf);

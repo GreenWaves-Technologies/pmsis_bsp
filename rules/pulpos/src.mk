@@ -38,7 +38,7 @@ CONFIG_I2C = 1
 endif
 
 ifeq '$(CONFIG_SPIRAM)' '1'
-PULP_SRCS += $(BSP_RAM_SRC) $(BSP_SPIRAM_SRC)
+PULP_SRCS += $(BSP_RAM_SRC) $(BSP_SPIRAM_SRC) ram/spiram/aps25xxxn.c
 CONFIG_BSP = 1
 CONFIG_SPIM = 1
 endif
