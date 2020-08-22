@@ -36,6 +36,7 @@
 // but last R/W bit is automatically added and 1 byte command must be shifter left by 1 byte
 #define APS25XXXN_SPI_CMD 0x2000
 
+#define APS25XXXN_REG_SPI_CMD 0x4000
 
 typedef struct
 {
@@ -86,6 +87,7 @@ static int aps25xxxn_open(struct pi_device *device)
   hyper_conf.xip_en = conf->xip_en;
   hyper_conf.latency = APS25XXXN_DEFAULT_LATENCY;
   hyper_conf.spi_cmd = APS25XXXN_SPI_CMD;
+  hyper_conf.reg_spi_cmd = APS25XXXN_REG_SPI_CMD;
   if (conf->baudrate)
   {
       hyper_conf.baudrate = conf->baudrate;
@@ -98,6 +100,11 @@ static int aps25xxxn_open(struct pi_device *device)
   {
       goto error2;
   }
+
+  uint16_t reg = 0;
+  pi_hyper_reg_get(&aps25xxxn->hyper_device, 8, (uint8_t *)&reg);
+  reg |= 1 << 3;
+  pi_hyper_reg_set(&aps25xxxn->hyper_device, 8, (uint8_t *)&reg);
 
   return 0;
 
