@@ -606,8 +606,8 @@ static void hyperflash_erase_sector_async(struct pi_device *device, uint32_t add
   hyperflash_set_reg_exec(hyperflash, 0x2AA<<1, 0x55);
   hyperflash_set_reg_exec(hyperflash, addr, 0x30);
 
-  // Typical sector erase time is 930ms
-  pi_task_push_delayed_us(pi_task_callback(&hyperflash->task, hyperflash_check_erase, device), 100000);
+  // Typical sector erase time is 930ms but keep it short as this time is shorter or some platform
+  pi_task_push_delayed_us(pi_task_callback(&hyperflash->task, hyperflash_check_erase, device), 10000);
 }
 
 
